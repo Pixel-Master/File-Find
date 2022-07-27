@@ -1,5 +1,5 @@
 # File-Find
-A Programm to fin files easier written in python.
+A Programm to find files easier written in python.
 ## Run
 **Download a prebuild app from the [Github Realase page](https://github.com/Pixel-Master/File-Find/releases)**
 
