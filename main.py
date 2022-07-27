@@ -1,86 +1,1 @@
-# Find Files easier with FindFile
-
-# Imports
-import tkinter as tk
-import additional_things
-
-
-# Creates a Title
-def search_object_name(root, name):
-    return tk.Label(root, text=name, font=("Arial", 25), bg="black", fg="white")
-
-
-# Setup of the main window
-def setup():
-    # Debug
-    print("Launching...")
-
-    # main window
-    # setup window
-    global root
-    root = tk.Tk()
-    root.geometry("500x800+50+50")
-    root.resizable(False, False)
-    root.title("Find-File")
-    root.config(bg="black")
-
-    # File-Find text
-    main_text = tk.Label(root, text="File-Find", font=("Baloo Bhaina 2 Bold", 80), bg="black", fg="white")
-    main_text.place(x=10, y=0)
-
-    # Labels
-    l1 = search_object_name(root, "Name:")
-    l1.place(x=10, y=120)
-    l2 = search_object_name(root, "in Name:")
-    l2.place(x=10, y=160)
-    l3 = search_object_name(root, "File Ending:")
-    l3.place(x=10, y=200)
-    l4 = search_object_name(root, "Search Library Files:")
-    l4.place(x=10, y=240)
-    l5 = search_object_name(root, "Search from directory:")
-    l5.place(x=10, y=280)
-    l6 = search_object_name(root, "File Size(MB) min:")
-    l6.place(x=10, y=320)
-    l7 = search_object_name(root, "max:")
-    l7.place(x=300, y=320)
-    l8 = search_object_name(root, "Search for Folders:")
-    l8.place(x=10, y=360)
-
-    # Entries
-    e1 = tk.Entry(root)
-    e1.place(x=200, y=122, width=300)
-    e2 = tk.Entry(root, )
-    e2.place(x=200, y=162, width=300)
-    e3 = tk.Entry(root)
-    e3.place(x=200, y=202, width=300)
-    e4 = tk.Entry(root)
-    e4.place(x=220, y=322, width=75)
-    e5 = tk.Entry(root)
-    e5.place(x=370, y=322, width=75)
-
-    # Radio Button
-    test12 = tk.StringVar(root)
-    test123 = tk.Radiobutton(root, value="1", variable=test12)
-    test123.pack()
-    test1 = tk.Radiobutton(root, value="2", variable=test12)
-    test1.pack()
-
-    def get_data():
-        print("Name: " + e1.get())
-        print("In name: " + e2.get())
-        print("File Type: " + e3.get())
-        print("File Size:\nmin: " + e4.get())
-        print("max: " + e5.get())
-        print("Test: " + test12.get())
-
-    # Buttons
-    search_bottom = tk.Button(root, text="Search", fg="green", bg="white", height=3, width=8, font=("Arial Bold", 30))
-    search_bottom.place(x=50, y=685)
-    generate_bottom = tk.Button(root, text="Generate\nshell\ncommand", fg="red", bg="white", height=3, width=8,
-                                font=("Arial Bold", 30), command=get_data)
-    generate_bottom.place(x=280, y=685)
-
-
-if __name__ == "__main__":
-    setup()
-    root.mainloop()
+# Find Files easier with FindFile# Importsimport tkinter as tkfrom tkinter import filedialog, messageboximport additional_thingsimport os, time# The GUI for the search resultsdef search_ui(sec):    # Window setup    search_result_ui = tk.Tk()    search_result_ui.geometry("500x800+50+50")    search_result_ui.resizable(False, True)    search_result_ui.title("File-Find Search Results")    search_result_ui.config(bg="black")    # main titles    main_text = tk.Label(search_result_ui, text="Search Results", font=("Baloo Bhaina 2 Bold", 70), bg="black",                         fg="white")    main_text.place(x=10, y=0)    seconds_text = tk.Label(search_result_ui, text=f"Seconds needed: {sec}", font=("Baloo Bhaina 2 Bold", 20),                            bg="black", fg="white")    seconds_text.place(x=10, y=100)def search(data_name, data_in_name, data_filetype, data_file_size_min, data_file_size_max, data_library,           data_search_from, data_folders):    messagebox.showwarning("This may take some Time!",                           "This may take some Time!\nPress OK to Start Searching", )    filelist = []    time_before_start = time.time()    for (roots, dirs, files) in os.walk(data_search_from):        for i in files:            filelist.append(i)    print("Seconds needed:", time.time() - time_before_start)    search_ui(time.time() - time_before_start)def open_dialog():    global search_from    search_from = filedialog.askdirectory()# Creates a Titledef search_object_name(window, name):    return tk.Label(window, text=name, font=("Arial", 25), bg="black", fg="white")# Setup of the main windowdef setup():    # Debug    print("Launching...")    # main window    # setup window    global root    root = tk.Tk()    root.geometry("500x800+50+50")    root.resizable(False, False)    root.title("Find-File")    root.config(bg="black")    # File-Find text    main_text = tk.Label(root, text="File-Find", font=("Baloo Bhaina 2 Bold", 80), bg="black", fg="white")    main_text.place(x=10, y=0)    # Labels    l1 = search_object_name(root, "Name:")    l1.place(x=10, y=120)    l2 = search_object_name(root, "in Name:")    l2.place(x=10, y=160)    l3 = search_object_name(root, "File Ending:")    l3.place(x=10, y=200)    l4 = search_object_name(root, "Search Library Files:")    l4.place(x=10, y=240)    l5 = search_object_name(root, "Search from directory:")    l5.place(x=10, y=280)    l6 = search_object_name(root, "File Size(MB) min:")    l6.place(x=10, y=320)    l7 = search_object_name(root, "max:")    l7.place(x=300, y=320)    l8 = search_object_name(root, "Search for Folders:")    l8.place(x=10, y=360)    # Entries    e1 = tk.Entry(root)    e1.place(x=200, y=122, width=300)    e2 = tk.Entry(root, )    e2.place(x=200, y=162, width=300)    e3 = tk.Entry(root)    e3.place(x=200, y=202, width=300)    e4 = tk.Entry(root)    e4.place(x=220, y=322, width=75)    e5 = tk.Entry(root)    e5.place(x=360, y=322, width=75)    # Radio Button    # Search for Library Files    var_library = tk.StringVar(root)    rb_library1 = tk.Radiobutton(root, value="search", variable=var_library, text="Search", bg="black", fg="white",                                 font=("Arial", 17))    rb_library1.place(x=260, y=242)    rb_library2 = tk.Radiobutton(root, value="dont search", variable=var_library, text="Don't search", bg="black",                                 fg="white", font=("Arial", 17))    rb_library2.place(x=350, y=242)    # Search for Folders    var_search_folders = tk.StringVar(root)    rb_search_folders1 = tk.Radiobutton(root, value="search", variable=var_search_folders, text="Search", bg="black",                                        fg="white", font=("Arial", 17))    rb_search_folders1.place(x=260, y=362)    rb_search_folders2 = tk.Radiobutton(root, value="dont search", variable=var_search_folders, text="Don't search",                                        bg="black", fg="white", font=("Arial", 17))    rb_search_folders2.place(x=350, y=362)    # Search from    # File dialog    search_from_button = tk.Button(root, text="Choose", highlightbackground="black", command=open_dialog)    search_from_button.place(x=270, y=280)    # Print the data    def print_data():        print("Name: ", e1.get(), "\nIn name: ", e2.get(), "\nFile Type: ", e3.get(), "\nFile Size:\nmin: ", e4.get(),              "\nmax: ", e5.get(), "\nSearch for Library files: ", var_library.get(), "\nSearch from: ", search_from,              "\nSearch for Folders: ", var_search_folders.get(), sep="")    #        data_name = e1.get()    #        data_in_name = e2.get()    #        data_filetype = e3.get()    #        data_file_size_min = e4.get()    #        data_file_size_max = e5.get()    #        data_library = var_library.get()    #        data_search_from = search_from    #        data_folder = var_search_folders.get()    # Search for files    def search_entry():        print_data()        search(e1.get(), e2.get(), e3.get(), e4.get(), e5.get(), var_library.get(), search_from,               var_search_folders.get())    # Buttons    search_bottom = tk.Button(root, text="Search", fg="green", bg="white", height=3, width=8, font=("Arial Bold", 30),                              command=search_entry)    search_bottom.place(x=50, y=685)    generate_bottom = tk.Button(root, text="Generate\nshell\ncommand", fg="red", bg="white", height=3, width=8,                                font=("Arial Bold", 30), command=print_data)    generate_bottom.place(x=280, y=685)if __name__ == "__main__":    global search_from, root    setup()    root.mainloop()
