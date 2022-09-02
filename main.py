@@ -1,9 +1,9 @@
 # Find Files easier with File-Find
 
 import os
-from time import time
 import tkinter as tk
 from fnmatch import fnmatch
+from time import time
 from tkinter import filedialog, messagebox
 from pyperclip import copy
 
@@ -19,7 +19,7 @@ def help_ui():
 
 
 # The GUI for the search results
-def search_ui(total_time, time_searching, time_indexing, matched_list):
+def search_ui(time_total, time_searching, time_indexing, matched_list):
     time_before_building = time()
     # Window setup
     search_result_ui = tk.Tk()
@@ -32,23 +32,28 @@ def search_ui(total_time, time_searching, time_indexing, matched_list):
     main_text = tk.Label(search_result_ui, text="Search Results", font=("Baloo Bhaina 2 Bold", 70), bg="black",
                          fg="white")
     main_text.place(x=10, y=0)
-    seconds_text = tk.Label(search_result_ui, text=f"Time needed:   Searching: {round(time_searching,3)}  Indexing:"
-                                                   f" {round(time_indexing,3)}  Total: {round(total_time,3)}",
-                            font=("Baloo Bhaina 2 Bold", 20), bg="black", fg="white")
+
+    # Seconds needed
+    seconds_text = tk.Label(search_result_ui, font=("Baloo Bhaina 2 Bold", 20), bg="black", fg="white")
     seconds_text.place(x=10, y=100)
+
+    # Files found
     objects_text = tk.Label(search_result_ui, text=f"Files found: {len(matched_list)}",
                             font=("Baloo Bhaina 2 Bold", 20), bg="black", fg="white")
-    objects_text.place(x=580, y=100)
+    objects_text.place(x=500, y=100)
 
-    # Results
+    # Scrollbars
     scrollbar_y = tk.Scrollbar(search_result_ui, bg="black")
     scrollbar_y.pack(side="right", fill="y")
     scrollbar_x = tk.Scrollbar(search_result_ui, bg="black", orient='vertical')
     scrollbar_x.pack(side="bottom", fill="x")
 
+    # Listbox
     result_listbox = tk.Listbox(search_result_ui, yscrollcommand=scrollbar_y.set, xscrollcommand=scrollbar_x.set,
                                 height=35, width=85, background="black", foreground="white")
+    result_listbox.place(y=140, x=10)
 
+    # Options for paths
     def open_with_program():
         selected_file = (result_listbox.get(result_listbox.curselection()))
         os.system("open " + str(selected_file.replace(" ", "\\ ")))
@@ -71,22 +76,57 @@ def search_ui(total_time, time_searching, time_indexing, matched_list):
         print(f"Copied File-Name: {os.path.basename(selected_file)}")
         messagebox.showinfo("Successful copied!", f"Successful copied File Name: {os.path.basename(selected_file)}!")
 
+    # Show more time info's
+    def show_time_stats():
+        messagebox.showinfo("Time Stats", f"Time needed:\n\nSearching: {round(time_searching, 3)}\nIndexing:"
+                                          f" {round(time_indexing, 3)}\nCreating UI: "
+                                          f"{round(time_building, 3)}\n---------\nTotal: "
+                                          f"{round(time_total + time_building, 3)}")
+
+    # Reloads File
+    def reload_files():
+        print("Reload...")
+        removed_files_while_reload = 0
+        time_before_reload = time()
+        for file in matched_list:
+            if not os.path.exists(file):
+                result_listbox.delete(result_listbox.index(matched_list.index(file)))
+                matched_list.remove(file)
+                removed_files_while_reload += 1
+            else:
+                continue
+        print(f"Reloaded found Files and removed {removed_files_while_reload} in"
+              f" {round(time() - time_before_reload, 3)} sec.")
+        messagebox.showinfo("Reloaded!", f"Reloaded found Files and removed {removed_files_while_reload}"
+                                         f" in {round(time() - time_before_reload, 3)} sec.")
+
     # Buttons
     show_in_finder = tk.Button(search_result_ui, text="Show in Finder", command=open_in_finder,
                                highlightbackground="black")
     show_in_finder.place(x=10, y=750)
-    open_file = tk.Button(search_result_ui, text="Open", command=open_with_program,
-                          highlightbackground="black")
+
+    open_file = tk.Button(search_result_ui, text="Open", command=open_with_program, highlightbackground="black")
     open_file.place(x=190, y=750)
+
     clipboard_path = tk.Button(search_result_ui, text="Copy Path to clipboard", command=copy_path,
                                highlightbackground="black")
     clipboard_path.place(x=330, y=750)
+
     clipboard_file = tk.Button(search_result_ui, text="Copy File Name to clipboard", command=copy_name,
                                highlightbackground="black")
     clipboard_file.place(x=540, y=750)
+
     info_button = tk.Button(search_result_ui, text="?", fg="black", bg="white", font=("Arial Bold", 15),
                             command=help_ui)
     info_button.place(x=740, y=0)
+
+    show_time = tk.Button(search_result_ui, text="...", command=show_time_stats, highlightbackground="black")
+    show_time.place(x=200, y=105)
+
+    reload_button = tk.Button(search_result_ui, text="Reload", highlightbackground="black", command=reload_files)
+    reload_button.place(x=700, y=105)
+
+    # Adding every object from matched_list to result_listbox
 
     for i in matched_list:
         result_listbox.insert("end", i + "\n")
@@ -94,7 +134,12 @@ def search_ui(total_time, time_searching, time_indexing, matched_list):
     scrollbar_y.config(command=result_listbox.yview)
     scrollbar_x.config(command=result_listbox.xview)
 
-    print("Time spent building th UI:", time() - time_before_building)
+    # seconds needed
+    seconds_text.config(text=f"Time needed: {round(time_total + (time() - time_before_building), 3)}")
+
+    # Time building UI
+    time_building = time() - time_before_building
+    print("Time spent building the UI:", time_building)
 
 
 # The search engine
@@ -119,25 +164,26 @@ def search(data_name, data_in_name, data_filetype, data_file_size_min, data_file
     for (roots, dirs, files) in os.walk(data_search_from):
         for i in files:
             found_path_list.append(os.path.join(roots, i))
-#            print("File:", os.path.join(roots, i))
+        #            print("File:", os.path.join(roots, i))
         if data_folders == "search":
             for i in dirs:
                 found_path_list.append(os.path.join(roots, i))
-#                print("Folder:", os.path.join(roots, i))
+    #                print("Folder:", os.path.join(roots, i))
 
     time_after_searching = time() - time_before_start
 
-    # Applies filters, when they don't match it continues. In the end match_var must have a score of 4
+    # Applies filters, when they don't match it continues.
     for i in found_path_list:
-        if data_name.lower() == os.path.basename(i).lower() or data_name == "":
+        basename = os.path.basename(i)
+        if data_name.lower() == basename.lower() or data_name == "":
             pass
         else:
             continue
-        if data_in_name.lower() in os.path.basename(i).lower() or data_in_name == "":
+        if data_in_name.lower() in basename.lower() or data_in_name == "":
             pass
         else:
             continue
-        if fnmatch(os.path.basename(i), "*." + data_filetype) or data_filetype == "":
+        if fnmatch(basename, "*." + data_filetype) or data_filetype == "":
             pass
         else:
             continue
@@ -171,19 +217,18 @@ def search(data_name, data_in_name, data_filetype, data_file_size_min, data_file
         if data_library == "dont search":
             if "/Library" in i:
                 continue
-        if os.path.basename(i) == ".DS_Store" or os.path.basename(i) == ".localized" or os.path.basename(
-                i) == "desktop.ini":
+        if basename == ".DS_Store" or basename == ".localized" or basename == "desktop.ini" or basename == "Thumbs.db":
             continue
         matched_filelist.append(i)
     # Prints out the seconds needed and the matching files
     print("Found Files and Folders:", matched_filelist)
     time_after_indexing = time() - (time_after_searching + time_before_start)
-    total_time = time() - time_before_start
-    print(f"\nSeconds needed:\nSearching: {time_after_searching}\nIndexing: {time_after_indexing}\nTotal: {total_time}")
+    time_total = time() - time_before_start
+    print(f"\nSeconds needed:\nSearching: {time_after_searching}\nIndexing: {time_after_indexing}\nTotal: {time_total}")
     print("\nFiles found:", len(matched_filelist))
 
     # Launches th GUI
-    search_ui(total_time, time_after_searching, time_after_indexing, matched_filelist)
+    search_ui(time_total, time_after_searching, time_after_indexing, matched_filelist)
 
 
 def open_dialog():
@@ -302,6 +347,15 @@ def setup():
 
 if __name__ == "__main__":
     global root
-    os.chdir(os.path.expanduser("~"))
+    userpath = os.path.expanduser("~")
+    os.chdir(userpath)
+    LibFolder = os.path.join(os.path.join(os.getcwd(), "Library"), "File-Find")
+    try:
+        os.makedirs(LibFolder)
+    except FileExistsError:
+        pass
+    ver_file = open(os.path.join(LibFolder, "version.txt"), "w")
+    ver_file.write("Version: dev-pre-alpha")
+    ver_file.close()
     setup()
     root.mainloop()
