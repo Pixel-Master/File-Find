@@ -4,7 +4,7 @@
 </p>
 
 
-<h3/ align="center">A macOS UI Utility that helps you to find Files easier.</h3>
+<h3 align="center">A macOS UI Utility that helps you to find Files easier.</h3>
 
 ## Features
 - Choose Filter wich Files to include:
