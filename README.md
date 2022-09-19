@@ -31,7 +31,17 @@
 	* Name
 	* In Name
 	* File Ending
-	
+
+## FAQ
+Q: **What is File-Find and how does it work?**
+
+A: File-Find is an open-source macOS Utility, that makes it easy to find Files. To search fill in the filters you need and leave the filters you don't need empty.
+
+Q: **Why does File-Find crash when searching?**
+
+A: File-Find is only using one thread. That's why it looks like File-Find "doesn't react".
+
+
 ## Download
 ### **[Version 1.0:](https://github.com/Pixel-Master/File-Find/releases/tag/v1.0.0)**
 #### Changelog:
@@ -65,4 +75,35 @@ Install pyperclip with pip:
 
 `python3 File-Find.py` 
 
- 
+## Roadmap
+1. [ ] UI:
+   1. [x] Filter UI
+   2. [ ] Help UI
+   3. [x] Search Result UI
+2. [ ] Exporting and Importing Searches:
+   1. [ ] Importing
+   2. [x] Exporting 
+3. [x] Caching:
+	1. [x] Creating Caches
+	2. [x] Using Caches
+	3. [x] Deleting Caches
+4. [ ] Multithreading:
+	1. [ ] UI using different thread as Search engine
+	2. [ ] Searching trough different threads
+	3. [ ] Indexing trough different threads
+5. [x] Sorting:
+   1. [x] Size
+   2. [x] File Name
+   3. [x] Modified
+   4. [x] Created
+   5. [x] Reverse
+6. [ ] Filter:
+    1. [x] Name
+    2. [x] In Name
+    3. [x] File Ending
+    4. [x] Search for Library Files
+    5. [x] Directory to search in
+    6. [x] File Size
+    7. [x] Search for Folders
+    8. [x] Search for Alias
+7. [ ] Compatible with Linux and Windows?
