@@ -51,7 +51,7 @@ A: File-Find is only using one thread. That's why it looks like File-Find "doesn
 #### Downloads:
 
 - [Mac](https://github.com/Pixel-Master/File-Find-Bot/releases/download/v1.0.0/File-Find.app.zip)
-- [Building from Source](https://github.com/Pixel-Master/File-Find#running-from-source)
+- [Building from Source](https://gitlab.com/Pixel-Mqster/File-Find/-/blob/main/README.md#running-from-source)
 
 
 ## Running from Source
@@ -103,7 +103,13 @@ Install pyperclip with pip:
     3. [x] File Ending
     4. [x] Search for Library Files
     5. [x] Directory to search in
-    6. [x] File Size
-    7. [x] Search for Folders
-    8. [x] Search for Alias
+    6. [x] Search for Folders
+    7. [ ] Search for Alias
+    8. [ ] Changeable:
+         1. [x] Size
+         2. [ ] Date Created
+         3. [ ] Date Created
+         4. [ ] Content
+         5. [x] UI
+         6. [ ] Included in Search
 7. [ ] Compatible with Linux and Windows?

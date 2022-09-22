@@ -3,21 +3,17 @@
 import os
 import tkinter as tk
 import FFkit
-from fnmatch import fnmatch
 from pickle import dump, load
 from time import time
 from tkinter import filedialog, messagebox
 from pyperclip import copy
 
 
-
-
-
 # The GUI for the search results
 def search_ui(time_total, time_searching, time_indexing, time_sorting, matched_list, search_path):
     time_before_building = time()
     # Window setup
-    search_result_ui = tk.Tk()
+    search_result_ui = tk.Toplevel()
     search_result_ui.geometry("800x800+150+150")
     search_result_ui.resizable(False, False)
     search_result_ui.title("File-Find Search Results")
@@ -79,7 +75,7 @@ def search_ui(time_total, time_searching, time_indexing, time_sorting, matched_l
                                           f"{round(time_building, 3)}\n---------\nTotal: "
                                           f"{round(time_total + time_building, 3)}")
 
-    # Reloads File
+    # Reloads File, check all collected files, if they still exist
     def reload_files():
         print("Reload...")
         time_before_reload = time()
@@ -92,12 +88,12 @@ def search_ui(time_total, time_searching, time_indexing, time_sorting, matched_l
                 matched_list.remove(file)
                 print(f"File Does Not exist: {file}")
                 removed_list.append(file)
-        with open(os.path.join(SearchesFolder, search_path.replace("/", "-") + ".FFSearch"), "rb") as SearchFile:
+        with open(os.path.join(Cached_SearchesFolder, search_path.replace("/", "-") + ".FFSearch"), "rb") as SearchFile:
             cached_files = list(load(SearchFile))
         for file in cached_files:
             if file in removed_list:
                 cached_files.remove(file)
-        with open(os.path.join(SearchesFolder, search_path.replace("/", "-") + ".FFSearch"), "wb") as SearchFile:
+        with open(os.path.join(Cached_SearchesFolder, search_path.replace("/", "-") + ".FFSearch"), "wb") as SearchFile:
             dump(cached_files, SearchFile)
         print(f"Reloaded found Files and removed {len(removed_list)} in"
               f" {round(time() - time_before_reload, 3)} sec.")
@@ -106,15 +102,14 @@ def search_ui(time_total, time_searching, time_indexing, time_sorting, matched_l
         objects_text.config(text=f"Files found: {len(matched_list)}")
         del cached_files, removed_list
 
-
     # Save Search
-    def save_ffsave():
+    def save_search():
         save_file = filedialog.asksaveasfilename(title="Export File-Find Search", initialdir=Saved_SearchFolder,
                                                  filetypes=(("File-Find Format", "*.FFSave"), ("Text file", "*.txt")))
         if save_file.endswith(".txt") and not os.path.exists(save_file):
             with open(save_file, "w") as SaveFile:
-                for i in matched_list:
-                    SaveFile.write(i + "\n")
+                for file in matched_list:
+                    SaveFile.write(file + "\n")
         elif save_file.endswith(".FFSave") and not os.path.exists(save_file):
             with open(save_file, "wb") as SaveFile:
                 dump(matched_list, SaveFile)
@@ -146,11 +141,10 @@ def search_ui(time_total, time_searching, time_indexing, time_sorting, matched_l
 
     reload_button = tk.Button(search_result_ui, text="Reload", highlightbackground="black", command=reload_files)
     reload_button.place(x=630, y=105)
-    save_button = tk.Button(search_result_ui, text="Save", highlightbackground="black", command=save_ffsave)
+    save_button = tk.Button(search_result_ui, text="Save", highlightbackground="black", command=save_search)
     save_button.place(x=710, y=105)
 
     # Adding every object from matched_list to result_listbox
-
     for i in matched_list:
         result_listbox.insert("end", i + "\n")
     result_listbox.place(y=140, x=10)
@@ -184,9 +178,9 @@ def search(data_name, data_in_name, data_filetype, data_file_size_min, data_file
     print("\nStarting Scanning...")
 
     # Goes through every file in the directory and saves it
-    if os.path.exists(os.path.join(SearchesFolder, data_search_from.replace("/", "-") + ".FFSearch")):
+    if os.path.exists(os.path.join(Cached_SearchesFolder, data_search_from.replace("/", "-") + ".FFSearch")):
         print("Scanning using cached Data..")
-        with open(os.path.join(SearchesFolder, data_search_from.replace("/", "-") + ".FFSearch"),
+        with open(os.path.join(Cached_SearchesFolder, data_search_from.replace("/", "-") + ".FFSearch"),
                   "rb") as SearchResults:
             found_path_list = load(SearchResults)
 
@@ -213,7 +207,7 @@ def search(data_name, data_in_name, data_filetype, data_file_size_min, data_file
             pass
         else:
             continue
-        if fnmatch(basename, "*." + data_filetype) or data_filetype == "":
+        if basename.endswith(f".{data_filetype}") or data_filetype == "":
             pass
         else:
             continue
@@ -277,9 +271,10 @@ def search(data_name, data_in_name, data_filetype, data_file_size_min, data_file
         if reverse_results:
             matched_path_list = list(reversed(matched_path_list))
 
-    # Saving Results
+    # Saving Results with pickle
     print("\nSaving Search Results...")
-    with open(os.path.join(SearchesFolder, data_search_from.replace("/", "-") + ".FFSearch"), "wb") as resultFile:
+    with open(os.path.join(Cached_SearchesFolder, data_search_from.replace("/", "-") + ".FFSearch"), "wb") \
+            as resultFile:
         dump(list(found_path_list), resultFile)
     time_after_sorting = time() - (time_after_indexing + time_after_searching + time_before_start)
     time_total = time() - time_before_start
@@ -290,17 +285,20 @@ def search(data_name, data_in_name, data_filetype, data_file_size_min, data_file
     # Launches the GUI
     search_ui(time_total, time_after_searching, time_after_indexing, time_after_sorting, matched_path_list,
               data_search_from)
-    print("Closed")
 
 
-def open_dialog():
-    search_from = filedialog.askdirectory()
-    os.chdir(search_from)
-
-
-# Creates a Title
-def search_object_name(window, name):
-    return tk.Label(window, text=name, font=("Arial", 25), bg="black", fg="white")
+# Load Save File
+def load_search():
+    file = filedialog.askopenfilename(title='Select a File-Find Saved-Search file (FFSave)',
+                                      filetypes=[('File-Find Search File', "FFSave")], initialdir=Saved_SearchFolder)
+    # Creating Cache File, because of the Reload Button
+    with open(file, "rb") as OpenedFile:
+        saved_file_content = load(OpenedFile)
+        if not os.path.exists(os.path.join(Cached_SearchesFolder, f"loaded from {file}.FFSearch".replace("/", "-"))):
+            with open(os.path.join(Cached_SearchesFolder, f"loaded from {file}.FFSearch".replace("/", "-")), "wb") \
+                    as CachedSearch:
+                dump(saved_file_content, file=CachedSearch)
+        search_ui(0, 0, 0, 0, saved_file_content, f"loaded from {file}".replace("/", "-"))
 
 
 # Setup of the main window
@@ -322,20 +320,26 @@ def setup():
     main_text.place(x=10, y=-20)
 
     # Labels
+    # Creates a Title
+    def search_object_name(window, name):
+        return tk.Label(window, text=name, font=("Arial", 25), bg="black", fg="white")
+
     l1 = search_object_name(root, "Name:")
-    l1.place(x=10, y=120)
+    l1.place(x=10, y=110)
     l2 = search_object_name(root, "in Name:")
-    l2.place(x=10, y=160)
+    l2.place(x=10, y=155)
     l3 = search_object_name(root, "File Ending:")
-    l3.place(x=10, y=200)
-    l4 = search_object_name(root, "Search Library Files:")
+    l3.place(x=10, y=195)
+    l4 = search_object_name(root, "File Size(Byte) min:")
     l4.place(x=10, y=240)
-    l5 = search_object_name(root, "Search from directory:")
-    l5.place(x=10, y=280)
-    l6 = search_object_name(root, "File Size(Byte) min:")
-    l6.place(x=10, y=320)
-    l7 = search_object_name(root, "max:")
-    l7.place(x=310, y=320)
+    l5 = search_object_name(root, "max:")
+    l5.place(x=310, y=240)
+    l6 = search_object_name(root, "Search from:")
+    l6.place(x=10, y=280)
+    l6_info = tk.Label(root, text=os.getcwd(), font=("Arial", 15), bg="black", fg="white", anchor="w", width=31)
+    l6_info.place(x=170, y=287)
+    l7 = search_object_name(root, "Search for System Files:")
+    l7.place(x=10, y=320)
     l8 = search_object_name(root, "Search for Folders:")
     l8.place(x=10, y=360)
     l9 = search_object_name(root, "Sort by:")
@@ -346,36 +350,38 @@ def setup():
 
     # Entries
     e1 = tk.Entry(root)
-    e1.place(x=200, y=122, width=300)
+    e1.place(x=200, y=112, width=280)
     e2 = tk.Entry(root)
-    e2.place(x=200, y=162, width=300)
+    e2.place(x=200, y=157, width=280)
     e3 = tk.Entry(root)
-    e3.place(x=200, y=202, width=300)
+    e3.place(x=200, y=197, width=280)
     e4 = tk.Entry(root)
-    e4.place(x=233, y=322, width=75)
+    e4.place(x=233, y=240, width=75)
     e5 = tk.Entry(root)
-    e5.place(x=370, y=322, width=75)
+    e5.place(x=370, y=240, width=75)
 
     # Radio Button
     # Search for Library Files
     var_library = tk.StringVar(root)
-    rb_library1 = tk.Radiobutton(root, value="search", variable=var_library, text="Search", bg="black", fg="white",
+    rb_library1 = tk.Radiobutton(root, value="search", variable=var_library, text="Yes", bg="black", fg="white",
                                  font=("Arial", 17))
-    rb_library1.place(x=260, y=242)
-    rb_library2 = tk.Radiobutton(root, value="dont search", variable=var_library, text="Don't search", bg="black",
+    rb_library1.place(x=310, y=322)
+    rb_library2 = tk.Radiobutton(root, value="dont search", variable=var_library, text="No", bg="black",
                                  fg="white", font=("Arial", 17))
-    rb_library2.place(x=350, y=242)
+    rb_library2.place(x=410, y=322)
     rb_library2.select()
     # Search for Folders
     var_search_folders = tk.StringVar(root)
-    rb_search_folders1 = tk.Radiobutton(root, value="search", variable=var_search_folders, text="Search", bg="black",
+    rb_search_folders1 = tk.Radiobutton(root, value="search", variable=var_search_folders, text="Yes", bg="black",
                                         fg="white", font=("Arial", 17))
-    rb_search_folders1.place(x=260, y=362)
-    rb_search_folders2 = tk.Radiobutton(root, value="dont search", variable=var_search_folders, text="Don't search",
+    rb_search_folders1.place(x=310, y=362)
+    rb_search_folders2 = tk.Radiobutton(root, value="dont search", variable=var_search_folders, text="No",
                                         bg="black", fg="white", font=("Arial", 17))
-    rb_search_folders2.place(x=350, y=362)
+    rb_search_folders2.place(x=410, y=362)
     rb_search_folders2.select()
-    # Sort by
+
+    # Sorting
+    # select sorting method
     var_sort_by = tk.StringVar(root)
     rb_sort_by1 = tk.Radiobutton(root, value="none", variable=var_sort_by, text="None", bg="black",
                                  fg="white", font=("Arial", 17))
@@ -397,27 +403,52 @@ def setup():
     var_reverse_sort = tk.StringVar(root)
     rb_reverse_sort1 = tk.Radiobutton(root, value="True", variable=var_reverse_sort, text="Yes", bg="black", fg="white",
                                       font=("Arial", 17))
-    rb_reverse_sort1.place(x=280, y=482)
+    rb_reverse_sort1.place(x=310, y=482)
     rb_reverse_sort2 = tk.Radiobutton(root, value="False", variable=var_reverse_sort, text="No", bg="black", fg="white",
                                       font=("Arial", 17))
-    rb_reverse_sort2.place(x=400, y=482)
+    rb_reverse_sort2.place(x=410, y=482)
     rb_reverse_sort2.select()
 
     # Search from File Dialog
-    search_from_button = tk.Button(root, text="Choose", highlightbackground="black", command=open_dialog)
-    search_from_button.place(x=270, y=280)
+    search_from_button = tk.Button(root, text="Choose", highlightbackground="black",
+                                   command=lambda: open_dialog(l6_info))
+    search_from_button.place(x=400, y=280)
+
+    # Change method
+    method_of_label = "size"
+
+    change_button = tk.Button(root, text="warning", command=lambda method_of_label: FFkit.change_method(l4, l5, e4, e5),
+                              bitmap="info", height=30, width=20, background="white")
+    change_button.place(x=460, y=232)
 
     # Print the data
     def print_data():
-        print("Filters:\n", "Name: ", e1.get(), "\nIn name: ", e2.get(), "\nFile Type: ", e3.get(), "\nFile "
-                                                                                                    "Size:\nmin: ",
-              e4.get(), "\nmax: ", e5.get(), "\nSearch for Library files: ", var_library.get(), "\nSearch from: ",
-              os.getcwd(), "\nSearch for Folders: ", var_search_folders.get(), "\nSort results by: ",
-              var_sort_by.get(), "\nReverse Results: ", var_reverse_sort.get(), sep="")
+        Method_s = "Error!"
+        Method_s2 = "Error!"
+        if method_of_label == "size":
+            Method_s = "File Size:\nmin:"
+            Method_s2 = "max:"
+        elif method_of_label == "content":
+            Method_s = "Content:"
+            Method_s2 = ""
+        elif method_of_label == "m_date":
+            Method_s = "Date Modified:\nFrom:"
+            Method_s2 = "To:"
+        elif method_of_label == "c_date":
+            Method_s = "Date Modified:\nFrom:"
+            Method_s2 = "To:"
+        print(f"Filters:\nName: {e1.get()}\nIn name: {e2.get()}\nFile Ending: {e3.get()}\n{Method_s} {e4.get()}\n"
+              f"{Method_s2} {e5.get()}\nSearch from: {os.getcwd()}\nSearch for System files: {var_library.get()}\n"
+              f"Search for Folders: {var_search_folders.get()}\nSort results by: {var_sort_by.get()}\nReverse Results: "
+              f"{var_reverse_sort.get()}")
 
-        # Search for files
-
+    # Search for files
     def search_entry():
+        if e1.get() != "" and e2.get() != "" or e1.get() != "" and e3.get() != "":
+            messagebox.showwarning("NAME ERROR!", "Name Error!\n\nFile Name and in Name or File Type can't be used "
+                                                  "together")
+            print("Name Error!\n\nFile Name and in Name or File Type can't be used together!")
+            raise NameError("Name Error!\n\nFile Name and in Name or File Type can't be used together!")
         if var_reverse_sort.get() == "True":
             reverse_results = True
         else:
@@ -431,9 +462,11 @@ def setup():
             messagebox.showwarning("VALUE ERROR!", "Value Error!\n\nFile Size: min. and max. must be integers!")
             print("Value Error!\n\nFile Size: min. and max. must be integers!")
         else:
+
             search(e1.get(), e2.get(), e3.get(), e4.get(), e5.get(), var_library.get(), os.getcwd(),
                    var_search_folders.get(), var_sort_by.get(), reverse_results)
 
+    # Generate a shell command, that displays in the UI
     def generate_shell_command():
         print_data()
 
@@ -458,13 +491,23 @@ def setup():
         command_copy_button = tk.Button(root, text="Copy", highlightbackground="black", command=copy_command)
         command_copy_button.place(x=400, y=590)
 
+    # Opens the File dialogue
+    def open_dialog(label):
+        search_from = filedialog.askdirectory(initialdir=userpath)
+        os.chdir(search_from)
+        label.config(text=os.getcwd())
+
     # Buttons
-    search_bottom = tk.Button(root, text="Search", fg="green", bg="white", height=3, width=8, font=("Arial Bold", 30),
+    search_bottom = tk.Button(root, text="Search", fg="green", bg="white", font=("Arial Bold", 30),
                               command=search_entry)
-    search_bottom.place(x=50, y=685)
-    generate_bottom = tk.Button(root, text="Shell\ncommand", fg="blue", bg="white", height=3, width=8,
-                                font=("Arial Bold", 30), command=generate_shell_command)
-    generate_bottom.place(x=280, y=685)
+    search_bottom.place(x=50, y=680, height=120, width=200)
+    generate_bottom = tk.Button(root, text="Shell Command", fg="blue", bg="white",
+                                font=("Arial Bold", 25), command=generate_shell_command)
+    generate_bottom.place(x=280, y=680, height=60, width=200)
+    more_options_bottom = tk.Button(root, text="Other...", fg="red", bg="white",
+                                    font=("Arial Bold", 30),
+                                    command=lambda: FFkit.other_options(load_search, messagebox))
+    more_options_bottom.place(x=280, y=740, height=60, width=200)
     info_button = tk.Button(root, text="?", fg="black", bg="white", font=("Arial Bold", 15), command=FFkit.help_ui)
     info_button.place(x=450, y=5)
 
@@ -472,22 +515,29 @@ def setup():
 if __name__ == "__main__":
     print("Launching...")
     global root
-    Version = "dev-pre-alpha"
+
+    # Creating File-Find dir and deleting Cache
+    Version = "dev-pre-alpha 18.Sep.22"
     userpath = os.path.expanduser("~")
     os.chdir(userpath)
+
     LibFolder = os.path.join(os.path.join(os.path.join(os.getcwd(), "Library"), "Application Support"), "File-Find")
-    SearchesFolder = os.path.join(LibFolder, "Searches")
+    Cached_SearchesFolder = os.path.join(LibFolder, "Cached Searches")
     Saved_SearchFolder = os.path.join(LibFolder, "Saved Searches")
-    try:
-        os.makedirs(os.path.join(Saved_SearchFolder))
-        os.makedirs(SearchesFolder)
-    except FileExistsError:
-        pass
-    for (main, folder, data) in os.walk(SearchesFolder):
+    Saved_FiltersFolder = os.path.join(LibFolder, "Saved Filters")
+
+    os.makedirs(Saved_SearchFolder, exist_ok=True)
+    os.makedirs(Saved_FiltersFolder, exist_ok=True)
+    os.makedirs(Cached_SearchesFolder, exist_ok=True)
+
+    for (main, folder, data) in os.walk(Cached_SearchesFolder):
         for cacheobj in data:
             os.remove(os.path.join(main, cacheobj))
     with open(os.path.join(LibFolder, "Info.txt"), "w") as ver_file:
         ver_file.write(f"Version: {Version}\n")
+
+#    FFkit.setup()
     setup()
+
     root.mainloop()
     print("End")
