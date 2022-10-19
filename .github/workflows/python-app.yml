@@ -42,12 +42,8 @@ jobs:
     - name: Python Linter
       uses: sunnysid3up/python-linter@v0.1-beta.7
 
-    - name: PyInstaller Build
-      uses: eric2788/pyinstaller-build@0.1.3
+    - name: Python3.8 PyInstaller Linux AMD64
+      uses: action-python/pyinstaller-py3.8@v1.0.0
       with:
-        main: File-Find
-        dist: ./dist
-        python_version: 3.10
-        pyinstaller_version: 4.7
-        artifact: File-Find.exe
-        no-console: true
+        path: ./
+
