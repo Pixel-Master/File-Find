@@ -1,158 +1,218 @@
-# Find Files easier with File-Find
-
+# Find Files easier with File Find
+# Main Script, execute this for running File-Find
 import os
-import tkinter as tk
-import FFkit
 from pickle import dump, load
-from time import time
-from tkinter import filedialog, messagebox
+from time import time, ctime
 from pyperclip import copy
+
+# PyQt5 Gui Imports
+from PyQt5.QtCore import QSize, QRect
+from PyQt5.QtGui import QFont, QIntValidator, QIcon
+from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QLabel, QPushButton, QRadioButton, QFileDialog, \
+    QListWidget, QLineEdit, QButtonGroup, QDateEdit, QFrame, QComboBox
+
+# Projects Library
+import FFkit
+import FFvars
 
 
 # The GUI for the search results
 def search_ui(time_total, time_searching, time_indexing, time_sorting, matched_list, search_path):
     time_before_building = time()
+
     # Window setup
-    search_result_ui = tk.Toplevel()
-    search_result_ui.geometry("800x800+150+150")
-    search_result_ui.resizable(False, False)
-    search_result_ui.title("File-Find Search Results")
-    search_result_ui.config(bg="black")
+    # Define the window
+    search_result_ui = QMainWindow(Root_Window)
+    # Set the Title of the Window
+    search_result_ui.setWindowTitle(f"File-Find Search Results | {search_path}")
+    # Set the Size of the Window and make it not resizable
+    search_result_ui.setFixedHeight(700)
+    search_result_ui.setFixedWidth(800)
 
-    # main titles
-    main_text = tk.Label(search_result_ui, text="Search Results", font=("Baloo Bhaina 2 Bold", 70), bg="black",
-                         fg="white")
-    main_text.place(x=10, y=0)
+    # Display the Window
+    search_result_ui.show()
 
-    # Seconds needed
-    seconds_text = tk.Label(search_result_ui, font=("Baloo Bhaina 2 Bold", 20), bg="black", fg="white")
-    seconds_text.place(x=10, y=100)
+    # File-Find Label
+    # Define the Label
+    main_label = QLabel("Search Results", parent=search_result_ui)
+    # Change Font
+    main_label.setFont(QFont("Baloo Bhaina", 70))
+    # Display the Label
+    main_label.move(0, -20)
+    main_label.show()
+    main_label.adjustSize()
 
-    # Files found
-    objects_text = tk.Label(search_result_ui, text=f"Files found: {len(matched_list)}",
-                            font=("Baloo Bhaina 2 Bold", 20), bg="black", fg="white")
-    objects_text.place(x=450, y=100)
+    # Seconds needed Label
+    seconds_text = QLabel(search_result_ui)
+    seconds_text.setFont(QFont("Baloo Bhaina", 20))
+    seconds_text.show()
+    seconds_text.move(10, 90)
 
-    # Scrollbars
-    scrollbar_y = tk.Scrollbar(search_result_ui, bg="black")
-    scrollbar_y.pack(side="right", fill="y")
-    scrollbar_x = tk.Scrollbar(search_result_ui, bg="black", orient='vertical')
-    scrollbar_x.pack(side="bottom", fill="x")
+    # Files found label
+    objects_text = QLabel(search_result_ui)
+    objects_text.setText(f"Files found: {len(matched_list)}")
+    objects_text.setFont(QFont("Baloo Bhaina", 20))
+    objects_text.show()
+    objects_text.move(420, 90)
+    objects_text.adjustSize()
+
+    # Timestamp
+    timestamp_text = QLabel(search_result_ui)
+    timestamp_text.setText(f"Timestamp: {ctime(time())}")
+    timestamp_text.setFont(QFont("Arial", 10))
+    timestamp_text.show()
+    timestamp_text.move(10, 680)
+    timestamp_text.adjustSize()
 
     # Listbox
-    result_listbox = tk.Listbox(search_result_ui, yscrollcommand=scrollbar_y.set, xscrollcommand=scrollbar_x.set,
-                                height=35, width=85, background="black", foreground="white")
-    result_listbox.place(y=140, x=10)
+    result_listbox = QListWidget(search_result_ui)
+    # Resize the List-widget
+    result_listbox.resize(781, 491)
+    # Place
+    result_listbox.move(10, 140)
+    # Connect the Listbox
+    result_listbox.show()
 
     # Options for paths
     def open_with_program():
-        selected_file = (result_listbox.get(result_listbox.curselection()))
-        os.system("open " + str(selected_file.replace(" ", "\\ ")))
+        selected_file = result_listbox.currentItem().text()
+        if os.system("open " + str(selected_file.replace(" ", "\\ "))) != 0:
+            FFkit.show_critical_messagebox("Error!", f"No Program found to open {selected_file}")
         print(f"Opened: {selected_file}")
 
     def open_in_finder():
-        selected_file = (result_listbox.get(result_listbox.curselection()))
-        os.system("open -R " + str(selected_file.replace(" ", "\\ ")))
+        selected_file = result_listbox.currentItem().text()
+
+        if os.system("open -R " + str(selected_file.replace(" ", "\\ "))) != 0:
+            FFkit.show_critical_messagebox("Error!", f"File not Found {selected_file}")
         print(f"Opened in Finder: {selected_file}")
 
     def copy_path():
-        selected_file = (result_listbox.get(result_listbox.curselection()))
+        selected_file = result_listbox.currentItem().text()
         copy(selected_file)
         print(f"Copied Path: {selected_file}")
-        messagebox.showinfo("Successful copied!", f"Successful copied Path: {selected_file}!")
+        FFkit.show_info_messagebox("Successfully copied!", f"Successfully copied Path:\n{selected_file}!")
 
     def copy_name():
-        selected_file = (result_listbox.get(result_listbox.curselection()))
+        selected_file = result_listbox.currentItem().text()
         copy(os.path.basename(selected_file))
         print(f"Copied File-Name: {os.path.basename(selected_file)}")
-        messagebox.showinfo("Successful copied!", f"Successful copied File Name: {os.path.basename(selected_file)}!")
+        FFkit.show_info_messagebox("Successfully copied!",
+                                   f"Successfully copied File Name:\n{os.path.basename(selected_file)} !")
 
     # Show more time info's
     def show_time_stats():
-        messagebox.showinfo("Time Stats", f"Time needed:\n\nScanning: {round(time_searching, 3)}\nIndexing:"
-                                          f" {round(time_indexing, 3)}\nSorting:"
-                                          f" {round(time_sorting, 3)}\nCreating UI: "
-                                          f"{round(time_building, 3)}\n---------\nTotal: "
-                                          f"{round(time_total + time_building, 3)}")
+        FFkit.show_info_messagebox("Time Stats", f"Time needed:\n\nScanning: {round(time_searching, 3)}\nIndexing:"
+                                                 f" {round(time_indexing, 3)}\nSorting:"
+                                                 f" {round(time_sorting, 3)}\nCreating UI: "
+                                                 f"{round(time_building, 3)}\n---------\nTotal: "
+                                                 f"{round(time_total + time_building, 3)}")
 
     # Reloads File, check all collected files, if they still exist
     def reload_files():
         print("Reload...")
         time_before_reload = time()
         removed_list = []
-        for file in matched_list:
-            if os.path.exists(file):
+        for matched_file in matched_list:
+            if os.path.exists(matched_file):
                 continue
             else:
-                result_listbox.delete(result_listbox.index(matched_list.index(file)))
-                matched_list.remove(file)
+                # result_listbox.takeItem()
+                matched_list.index(result_listbox.currentItem().text())
                 print(f"File Does Not exist: {file}")
                 removed_list.append(file)
         with open(os.path.join(Cached_SearchesFolder, search_path.replace("/", "-") + ".FFSearch"), "rb") as SearchFile:
             cached_files = list(load(SearchFile))
-        for file in cached_files:
-            if file in removed_list:
+        for cached_file in cached_files:
+            if cached_file in removed_list:
                 cached_files.remove(file)
         with open(os.path.join(Cached_SearchesFolder, search_path.replace("/", "-") + ".FFSearch"), "wb") as SearchFile:
             dump(cached_files, SearchFile)
         print(f"Reloaded found Files and removed {len(removed_list)} in"
               f" {round(time() - time_before_reload, 3)} sec.")
-        messagebox.showinfo("Reloaded!", f"Reloaded found Files and removed {len(removed_list)}"
-                                         f" in {round(time() - time_before_reload, 3)} sec.")
-        objects_text.config(text=f"Files found: {len(matched_list)}")
+        FFkit.show_info_messagebox("Reloaded!", f"Reloaded found Files and removed {len(removed_list)}"
+                                                f" in {round(time() - time_before_reload, 3)} sec.")
+        objects_text.setText(f"Files found: {len(matched_list)}")
         del cached_files, removed_list
 
     # Save Search
     def save_search():
-        save_file = filedialog.asksaveasfilename(title="Export File-Find Search", initialdir=Saved_SearchFolder,
-                                                 filetypes=(("File-Find Format", "*.FFSave"), ("Text file", "*.txt")))
+        save_dialog = QFileDialog.getSaveFileName(search_result_ui, "Export File-Find Search", Saved_SearchFolder,
+                                                  "File-Find Search (*.FFSave);;Plain Text File (*.txt)")
+        save_file = save_dialog[0]
         if save_file.endswith(".txt") and not os.path.exists(save_file):
-            with open(save_file, "w") as SaveFile:
-                for file in matched_list:
-                    SaveFile.write(file + "\n")
+            with open(save_file, "w") as ExportFile:
+                for matched_file in matched_list:
+                    ExportFile.write(matched_file + "\n")
         elif save_file.endswith(".FFSave") and not os.path.exists(save_file):
-            with open(save_file, "wb") as SaveFile:
-                dump(matched_list, SaveFile)
-        elif not os.path.exists(save_file):
-            messagebox.showinfo("Error", "Try again this File Already Exist!")
+            with open(save_file, "wb") as ExportFile:
+                dump(matched_list, ExportFile)
 
     # Buttons
-    show_in_finder = tk.Button(search_result_ui, text="Show in Finder", command=open_in_finder,
-                               highlightbackground="black")
-    show_in_finder.place(x=10, y=750)
+    # Functions to automate Button
+    def generate_button(text, command):
+        button = QPushButton(search_result_ui)
+        button.setText(text)
+        button.clicked.connect(command)
+        button.show()
+        button.adjustSize()
+        return button
 
-    open_file = tk.Button(search_result_ui, text="Open", command=open_with_program, highlightbackground="black")
-    open_file.place(x=190, y=750)
+    # Button to open the File in Finder
+    show_in_finder = generate_button("Show in Finder", open_in_finder)
+    show_in_finder.move(10, 650)
 
-    clipboard_path = tk.Button(search_result_ui, text="Copy Path to clipboard", command=copy_path,
-                               highlightbackground="black")
-    clipboard_path.place(x=330, y=750)
+    # Button to open the File
+    open_file = generate_button("Open", open_with_program)
+    open_file.move(210, 650)
 
-    clipboard_file = tk.Button(search_result_ui, text="Copy File Name to clipboard", command=copy_name,
-                               highlightbackground="black")
-    clipboard_file.place(x=540, y=750)
+    # Button to copy the File path to the clipboard using pyperclip
+    clipboard_path = generate_button("Copy Path to clipboard", copy_path)
+    clipboard_path.move(360, 650)
 
-    info_button = tk.Button(search_result_ui, text="?", fg="black", bg="white", font=("Arial Bold", 15),
-                            command=FFkit.help_ui)
-    info_button.place(x=740, y=0)
+    # Button to copy the File name to the clipboard using pyperclip
+    clipboard_file = generate_button("Copy File Name to clipboard", copy_name)
+    clipboard_file.move(570, 650)
 
-    show_time = tk.Button(search_result_ui, text="...", command=show_time_stats, highlightbackground="black")
-    show_time.place(x=200, y=105)
+    # Help Button
+    help_button = generate_button(" Help", command=lambda: FFkit.help_ui(Root_Window))
+    help_button.move(740, 0)
+    help_button_font = QFont("Arial", 25)
+    help_button_font.setBold(True)
+    help_button.setFont(help_button_font)
+    # Color
+    help_button.setStyleSheet("color: #b50104;")
+    # Icon
+    help_button.setIcon(QIcon(os.path.join(AssetsFolder, "Info_button_img_small.png")))
+    help_button.setIconSize(QSize(25, 25))
+    # Place
+    help_button.resize(120, 50)
+    help_button.move(670, 10)
 
-    reload_button = tk.Button(search_result_ui, text="Reload", highlightbackground="black", command=reload_files)
-    reload_button.place(x=630, y=105)
-    save_button = tk.Button(search_result_ui, text="Save", highlightbackground="black", command=save_search)
-    save_button.place(x=710, y=105)
+    # Time stat Button
+    show_time = generate_button(None, show_time_stats, )
+    # Icon
+    show_time.setIcon(QIcon(os.path.join(AssetsFolder, "Time_button_img_small.png")))
+    show_time.setIconSize(QSize(23, 23))
+    # Place
+    show_time.resize(50, 40)
+    show_time.move(230, 85)
+
+    # Reload Button
+    reload_button = generate_button("Reload", reload_files)
+    reload_button.move(640, 90)
+
+    # Save Button
+    save_button = generate_button("Save", save_search)
+    save_button.move(720, 90)
 
     # Adding every object from matched_list to result_listbox
-    for i in matched_list:
-        result_listbox.insert("end", i + "\n")
-    result_listbox.place(y=140, x=10)
-    scrollbar_y.config(command=result_listbox.yview)
-    scrollbar_x.config(command=result_listbox.xview)
+    for file in matched_list:
+        result_listbox.addItem(file)
 
-    # seconds needed
-    seconds_text.config(text=f"Time needed: {round(time_total + (time() - time_before_building), 3)}")
+    # Update Seconds needed Label
+    seconds_text.setText(f"Time needed: {round(time_total + (time() - time_before_building), 3)}")
+    seconds_text.adjustSize()
 
     # Time building UI
     time_building = time() - time_before_building
@@ -161,10 +221,9 @@ def search_ui(time_total, time_searching, time_indexing, time_sorting, matched_l
 
 # The search engine
 def search(data_name, data_in_name, data_filetype, data_file_size_min, data_file_size_max, data_library,
-           data_search_from, data_folders, sort_by, reverse_results):
+           data_search_from, data_folders, data_content, data_sort_by, data_reverse_sort):
     # Warning
-    messagebox.showinfo("This may take some Time!",
-                        "This may take some Time!\nPress OK to Start Searching")
+    FFkit.show_info_messagebox("This may take some Time!", "This may take some Time!\nPress OK to Start Searching")
     print("This may take some Time!\nPress OK to Start Searching")
 
     # Creates empty lists for the files
@@ -174,10 +233,21 @@ def search(data_name, data_in_name, data_filetype, data_file_size_min, data_file
     # Saves time before indexing
     time_before_start = time()
 
+    # Lower Arguments
+    data_name = data_name.lower()
+    data_in_name = data_in_name.lower()
+
+    # Convert to Byte format
+    failed_files = 0
+    _data_content = "".join(format(ord(item), 'b') for item in data_content)
+
     # Debug
     print("\nStarting Scanning...")
 
-    # Goes through every file in the directory and saves it
+    '''
+    Checking, if Cache File exist, if not it goes through every file in the directory and saves it. If It Exist it 
+    loads the Cache File in to found_path_list 
+    '''
     if os.path.exists(os.path.join(Cached_SearchesFolder, data_search_from.replace("/", "-") + ".FFSearch")):
         print("Scanning using cached Data..")
         with open(os.path.join(Cached_SearchesFolder, data_search_from.replace("/", "-") + ".FFSearch"),
@@ -186,49 +256,61 @@ def search(data_name, data_in_name, data_filetype, data_file_size_min, data_file
 
     else:
         for (roots, dirs, files) in os.walk(data_search_from):
-            for i in files:
-                found_path_list.append(os.path.join(roots, i))
-            #   print("File:", os.path.join(roots, i))
-            for i in dirs:
-                found_path_list.append(os.path.join(roots, i))
-            #    print("Folder:", os.path.join(roots, i))
+            for file in files:
+                found_path_list.append(os.path.join(roots, file))
+            for directory in dirs:
+                found_path_list.append(os.path.join(roots, directory))
 
     time_after_searching = time() - time_before_start
 
+    # Debug
     print("\nStarting Indexing...\n")
     # Applies filters, when they don't match it continues.
-    for i in found_path_list:
-        basename = os.path.basename(i)
-        if data_name.lower() == basename.lower() or data_name == "":
+    for found_file in found_path_list:
+        basename = os.path.basename(found_file)
+        lower_basename = os.path.basename(found_file).lower()
+        # Name
+        if data_name == lower_basename or data_name == "":
             pass
         else:
             continue
-        if data_in_name.lower() in basename.lower() or data_in_name == "":
+        # In name
+        if data_in_name in lower_basename or data_in_name == "":
             pass
         else:
             continue
+        # File Ending
         if basename.endswith(f".{data_filetype}") or data_filetype == "":
             pass
         else:
             continue
-        if data_folders != "search":
-            if os.path.isdir(i):
+
+        # Search for Folders
+        if not data_folders:
+            if os.path.isdir(found_file):
                 continue
 
-        try:
-            int(data_file_size_min)
-            int(data_file_size_max)
-            if os.path.isfile(i):
+        # Search in System Files
+        if not data_library:
+            if "/Library" in found_file:
+                continue
+
+        # Filter some unnecessary System Files
+        if basename == ".DS_Store" or basename == ".localized" or basename == "desktop.ini" or basename == "Thumbs.db":
+            continue
+
+        # Filter File Size
+        if data_file_size_min != "":
+            if os.path.isfile(found_file):
                 if int(data_file_size_max) >= int(
-                        os.path.getsize(i)) >= int(data_file_size_min):
+                        os.path.getsize(found_file)) >= int(data_file_size_min):
                     pass
                 else:
                     continue
-            elif os.path.isdir(i):
+            elif os.path.isdir(found_file):
                 folder_size = 0
-
                 # Gets the size
-                for path, dirs, files in os.walk(i):
+                for path, dirs, files in os.walk(found_file):
                     for file in files:
                         try:
                             folder_size += os.path.getsize(os.path.join(path, file))
@@ -239,36 +321,45 @@ def search(data_name, data_in_name, data_filetype, data_file_size_min, data_file
                     pass
                 else:
                     continue
+
+        # Contains
+        if data_content != "":
+            does_contain = False
+            try:
+                with open(found_file, "r") as ContentFile:
+                    for line in ContentFile:
+                        if data_content in line:
+                            does_contain = True
+                            break
+            except (UnicodeDecodeError, FileNotFoundError, OSError):
+                failed_files += 1
+                continue
             else:
-                continue
-        except ValueError:
-            pass
-        if data_library == "dont search":
-            if "/Library" in i:
-                continue
-        if basename == ".DS_Store" or basename == ".localized" or basename == "desktop.ini" or basename == "Thumbs.db":
-            continue
-        matched_path_list.append(i)
-    # Prints out the seconds needed and the matching files
+                if not does_contain or os.path.isdir(found_file):
+                    continue
+
+        # Add the File to matched_path_list
+        matched_path_list.append(found_file)
+
+    # Prints out seconds needed and the matching files
     print(f"Found {len(matched_path_list)} Files and Folders")
     time_after_indexing = time() - (time_after_searching + time_before_start)
 
     # Sorting
-
-    if sort_by == "filename":
+    if data_sort_by == "File Name":
         print("\nSorting List by Name...")
-        matched_path_list.sort(key=FFkit.SORT.name, reverse=reverse_results)
-    elif sort_by == "size":
+        matched_path_list.sort(key=FFkit.SORT.name, reverse=data_reverse_sort)
+    elif data_sort_by == "File Size":
         print("\nSorting List by Size..")
-        matched_path_list.sort(key=FFkit.SORT.size, reverse=not reverse_results)
-    elif sort_by == "c_date":
+        matched_path_list.sort(key=FFkit.SORT.size, reverse=not data_reverse_sort)
+    elif data_sort_by == "Date Created":
         print("\nSorting List by creation date..")
-        matched_path_list.sort(key=FFkit.SORT.c_date, reverse=not reverse_results)
-    elif sort_by == "m_date":
+        matched_path_list.sort(key=FFkit.SORT.c_date, reverse=not data_reverse_sort)
+    elif data_sort_by == "Date Created":
         print("\nSorting List by modified date..")
-        matched_path_list.sort(key=FFkit.SORT.m_date, reverse=not reverse_results)
+        matched_path_list.sort(key=FFkit.SORT.m_date, reverse=not data_reverse_sort)
     else:
-        if reverse_results:
+        if data_reverse_sort:
             matched_path_list = list(reversed(matched_path_list))
 
     # Saving Results with pickle
@@ -289,16 +380,19 @@ def search(data_name, data_in_name, data_filetype, data_file_size_min, data_file
 
 # Load Save File
 def load_search():
-    file = filedialog.askopenfilename(title='Select a File-Find Saved-Search file (FFSave)',
-                                      filetypes=[('File-Find Search File', "FFSave")], initialdir=Saved_SearchFolder)
+    load_dialog = QFileDialog.getOpenFileName(Root_Window, "Export File-Find Search", Saved_SearchFolder, "*.FFSave;")
+    load_file = load_dialog[0]
+
     # Creating Cache File, because of the Reload Button
-    with open(file, "rb") as OpenedFile:
-        saved_file_content = load(OpenedFile)
-        if not os.path.exists(os.path.join(Cached_SearchesFolder, f"loaded from {file}.FFSearch".replace("/", "-"))):
-            with open(os.path.join(Cached_SearchesFolder, f"loaded from {file}.FFSearch".replace("/", "-")), "wb") \
-                    as CachedSearch:
-                dump(saved_file_content, file=CachedSearch)
-        search_ui(0, 0, 0, 0, saved_file_content, f"loaded from {file}".replace("/", "-"))
+    if load_file != "":
+        with open(load_file, "rb") as OpenedFile:
+            saved_file_content = load(OpenedFile)
+            if not os.path.exists(
+                    os.path.join(Cached_SearchesFolder, f"loaded from {load_file}.FFSearch".replace("/", "-"))):
+                with open(os.path.join(Cached_SearchesFolder,
+                                       f"loaded from {load_file}.FFSearch".replace("/", "-")), "wb") as CachedSearch:
+                    dump(saved_file_content, file=CachedSearch)
+            search_ui(0, 0, 0, 0, saved_file_content, f"loaded from {load_file}".replace("/", "-"))
 
 
 # Setup of the main window
@@ -306,238 +400,432 @@ def setup():
     # Debug
     print("Launching UI...")
 
-    # main window
-    # setup window
-    global root
-    root = tk.Tk()
-    root.geometry("500x800+50+50")
-    root.resizable(False, False)
-    root.title("Find-File")
-    root.config(bg="black")
+    # Main Window
+    # Create the Global Variables
+    global root, Root_Window
+    # Create the window
+    root = QApplication([])
+    root.setStyle("macos")
 
-    # File-Find text
-    main_text = tk.Label(root, text="File-Find", font=("Baloo Bhaina 2 Bold", 80), bg="black", fg="white")
-    main_text.place(x=10, y=-20)
+    Root_Window = QWidget()
+    # Set the Title of the Window
+    Root_Window.setWindowTitle("File-Find")
+    # Set the Size of the Window and make it not resizable
+    Root_Window.setFixedHeight(500)
+    Root_Window.setFixedWidth(800)
+    # Display the Window
+    Root_Window.show()
+
+    # File-Find Label
+    # Define the Label
+    main_label = QLabel("File Find", parent=Root_Window)
+    # Change Font
+    main_label.setFont(QFont("Baloo Bhaina", 70))
+    # Display the Label
+    main_label.move(0, -30)
+    main_label.show()
 
     # Labels
-    # Creates a Title
-    def search_object_name(window, name):
-        return tk.Label(window, text=name, font=("Arial", 25), bg="black", fg="white")
+    # Functions to automate Labels
+    def large_filter_label(name):
+        # Define the Label
+        label = QLabel(name, parent=Root_Window)
+        # Change Font
+        label.setFont(QFont("Arial", 25))
+        # Display the Label
+        label.show()
+        # Return the Label to move it
+        return label
 
-    l1 = search_object_name(root, "Name:")
-    l1.place(x=10, y=110)
-    l2 = search_object_name(root, "in Name:")
-    l2.place(x=10, y=155)
-    l3 = search_object_name(root, "File Ending:")
-    l3.place(x=10, y=195)
-    l4 = search_object_name(root, "File Size(Byte) min:")
-    l4.place(x=10, y=240)
-    l5 = search_object_name(root, "max:")
-    l5.place(x=310, y=240)
-    l6 = search_object_name(root, "Search from:")
-    l6.place(x=10, y=280)
-    l6_info = tk.Label(root, text=os.getcwd(), font=("Arial", 15), bg="black", fg="white", anchor="w", width=31)
-    l6_info.place(x=170, y=287)
-    l7 = search_object_name(root, "Search for System Files:")
-    l7.place(x=10, y=320)
-    l8 = search_object_name(root, "Search for Folders:")
-    l8.place(x=10, y=360)
-    l9 = search_object_name(root, "Sort by:")
-    l9.place(x=10, y=420)
-    l9 = search_object_name(root, "Reverse Results:")
-    l9.place(x=10, y=480)
-    command_label2 = tk.Label(root)
+    def small_filter_label(name: str):
+        # Define the Label
+        label = QLabel(name, parent=Root_Window)
+        # Change Font
+        label.setFont(QFont("Arial", 15))
+        # Set the Maximum Length
+        label.setMaximumWidth(178)
+        # Display the Label
+        label.show()
+        # Return the Label to move it
+        return label
+
+    # Create a Label for every Filter with the Function, defined above
+    # -----Basic Search-----
+    # Frame and Label
+    sorting_frame_label = small_filter_label("Basic Search")
+    sorting_frame_label.move(5, 70)
+    basic_search_frame = QFrame(Root_Window)
+    basic_search_frame.setGeometry(QRect(5, 90, 385, 170))
+    basic_search_frame.setFrameShape(QFrame.StyledPanel)
+    basic_search_frame.setFrameShadow(QFrame.Raised)
+    basic_search_frame.show()
+
+    # Creating the Labels
+    l1 = large_filter_label("Name:")
+    l1.move(10, 100)
+    l2 = large_filter_label("in Name:")
+    l2.move(10, 140)
+    l3 = large_filter_label("File Ending:")
+    l3.move(10, 180)
+    l4 = large_filter_label("Directory:")
+    l4.move(10, 220)
+    # Label to display the Path
+    l4_small = small_filter_label(os.getcwd())
+    l4_small.move(140, 228)
+
+    # -----Advanced Search-----
+    # Frame and Label
+    sorting_frame_label = small_filter_label("Advanced Search")
+    sorting_frame_label.move(395, 70)
+    advanced_search_frame = QFrame(Root_Window)
+    advanced_search_frame.setGeometry(QRect(395, 90, 400, 290))
+    advanced_search_frame.setFrameShape(QFrame.StyledPanel)
+    advanced_search_frame.setFrameShadow(QFrame.Raised)
+    advanced_search_frame.show()
+
+    l5 = large_filter_label("File Size(Byte): min:")
+    l5.move(400, 100)
+    l5_2 = large_filter_label("max:")
+    l5_2.move(680, 100)
+    l6 = large_filter_label("Created from:")
+    l6.move(400, 140)
+    l6_2 = large_filter_label("to:")
+    l6_2.move(660, 140)
+    l7 = large_filter_label("Modified from:")
+    l7.move(400, 180)
+    l7_2 = large_filter_label("to:")
+    l7_2.move(660, 180)
+    l8 = large_filter_label("Contains:")
+    l8.move(400, 220)
+    l19 = large_filter_label("Search in System Files:")
+    l19.move(400, 300)
+    l10 = large_filter_label("Search for Folders:")
+    l10.move(400, 340)
+
+    # -----Sorting-----
+    # Frame and Label
+    sorting_frame_label = small_filter_label("Sorting")
+    sorting_frame_label.move(5, 270)
+    sorting_search_frame = QFrame(Root_Window)
+    sorting_search_frame.setGeometry(QRect(5, 290, 385, 90))
+    sorting_search_frame.setFrameShape(QFrame.StyledPanel)
+    sorting_search_frame.setFrameShadow(QFrame.Raised)
+    sorting_search_frame.show()
+
+    l12 = large_filter_label("Sort by:")
+    l12.move(10, 300)
+    l13 = large_filter_label("Reverse Results:")
+    l13.move(10, 340)
+
+    # Label for the Shell Command
+    command_label2 = QLabel("", Root_Window)
+    command_label2.setFont(QFont("Arial", 20))
+    command_label2.setMaximumWidth(310)
 
     # Entries
-    e1 = tk.Entry(root)
-    e1.place(x=200, y=112, width=280)
-    e2 = tk.Entry(root)
-    e2.place(x=200, y=157, width=280)
-    e3 = tk.Entry(root)
-    e3.place(x=200, y=197, width=280)
-    e4 = tk.Entry(root)
-    e4.place(x=233, y=240, width=75)
-    e5 = tk.Entry(root)
-    e5.place(x=370, y=240, width=75)
+    # Function to automate Entry creation
+    def filter_entry(only_int):
+        # Define the Entry
+        entry = QLineEdit(Root_Window)
+        # Set the Length
+        entry.resize(230, 20)
+        # If only_int true, configure the label
+        if only_int:
+            entry.setValidator(QIntValidator())
+        # Display the Entry
+        entry.show()
+        # Return the Label to place it
+        return entry
+
+    # Create an Entry for every Filter with the Function, defined above
+    e1 = filter_entry(False)
+    e1.move(150, 104)
+    e2 = filter_entry(False)
+    e2.move(150, 144)
+    e3 = filter_entry(False)
+    e3.move(150, 184)
+    e4 = filter_entry(True)
+    e4.resize(50, 20)
+    e4.move(625, 104)
+    e5 = filter_entry(True)
+    e5.resize(50, 19)
+    e5.move(740, 104)
+    # Plain Text Edit for Contains
+    e6 = filter_entry(False)
+    e6.resize(270, 25)
+    e6.move(510, 224)
 
     # Radio Button
+    # Function for automating
+    def create_radio_button(group, text):
+        # Create Radio Button
+        rb = QRadioButton(Root_Window)
+        # Set the Text
+        rb.setText(text)
+        # Add the Button to the Group
+        group.addButton(rb)
+        # Display the Button
+        rb.show()
+        # Return the Button
+        return rb
+
     # Search for Library Files
-    var_library = tk.StringVar(root)
-    rb_library1 = tk.Radiobutton(root, value="search", variable=var_library, text="Yes", bg="black", fg="white",
-                                 font=("Arial", 17))
-    rb_library1.place(x=310, y=322)
-    rb_library2 = tk.Radiobutton(root, value="dont search", variable=var_library, text="No", bg="black",
-                                 fg="white", font=("Arial", 17))
-    rb_library2.place(x=410, y=322)
-    rb_library2.select()
+    # Group for Radio Buttons
+    library_group = QButtonGroup(Root_Window)
+    # Radio Button 1
+    rb_library1 = create_radio_button(library_group, "Yes")
+    # Move the Button
+    rb_library1.move(680, 302)
+    # Radio Button 2
+    rb_library2 = create_radio_button(library_group, "No")
+    # Move the Button
+    rb_library2.move(740, 302)
+    # Select the Button 2
+    rb_library2.setChecked(True)
+
     # Search for Folders
-    var_search_folders = tk.StringVar(root)
-    rb_search_folders1 = tk.Radiobutton(root, value="search", variable=var_search_folders, text="Yes", bg="black",
-                                        fg="white", font=("Arial", 17))
-    rb_search_folders1.place(x=310, y=362)
-    rb_search_folders2 = tk.Radiobutton(root, value="dont search", variable=var_search_folders, text="No",
-                                        bg="black", fg="white", font=("Arial", 17))
-    rb_search_folders2.place(x=410, y=362)
-    rb_search_folders2.select()
+    # Group for Radio Buttons
+    folder_group = QButtonGroup(Root_Window)
+    # Radio Button 1
+    rb_folder1 = create_radio_button(folder_group, "Yes")
+    # Move the Button
+    rb_folder1.move(680, 342)
+    # Radio Button 2
+    rb_folder2 = create_radio_button(folder_group, "No")
+    # Move the Button
+    rb_folder2.move(740, 342)
+    # Select the Button 2
+    rb_folder2.setChecked(True)
 
-    # Sorting
-    # select sorting method
-    var_sort_by = tk.StringVar(root)
-    rb_sort_by1 = tk.Radiobutton(root, value="none", variable=var_sort_by, text="None", bg="black",
-                                 fg="white", font=("Arial", 17))
-    rb_sort_by1.place(x=410, y=422)
-    rb_sort_by2 = tk.Radiobutton(root, value="filename", variable=var_sort_by, text="File Name",
-                                 bg="black", fg="white", font=("Arial", 17))
-    rb_sort_by2.place(x=300, y=422)
-    rb_sort_by3 = tk.Radiobutton(root, value="size", variable=var_sort_by, text="Size",
-                                 bg="black", fg="white", font=("Arial", 17))
-    rb_sort_by3.place(x=200, y=422)
-    rb_sort_by4 = tk.Radiobutton(root, value="m_date", variable=var_sort_by, text="Modified",
-                                 bg="black", fg="white", font=("Arial", 17))
-    rb_sort_by4.place(x=200, y=447)
-    rb_sort_by5 = tk.Radiobutton(root, value="c_date", variable=var_sort_by, text="Created",
-                                 bg="black", fg="white", font=("Arial", 17))
-    rb_sort_by5.place(x=300, y=447)
-    rb_sort_by1.select()
     # Reverse Sort
-    var_reverse_sort = tk.StringVar(root)
-    rb_reverse_sort1 = tk.Radiobutton(root, value="True", variable=var_reverse_sort, text="Yes", bg="black", fg="white",
-                                      font=("Arial", 17))
-    rb_reverse_sort1.place(x=310, y=482)
-    rb_reverse_sort2 = tk.Radiobutton(root, value="False", variable=var_reverse_sort, text="No", bg="black", fg="white",
-                                      font=("Arial", 17))
-    rb_reverse_sort2.place(x=410, y=482)
-    rb_reverse_sort2.select()
+    # Group for Radio Buttons
+    reverse_sort_group = QButtonGroup(Root_Window)
+    # Radio Button 1
+    rb_reverse_sort1 = create_radio_button(reverse_sort_group, "Yes")
+    # Move the Button
+    rb_reverse_sort1.move(260, 342)
+    # Radio Button 2
+    rb_reverse_sort2 = create_radio_button(reverse_sort_group, "No")
+    # Move the Button
+    rb_reverse_sort2.move(320, 342)
+    # Select the Button
+    rb_reverse_sort2.setChecked(True)
 
-    # Search from File Dialog
-    search_from_button = tk.Button(root, text="Choose", highlightbackground="black",
-                                   command=lambda: open_dialog(l6_info))
-    search_from_button.place(x=400, y=280)
+    # Drop Down Menus
+    # Sorting Menu
+    # Defining
+    combobox_sorting = QComboBox(Root_Window)
+    # Adding Options
+    combobox_sorting.addItems(["None", "File Size", "File Name", "Date Modified", "Date Created"])
+    # Display
+    combobox_sorting.show()
+    combobox_sorting.move(240, 300)
 
-    # Change method
-    method_of_label = "size"
+    # Date-Time Entries
+    def generate_day_entry():
+        # Define dt_entry
+        dt_entry = QDateEdit(Root_Window)
+        # Change dd.mm.yy to dd.MM.yyyy (e.g. 13.1.01 = 13.Jan.2001)
+        dt_entry.setDisplayFormat("dd.MMM.yyyy")
+        # Display
+        dt_entry.show()
+        # Return dt entry to move it
+        return dt_entry
 
-    change_button = tk.Button(root, text="warning", command=lambda method_of_label: FFkit.change_method(l4, l5, e4, e5),
-                              bitmap="info", height=30, width=20, background="white")
-    change_button.place(x=460, y=232)
+    # Date Created
+    c_date_from_drop_down = generate_day_entry()
+    c_date_from_drop_down.move(558, 144)
+    c_date_to_drop_down = generate_day_entry()
+    c_date_to_drop_down.move(690, 144)
+
+    # Date Modified
+    m_date_from_drop_down = generate_day_entry()
+    m_date_from_drop_down.move(558, 184)
+    m_date_to_drop_down = generate_day_entry()
+    m_date_to_drop_down.move(690, 184)
+
+    # Push Buttons
+    # Search from Button
+    # Function to automate Buttons
+    def generate_change_button(command):
+        # Generate the Button
+        button = QPushButton(Root_Window)
+        # Change the Text
+        button.setText("Select")
+        # Set the command
+        button.clicked.connect(command)
+        # Display the Button
+        button.show()
+        # Return the value of the Button, to move the Button
+        return button
+
+    # Opens the File dialogue and changes the current working dir into the returned value
+    def open_dialog():
+        search_from = QFileDialog.getExistingDirectory(directory=os.getcwd())
+        try:
+            os.chdir(search_from)
+            l4_small.setText(search_from)
+            l4_small.adjustSize()
+        except FileNotFoundError:
+            pass
+
+    search_from_button = generate_change_button(open_dialog)
+    search_from_button.move(310, 220)
 
     # Print the data
     def print_data():
-        Method_s = "Error!"
-        Method_s2 = "Error!"
-        if method_of_label == "size":
-            Method_s = "File Size:\nmin:"
-            Method_s2 = "max:"
-        elif method_of_label == "content":
-            Method_s = "Content:"
-            Method_s2 = ""
-        elif method_of_label == "m_date":
-            Method_s = "Date Modified:\nFrom:"
-            Method_s2 = "To:"
-        elif method_of_label == "c_date":
-            Method_s = "Date Modified:\nFrom:"
-            Method_s2 = "To:"
-        print(f"Filters:\nName: {e1.get()}\nIn name: {e2.get()}\nFile Ending: {e3.get()}\n{Method_s} {e4.get()}\n"
-              f"{Method_s2} {e5.get()}\nSearch from: {os.getcwd()}\nSearch for System files: {var_library.get()}\n"
-              f"Search for Folders: {var_search_folders.get()}\nSort results by: {var_sort_by.get()}\nReverse Results: "
-              f"{var_reverse_sort.get()}")
+        print(f"Filters:\n"
+              f"Name: {e1.text()}\n"
+              f"In name: {e2.text()}\n"
+              f"File Ending: {e3.text()}\n"
+              f"Search from: {os.getcwd()}\n\n"
+              f"File size: min:{e4.text()} max: {e5.text()}\n"
+              f"Date Modified from: {m_date_from_drop_down.date()} to: {m_date_to_drop_down.date()}\n"
+              f"Date Created from: {c_date_from_drop_down.date()} to: {c_date_to_drop_down.date()}\n"
+              f"Contains: {e6.text()}\n"
+              f"Search for System files: {rb_library1.isChecked()}\n"
+              f"Search for Folders: {rb_folder1.isChecked()}\n\n"
+              f"Sort results by: {combobox_sorting.currentText()}\n"
+              f"Reverse Results: {rb_reverse_sort1.isChecked()}")
 
-    # Search for files
+    # Start Search for files locally
     def search_entry():
-        if e1.get() != "" and e2.get() != "" or e1.get() != "" and e3.get() != "":
-            messagebox.showwarning("NAME ERROR!", "Name Error!\n\nFile Name and in Name or File Type can't be used "
-                                                  "together")
-            print("Name Error!\n\nFile Name and in Name or File Type can't be used together!")
-            raise NameError("Name Error!\n\nFile Name and in Name or File Type can't be used together!")
-        if var_reverse_sort.get() == "True":
-            reverse_results = True
+        # Fetching Errors
+        if e1.text() != "" and e2.text() != "" or e1.text() != "" and e3.text() != "":
+            FFkit.show_critical_messagebox("NAME ERROR!", "Name Error!\n\nFile Name and in Name or File Type can't "
+                                                          "be used together")
         else:
-            reverse_results = False
-        print_data()
-        try:
-            if e4.get() != "" or e5.get() != "":
-                int(e4.get())
-                int(e5.get())
-        except ValueError:
-            messagebox.showwarning("VALUE ERROR!", "Value Error!\n\nFile Size: min. and max. must be integers!")
-            print("Value Error!\n\nFile Size: min. and max. must be integers!")
-        else:
-
-            search(e1.get(), e2.get(), e3.get(), e4.get(), e5.get(), var_library.get(), os.getcwd(),
-                   var_search_folders.get(), var_sort_by.get(), reverse_results)
+            print_data()
+            search(data_name=e1.text(),
+                   data_in_name=e2.text(),
+                   data_filetype=e3.text(),
+                   data_file_size_min=e4.text(), data_file_size_max=e5.text(),
+                   data_library=rb_library1.isChecked(),
+                   data_search_from=os.getcwd(),
+                   data_content=e6.text(),
+                   data_folders=rb_folder1.isChecked(),
+                   data_sort_by=combobox_sorting.currentText(),
+                   data_reverse_sort=rb_reverse_sort1.isChecked())
 
     # Generate a shell command, that displays in the UI
     def generate_shell_command():
         print_data()
 
         def copy_command():
+            # Copying the command
             copy(shell_command)
+            # Feedback to the User
             print(f"Copied Command: {shell_command}")
-            messagebox.showinfo("Successful copied!", f"Successful copied Command: {shell_command} !")
+            # Messagebox
+            FFkit.show_info_messagebox("Successful copied!", f"Successful copied Command:\n{shell_command} !")
 
+        # Generate a shell command
         shell_command = f"find {os.getcwd()}"
-        if e1.get() != "":
-            shell_command += f" -name {e1.get()}"
-        elif e3.get() != "":
-            shell_command += f" -iname \"*{e3.get()}\""
-        elif e2.get() != "":
-            shell_command += f" -iname {e2.get()}"
+        if e1.text() != "":
+            shell_command += f" -name \"{e1.text()}\""
+        elif e3.text() != "":
+            shell_command += f" -iname \"*{e3.text()}\""
+        elif e2.text() != "":
+            shell_command += f" -iname \"{e2.text()}\""
         print(f"\nCommand: {shell_command}")
-        command_label = tk.Label(root, text="Command:", font=("Arial", 30), bg="black", fg="white")
-        command_label.place(x=10, y=540)
-        command_label2.config(text=shell_command, font=("Arial", 20), bg="blue", fg="white", width=31,
-                              anchor="w")
-        command_label2.place(x=10, y=590)
-        command_copy_button = tk.Button(root, text="Copy", highlightbackground="black", command=copy_command)
-        command_copy_button.place(x=400, y=590)
 
-    # Opens the File dialogue
-    def open_dialog(label):
-        search_from = filedialog.askdirectory(initialdir=userpath)
-        os.chdir(search_from)
-        label.config(text=os.getcwd())
+        # Label, saying command
+        command_label = QLabel(Root_Window)
+        command_label.setText("Command:")
+        command_label.setFont(QFont("Arial", 20))
+        command_label.show()
+        command_label.move(10, 450)
+
+        # Label, displaying the command
+        command_label2.setText(shell_command)
+        command_label2.setStyleSheet("background-color: blue;color: white;")
+        command_label2.adjustSize()
+        command_label2.move(120, 450)
+        command_label2.show()
+
+        # Copy Command Button
+        command_copy_button = QPushButton(Root_Window)
+        # Change the Text
+        command_copy_button.setText("Copy")
+        # Change the click event
+        command_copy_button.clicked.connect(copy_command)
+        # Display the Button at the correct position
+        command_copy_button.show()
+        command_copy_button.move(430, 450)
 
     # Buttons
-    search_bottom = tk.Button(root, text="Search", fg="green", bg="white", font=("Arial Bold", 30),
-                              command=search_entry)
-    search_bottom.place(x=50, y=680, height=120, width=200)
-    generate_bottom = tk.Button(root, text="Shell Command", fg="blue", bg="white",
-                                font=("Arial Bold", 25), command=generate_shell_command)
-    generate_bottom.place(x=280, y=680, height=60, width=200)
-    more_options_bottom = tk.Button(root, text="Other...", fg="red", bg="white",
-                                    font=("Arial Bold", 30),
-                                    command=lambda: FFkit.other_options(load_search, messagebox))
-    more_options_bottom.place(x=280, y=740, height=60, width=200)
-    info_button = tk.Button(root, text="?", fg="black", bg="white", font=("Arial Bold", 15), command=FFkit.help_ui)
-    info_button.place(x=450, y=5)
+    def large_button(text, command, font_size):
+        # Define the Button
+        button = QPushButton(Root_Window)
+        # Set the Text
+        button.setText(text)
+        # Set the Font
+        Font = QFont("Arial", font_size)
+        Font.setBold(True)
+        button.setFont(Font)
+        # Set the Command
+        button.clicked.connect(command)
+        # Display the Button
+        button.show()
+        # Return the Button
+        return button
+
+    # Search button with image, to start searching
+    search_button = large_button("Find", search_entry, 25)
+    # Icon
+    search_button.setIcon(QIcon(os.path.join(AssetsFolder, "Find_button_img_small.png")))
+    search_button.setIconSize(QSize(25, 25))
+    # Place
+    search_button.resize(105, 50)
+    search_button.move(625, 440)
+
+    # Button for more Options: Load Searches, Generate shell Command and Info about the Cache
+    more_options_button = large_button(None, lambda: FFkit.other_options(
+        load_search, generate_shell_command, Root_Window), 50)
+    # Icon
+    more_options_button.setIcon(QIcon(os.path.join(AssetsFolder, "More_button_img_small.png")))
+    more_options_button.setIconSize(QSize(100, 100))
+    # Place
+    more_options_button.resize(65, 50)
+    more_options_button.move(730, 440)
+
+    # Help Button, that calls FFKit.help_ui()
+    help_button = large_button(" Help", lambda: FFkit.help_ui(Root_Window), 25)
+    # Color
+    help_button.setStyleSheet("color: #b50104;")
+    # Icon
+    help_button.setIcon(QIcon(os.path.join(AssetsFolder, "Info_button_img_small.png")))
+    help_button.setIconSize(QSize(25, 25))
+    # Place
+    help_button.resize(120, 50)
+    help_button.move(670, 10)
 
 
 if __name__ == "__main__":
     print("Launching...")
-    global root
+    global root, Root_Window
 
     # Creating File-Find dir and deleting Cache
-    Version = "dev-pre-alpha 18.Sep.22"
+    Version = "dev-pre-alpha 19.oct.22-pyqt5"
     userpath = os.path.expanduser("~")
     os.chdir(userpath)
 
     LibFolder = os.path.join(os.path.join(os.path.join(os.getcwd(), "Library"), "Application Support"), "File-Find")
     Cached_SearchesFolder = os.path.join(LibFolder, "Cached Searches")
     Saved_SearchFolder = os.path.join(LibFolder, "Saved Searches")
-    Saved_FiltersFolder = os.path.join(LibFolder, "Saved Filters")
+    AssetsFolder = os.path.join(LibFolder, "assets")
 
     os.makedirs(Saved_SearchFolder, exist_ok=True)
-    os.makedirs(Saved_FiltersFolder, exist_ok=True)
     os.makedirs(Cached_SearchesFolder, exist_ok=True)
-
+    os.makedirs(AssetsFolder, exist_ok=True)
     for (main, folder, data) in os.walk(Cached_SearchesFolder):
         for cacheobj in data:
             os.remove(os.path.join(main, cacheobj))
     with open(os.path.join(LibFolder, "Info.txt"), "w") as ver_file:
         ver_file.write(f"Version: {Version}\n")
 
-#    FFkit.setup()
+    FFvars.setup(AssetsFolder)
     setup()
 
-    root.mainloop()
+    root.exec()
     print("End")

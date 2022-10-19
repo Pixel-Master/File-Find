@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://github.com/Pixel-Master/File-Find/blob/main/assets/icon.png?raw=true" height="128">
+  <img src="https://gitlab.com/Pixel-Mqster/File-Find/-/raw/main/assets/icon.png" height="128">
   <h1 align="center">File-Find for macOS</h1>
 
 
@@ -10,10 +10,11 @@
 	* Name
 	* In Name
 	* File Ending
-	* Search for Library Files
+	* Search in System Files
 	* Directory to search in
 	* File Size
 	* Search for Folders
+    * Search for File Content
 - Search for Files and export Searches
 
 - Choose options for Files:
@@ -23,8 +24,8 @@
 - Sort Results:
 	* Size
 	* File Name
-	* Modified
-	* Created
+	* Date Modified
+	* Date Created
 - Reverse Results
 
 - Generate Shell command from Filters, supports:
@@ -41,6 +42,9 @@ Q: **Why does File-Find crash when searching?**
 
 A: File-Find is only using one thread. That's why it looks like File-Find "doesn't react".
 
+Q: **How to clean the Cache?**
+
+A: File-Find is saving the cache under `/Users/USERNAME/Library/Application Support/File-Find/Cached Searches`. The Cache gets cleaned up on start up, that means to clean the cache just restart File Find
 
 ## Download
 ### **[Version 1.0:](https://github.com/Pixel-Master/File-Find/releases/tag/v1.0.0)**
@@ -58,16 +62,25 @@ A: File-Find is only using one thread. That's why it looks like File-Find "doesn
 
 ### Note:
 
-**File Find won't work properly on Linux or Windows, because the UI displays different depending on the OS and some Features are rel** 
+**File Find won't work properly on Linux or Windows, because the UI displays different depending on the OS and some Features are depending on the system.** 
 
 
-### Dependencies (when running from source)
-- [Python](https://python.org/) 3.6 or higher
-- [Pyperclip](https://pyperclip.readthedocs.io/en/latest/) 
+### Install dependencies (when running from source)
+- [Python](https://python.org/) 3.9 or higher
+- [Pyperclip](https://pypi.org/project/pyperclip/) 1.8.2 or higher
+- [PyQt 5](https://pypi.org/project/PyQt5/) 5.15 or higher
 
-Install pyperclip with pip:
+1. Install Python:
 
+    Download the installer: https://python.org/download or use
+
+    Homebrew: `brew install python@3.10`
+    
+2. Install pyperclip with pip:
 `pip3 install pyperclip`
+
+3. Install PyQt 5 with pip:
+`pip3 install PyQt5`
 
 ### Running
 1. Install dependencies
@@ -78,15 +91,17 @@ Install pyperclip with pip:
 ## Roadmap
 1. [ ] UI:
    1. [x] Filter UI
-   2. [ ] Help UI
+   2. [x] Help UI
    3. [x] Search Result UI
-2. [ ] Exporting and Importing Searches:
-   1. [ ] Importing
+   4. [ ] Cache UI
+2. [x] Exporting and Importing Searches:
+   1. [x] Importing
    2. [x] Exporting 
 3. [x] Caching:
 	1. [x] Creating Caches
 	2. [x] Using Caches
 	3. [x] Deleting Caches
+    4. [ ] Cache UI
 4. [ ] Multithreading:
 	1. [ ] UI using different thread as Search engine
 	2. [ ] Searching trough different threads
@@ -101,15 +116,11 @@ Install pyperclip with pip:
     1. [x] Name
     2. [x] In Name
     3. [x] File Ending
-    4. [x] Search for Library Files
+    4. [x] Search in System Files
     5. [x] Directory to search in
     6. [x] Search for Folders
     7. [ ] Search for Alias
-    8. [ ] Changeable:
-         1. [x] Size
-         2. [ ] Date Created
-         3. [ ] Date Created
-         4. [ ] Content
-         5. [x] UI
-         6. [ ] Included in Search
+    8. [ ] Contains:
+    9. [ ] Date Modified
+   10. [ ] Date Created
 7. [ ] Compatible with Linux and Windows?
