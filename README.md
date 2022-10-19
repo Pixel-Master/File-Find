@@ -1,3 +1,5 @@
+## !! The Development for the tkinter version has stopped File FInd switched to PyQT5 see: https://github.com/Pixel-Master/File-Find/tree/main!!
+
 <p align="center">
   <img src="https://github.com/Pixel-Master/File-Find/blob/main/assets/icon.png?raw=true" height="128">
   <h1 align="center">File-Find for macOS</h1>
