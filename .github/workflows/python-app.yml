@@ -39,9 +39,6 @@ jobs:
       #run: |
         #pytest
         
-    - name: Python Linter
-      uses: sunnysid3up/python-linter@v0.1-beta.7
-
     - name: Python3.8 PyInstaller Linux AMD64
       uses: action-python/pyinstaller-py3.8@v1.0.0
       with:
