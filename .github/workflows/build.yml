@@ -51,7 +51,7 @@ jobs:
     - name: Build .app
       run: |
         # x86_64 Build
-        pyinstaller --noconfirm --name "File-Find-x86_64" --onedir --windowed --icon "./assets/icon.icns" --osx-bundle-identifier "io.github.pixel-master.file-find" --target-architecture "x86_64" --add-data "./FFkit.py:." --add-data "./FFvars.py:."  "./File-Find.py"     
+        pyinstaller --noconfirm --name "File-Find" --onedir --windowed --icon "./assets/icon.icns" --osx-bundle-identifier "io.github.pixel-master.file-find" --target-architecture "x86_64" --add-data "./FFkit.py:." --add-data "./FFvars.py:."  "./File-Find.py"     
     - name: Upload File-Find.app
       uses: actions/upload-artifact@v2
       with:
