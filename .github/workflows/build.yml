@@ -50,8 +50,8 @@ jobs:
           #output-dir: ./
     - name: Build .app
       run: |
-        # Arch64 Build
-        pyinstaller --noconfirm --name "File-Find-arch" --onedir --windowed --icon "/Users/constipixel/Documents/Python/File-Find/assets/icon/icon.icns" --osx-bundle-identifier "io.github.pixel-master.file-find" --target-architecture "arch64" --add-data "./FFkit.py:." --add-data "./FFvars.py:."  "./File-Find.py"
+        # x86_64 Build
+        pyinstaller --noconfirm --name "File-Find-x86_64" --onedir --windowed --icon "/Users/constipixel/Documents/Python/File-Find/assets/icon/icon.icns" --osx-bundle-identifier "io.github.pixel-master.file-find" --target-architecture "x86_64" --add-data "./FFkit.py:." --add-data "./FFvars.py:."  "./File-Find.py"
         # Arm 64 Build
         pyinstaller --noconfirm --name "File-Find-arm" --onedir --windowed --icon "/Users/constipixel/Documents/Python/File-Find/assets/icon/icon.icns" --osx-bundle-identifier "io.github.pixel-master.file-find" --target-architecture "arm64" --add-data "./FFkit.py:." --add-data "./FFvars.py:."  "./File-Find.py"
     - name: Upload arm-version
@@ -63,7 +63,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
           name: File-Find intel
-          path: ./dist/File-Find-arch.app             
+          path: ./dist/File-Find-x86_64.app             
           
       
 
