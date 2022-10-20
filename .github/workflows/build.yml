@@ -26,7 +26,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install flake8 pytest
+        pip install flake8 pytest pyinstaller
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
         pip install pyqt5 pyperclip
         
@@ -41,23 +41,29 @@ jobs:
       #run: |
         #pytest
         
-    - name: Build App from Python Script (Nuitka)
-      uses: Nuitka/Nuitka-Action@v0.4
-      with:
-          script-name: File-Find.py
-          macos-create-app-bundle: true
-          disable-console: true
-          output-dir: ./
-          
-  
-    - name: Zip .app
-      run: zip -r File-Find.zip File-Find.app
-    - name: Upload artifact
+    #- name: Build App from Python Script (Nuitka)
+      #uses: Nuitka/Nuitka-Action@v0.4
+      #with:
+          #script-name: File-Find.py
+          #macos-create-app-bundle: true
+          #disable-console: true
+          #output-dir: ./
+    - name: Build .app
+      run: |
+        # Arch64 Build
+        pyinstaller --noconfirm --name "File-Find-arch" --onedir --windowed --icon "/Users/constipixel/Documents/Python/File-Find/assets/icon/icon.icns" --osx-bundle-identifier "io.github.pixel-master.file-find" --target-architecture "arch64" --add-data "./FFkit.py:." --add-data "./FFvars.py:."  "./File-Find.py"
+        # Arm 64 Build
+        pyinstaller --noconfirm --name "File-Find-arm" --onedir --windowed --icon "/Users/constipixel/Documents/Python/File-Find/assets/icon/icon.icns" --osx-bundle-identifier "io.github.pixel-master.file-find" --target-architecture "arm64" --add-data "./FFkit.py:." --add-data "./FFvars.py:."  "./File-Find.py"
+    - name: Upload arm-version
       uses: actions/upload-artifact@v2
       with:
-          name: File-Find
-          path: ./File-Find.zip      
-          
+          name: File-Find m1
+          path: ./dist/File-Find-arm.app      
+    - name: Upload arch-version
+      uses: actions/upload-artifact@v2
+      with:
+          name: File-Find intel
+          path: ./dist/File-Find-arch.app             
           
       
 
