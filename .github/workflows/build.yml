@@ -64,7 +64,6 @@ jobs:
     - name: Upload File-Find.app
       uses: actions/upload-artifact@v2
       with:
-          name: File-Find
-          path: ./dist/File-Find.app.zip             
+          name: File Find.app
+          path: ./File-Find.app.zip             
       
-
