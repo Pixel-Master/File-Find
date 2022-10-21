@@ -25,6 +25,7 @@ jobs:
         python-version: "3.10"
     - name: Install dependencies
       run: |
+        #mkdir nuitka-build
         python -m pip install --upgrade pip
         pip install flake8 pytest pyinstaller
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
@@ -47,14 +48,18 @@ jobs:
           #script-name: File-Find.py
           #macos-create-app-bundle: true
           #disable-console: true
-          #output-dir: ./
+          #output-file: File-Find-nuitka.app
+          #include-package: FFKit
+          #include-package: FFvars
+          #enable-plugins: pyqt5
+          #output-dir: ./nuitka-build
     
-    - name: Build .app
+    - name: Build .app with pyinstaller
       run: |
         # x86_64 Build
         pyinstaller --noconfirm --name "File-Find" --onedir --windowed --icon "./assets/icon.icns" --osx-bundle-identifier "io.github.pixel-master.file-find" --target-architecture "x86_64" --add-data "./FFkit.py:." --add-data "./FFvars.py:."  "./File-Find.py"     
     - name: Zip .app
-      run: zip -r ./dist/File-Find.app.zip File-Find.app
+      run: zip -r ./File-Find.app.zip ./dist/File-Find.app
     
     - name: Upload File-Find.app
       uses: actions/upload-artifact@v2
