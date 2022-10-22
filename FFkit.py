@@ -1,6 +1,6 @@
 import os
 
-from PyQt5.QtWidgets import QMainWindow, QWidget, QLabel, QPushButton, QMessageBox, QFrame
+from PyQt5.QtWidgets import QMainWindow, QMessageBox, QWidget, QLabel, QPushButton, QFrame
 from PyQt5.QtGui import QFont, QPixmap
 from PyQt5.QtCore import QRect
 
@@ -111,9 +111,10 @@ def help_ui(root):
     ff_logo.setText("HI")
     ff_logo.setFont(QFont("Baloo Bhaina", 45))
     # Set the Icon
-    AssetsFolder = os.path.join(os.path.join(os.path.join(os.path.join(os.getcwd(), "Library"), "Application Support"), "File-Find"), "assets")
-    ff_Logo_img = QPixmap(os.path.join(AssetsFolder, "FFlogo_small.png"))
-    ff_logo.setPixmap(ff_Logo_img)
+    AssetsFolder = os.path.join(os.path.join(os.path.join(os.path.join(
+        os.getcwd(), "Library"), "Application Support"), "File-Find"), "assets")
+    ff_logo_img = QPixmap(os.path.join(AssetsFolder, "FFlogo_small.png"))
+    ff_logo.setPixmap(ff_logo_img)
     # Display the Icon
     ff_logo.move(280, 100)
     ff_logo.adjustSize()
@@ -192,13 +193,8 @@ def refactor_value(human_readable_label):
     change_button.move(120, 120)
 
 
-# Popup with Info about hte Cache
-def cache_info():
-    pass
-
-
 # Other Options, displayed on root
-def other_options(load_search, generate_command, root: QWidget):
+def other_options(load_search, generate_command, remove_cache, root: QWidget):
     # Using QMainWindow as a Child Window
     other_options_window = QMainWindow(root)
     # Set the Title of the Window
@@ -241,13 +237,13 @@ def other_options(load_search, generate_command, root: QWidget):
     button_option_load = generate_button(load_search, "Load Saved Search")
     button_option_load.move(50, 100)
 
-    button_option_cache = generate_button(cache_info, "Cache Info")
+    button_option_cache = generate_button(lambda: remove_cache(True), "Clear Cache")
     button_option_cache.move(50, 150)
 
 
 # Error PopUp
-def show_critical_messagebox(title, text):
-    msg = QMessageBox()
+def show_critical_messagebox(title, text, parent):
+    msg = QMessageBox(parent)
     msg.setIcon(QMessageBox.Critical)
 
     # setting message for Message Box
@@ -263,13 +259,13 @@ def show_critical_messagebox(title, text):
 
 
 # Info PopUp
-def show_info_messagebox(title, text):
+def show_info_messagebox(title, text, parent):
     # Warning
-    msg = QMessageBox()
-    msg.setIcon(QMessageBox.Information)
+    msg = QMessageBox(parent)
+    msg.setIcon(QMessageBox.NoIcon)
     msg.setText(text)
     msg.setWindowTitle(title)
-    msg.show()
+
     msg.exec_()
 
     # Return the Value of the Message Box

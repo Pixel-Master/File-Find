@@ -2,14 +2,14 @@
 # Main Script, execute this for running File-Find
 import os
 from pickle import dump, load
-from time import time, ctime
-from pyperclip import copy
+from time import time, ctime, mktime
 
 # PyQt5 Gui Imports
 from PyQt5.QtCore import QSize, QRect
 from PyQt5.QtGui import QFont, QIntValidator, QIcon
 from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QLabel, QPushButton, QRadioButton, QFileDialog, \
-    QListWidget, QLineEdit, QButtonGroup, QDateEdit, QFrame, QComboBox
+    QListWidget, QLineEdit, QButtonGroup, QDateEdit, QFrame, QComboBox, QMessageBox
+from pyperclip import copy
 
 # Projects Library
 import FFkit
@@ -77,28 +77,30 @@ def search_ui(time_total, time_searching, time_indexing, time_sorting, matched_l
     def open_with_program():
         selected_file = result_listbox.currentItem().text()
         if os.system("open " + str(selected_file.replace(" ", "\\ "))) != 0:
-            FFkit.show_critical_messagebox("Error!", f"No Program found to open {selected_file}")
+            FFkit.show_critical_messagebox("Error!", f"No Program found to open {selected_file}", search_result_ui)
         print(f"Opened: {selected_file}")
 
     def open_in_finder():
         selected_file = result_listbox.currentItem().text()
 
         if os.system("open -R " + str(selected_file.replace(" ", "\\ "))) != 0:
-            FFkit.show_critical_messagebox("Error!", f"File not Found {selected_file}")
+            FFkit.show_critical_messagebox("Error!", f"File not Found {selected_file}", search_result_ui)
         print(f"Opened in Finder: {selected_file}")
 
     def copy_path():
         selected_file = result_listbox.currentItem().text()
         copy(selected_file)
         print(f"Copied Path: {selected_file}")
-        FFkit.show_info_messagebox("Successfully copied!", f"Successfully copied Path:\n{selected_file}!")
+        FFkit.show_info_messagebox("Successfully copied!", f"Successfully copied Path:\n{selected_file}!",
+                                   search_result_ui)
 
     def copy_name():
         selected_file = result_listbox.currentItem().text()
         copy(os.path.basename(selected_file))
         print(f"Copied File-Name: {os.path.basename(selected_file)}")
         FFkit.show_info_messagebox("Successfully copied!",
-                                   f"Successfully copied File Name:\n{os.path.basename(selected_file)} !")
+                                   f"Successfully copied File Name:\n{os.path.basename(selected_file)} !",
+                                   search_result_ui)
 
     # Show more time info's
     def show_time_stats():
@@ -106,7 +108,7 @@ def search_ui(time_total, time_searching, time_indexing, time_sorting, matched_l
                                                  f" {round(time_indexing, 3)}\nSorting:"
                                                  f" {round(time_sorting, 3)}\nCreating UI: "
                                                  f"{round(time_building, 3)}\n---------\nTotal: "
-                                                 f"{round(time_total + time_building, 3)}")
+                                                 f"{round(time_total + time_building, 3)}", search_result_ui)
 
     # Reloads File, check all collected files, if they still exist
     def reload_files():
@@ -131,7 +133,7 @@ def search_ui(time_total, time_searching, time_indexing, time_sorting, matched_l
         print(f"Reloaded found Files and removed {len(removed_list)} in"
               f" {round(time() - time_before_reload, 3)} sec.")
         FFkit.show_info_messagebox("Reloaded!", f"Reloaded found Files and removed {len(removed_list)}"
-                                                f" in {round(time() - time_before_reload, 3)} sec.")
+                                                f" in {round(time() - time_before_reload, 3)} sec.", search_result_ui)
         objects_text.setText(f"Files found: {len(matched_list)}")
         del cached_files, removed_list
 
@@ -221,25 +223,23 @@ def search_ui(time_total, time_searching, time_indexing, time_sorting, matched_l
 
 # The search engine
 def search(data_name, data_in_name, data_filetype, data_file_size_min, data_file_size_max, data_library,
-           data_search_from, data_folders, data_content, data_sort_by, data_reverse_sort):
-    # Warning
-    FFkit.show_info_messagebox("This may take some Time!", "This may take some Time!\nPress OK to Start Searching")
-    print("This may take some Time!\nPress OK to Start Searching")
-
+           data_search_from, data_folders, data_content, data_time, data_sort_by, data_reverse_sort):
     # Creates empty lists for the files
     matched_path_list = []
     found_path_list = []
 
-    # Saves time before indexing
+    # Saving time before scanning
     time_before_start = time()
 
     # Lower Arguments
     data_name = data_name.lower()
     data_in_name = data_in_name.lower()
 
-    # Convert to Byte format
-    failed_files = 0
-    _data_content = "".join(format(ord(item), 'b') for item in data_content)
+    # Checking if data_time is needed
+    if data_time == [946681200.0, 946681200.0, 946681200.0, 946681200.0]:
+        data_time_needed = False
+    else:
+        data_time_needed = True
 
     # Debug
     print("\nStarting Scanning...")
@@ -267,8 +267,11 @@ def search(data_name, data_in_name, data_filetype, data_file_size_min, data_file
     print("\nStarting Indexing...\n")
     # Applies filters, when they don't match it continues.
     for found_file in found_path_list:
+
+        # Looks for basename to be faster
         basename = os.path.basename(found_file)
         lower_basename = os.path.basename(found_file).lower()
+
         # Name
         if data_name == lower_basename or data_name == "":
             pass
@@ -285,19 +288,32 @@ def search(data_name, data_in_name, data_filetype, data_file_size_min, data_file
         else:
             continue
 
-        # Search for Folders
-        if not data_folders:
-            if os.path.isdir(found_file):
-                continue
-
         # Search in System Files
         if not data_library:
             if "/Library" in found_file:
                 continue
 
-        # Filter some unnecessary System Files
-        if basename == ".DS_Store" or basename == ".localized" or basename == "desktop.ini" or basename == "Thumbs.db":
-            continue
+        # Search for Folders
+        if not data_folders:
+            if os.path.isdir(found_file):
+                continue
+
+        # Search for Date Modified, Created
+        # Checking if
+        if data_time_needed:
+            # Using os.stat because os.path.getctime returns a wrong date
+            file_c_time = os.stat(found_file).st_birthtime
+            file_m_time = os.path.getmtime(found_file)
+
+            # Checking for file time and which values in data_time are modified
+            if data_time[0] <= file_c_time <= data_time[1] != 946681200.0:
+                pass
+            elif data_time[0] != 946681200.0 and data_time[1] != 946681200.0:
+                continue
+            if data_time[2] <= file_m_time <= data_time[3] != 946681200.0:
+                pass
+            elif data_time[3] != 946681200.0 and data_time[2] != 946681200.0:
+                continue
 
         # Filter File Size
         if data_file_size_min != "":
@@ -332,11 +348,14 @@ def search(data_name, data_in_name, data_filetype, data_file_size_min, data_file
                             does_contain = True
                             break
             except (UnicodeDecodeError, FileNotFoundError, OSError):
-                failed_files += 1
                 continue
             else:
                 if not does_contain or os.path.isdir(found_file):
                     continue
+
+        # Filter some unnecessary System Files
+        if basename == ".DS_Store" or basename == ".localized" or basename == "desktop.ini" or basename == "Thumbs.db":
+            continue
 
         # Add the File to matched_path_list
         matched_path_list.append(found_file)
@@ -672,16 +691,17 @@ def setup():
     search_from_button = generate_change_button(open_dialog)
     search_from_button.move(310, 220)
 
-    # Print the data
+    # Print the given data
     def print_data():
+
         print(f"Filters:\n"
               f"Name: {e1.text()}\n"
               f"In name: {e2.text()}\n"
               f"File Ending: {e3.text()}\n"
               f"Search from: {os.getcwd()}\n\n"
               f"File size: min:{e4.text()} max: {e5.text()}\n"
-              f"Date Modified from: {m_date_from_drop_down.date()} to: {m_date_to_drop_down.date()}\n"
-              f"Date Created from: {c_date_from_drop_down.date()} to: {c_date_to_drop_down.date()}\n"
+              f"Date Modified from: {m_date_from_drop_down.text()} to: {m_date_to_drop_down.text()}\n"
+              f"Date Created from: {c_date_from_drop_down.text()} to: {c_date_to_drop_down.text()}\n"
               f"Contains: {e6.text()}\n"
               f"Search for System files: {rb_library1.isChecked()}\n"
               f"Search for Folders: {rb_folder1.isChecked()}\n\n"
@@ -690,12 +710,38 @@ def setup():
 
     # Start Search for files locally
     def search_entry():
+        # Print Input
+        print_data()
+
         # Fetching Errors
         if e1.text() != "" and e2.text() != "" or e1.text() != "" and e3.text() != "":
             FFkit.show_critical_messagebox("NAME ERROR!", "Name Error!\n\nFile Name and in Name or File Type can't "
-                                                          "be used together")
+                                                          "be used together", Root_Window)
+
+        # Warning
+        elif QMessageBox.information(Root_Window, "This may take some Time!",
+                                     "This may take some Time!\nPress OK to Start Searching",
+                                     QMessageBox.Ok | QMessageBox.Cancel) == QMessageBox.Cancel:
+            print("Cancelled Searching!")
+
+        # Start Searching
         else:
-            print_data()
+            '''
+            Converting the output of QDateEdit into the unix time by first using QDateEdit.date() to get something like
+            this: QDate(1,3,2000), after that using QDate.toPyDate to get this: 1-3-2000, than we can use .split("-")
+            to convert 1-3-2000 into a list [1,3,2000], after that we use time.mktime to get the unix time format
+            that means something like, that: 946854000.0, only to match this with os.getctime, what we can use to get
+            the creation date of a file.
+            
+            Yea it would be easier if Qt had a function to get the unix time
+            '''
+            unix_time_list = []
+            for time_drop_down in [c_date_from_drop_down, c_date_to_drop_down, m_date_from_drop_down,
+                                   m_date_to_drop_down]:
+                time_list = str(time_drop_down.date().toPyDate()).split("-")
+                unix_time_list.append(
+                    mktime((int(time_list[0]), int(time_list[1]), int(time_list[2]), 0, 0, 0, 0, 0, 0)))
+
             search(data_name=e1.text(),
                    data_in_name=e2.text(),
                    data_filetype=e3.text(),
@@ -705,6 +751,7 @@ def setup():
                    data_content=e6.text(),
                    data_folders=rb_folder1.isChecked(),
                    data_sort_by=combobox_sorting.currentText(),
+                   data_time=unix_time_list,
                    data_reverse_sort=rb_reverse_sort1.isChecked())
 
     # Generate a shell command, that displays in the UI
@@ -717,7 +764,8 @@ def setup():
             # Feedback to the User
             print(f"Copied Command: {shell_command}")
             # Messagebox
-            FFkit.show_info_messagebox("Successful copied!", f"Successful copied Command:\n{shell_command} !")
+            FFkit.show_info_messagebox("Successful copied!", f"Successful copied Command:\n{shell_command} !",
+                                       Root_Window)
 
         # Generate a shell command
         shell_command = f"find {os.getcwd()}"
@@ -781,7 +829,7 @@ def setup():
 
     # Button for more Options: Load Searches, Generate shell Command and Info about the Cache
     more_options_button = large_button(None, lambda: FFkit.other_options(
-        load_search, generate_shell_command, Root_Window), 50)
+        load_search, generate_shell_command, remove_cache, Root_Window), 50)
     # Icon
     more_options_button.setIcon(QIcon(os.path.join(AssetsFolder, "More_button_img_small.png")))
     more_options_button.setIconSize(QSize(100, 100))
@@ -818,9 +866,17 @@ if __name__ == "__main__":
     os.makedirs(Saved_SearchFolder, exist_ok=True)
     os.makedirs(Cached_SearchesFolder, exist_ok=True)
     os.makedirs(AssetsFolder, exist_ok=True)
-    for (main, folder, data) in os.walk(Cached_SearchesFolder):
-        for cacheobj in data:
-            os.remove(os.path.join(main, cacheobj))
+
+
+    def remove_cache(show_popup):
+        for (main, folder, data) in os.walk(Cached_SearchesFolder):
+            for cacheobj in data:
+                os.remove(os.path.join(main, cacheobj))
+        if show_popup:
+            FFkit.show_info_messagebox("Cleared Cache", "Cleared Cache successfully!", Root_Window)
+
+
+    remove_cache(False)
     with open(os.path.join(LibFolder, "Info.txt"), "w") as ver_file:
         ver_file.write(f"Version: {Version}\n")
 
