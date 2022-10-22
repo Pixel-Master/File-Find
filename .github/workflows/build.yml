@@ -57,15 +57,15 @@ jobs:
     - name: Build .app with pyinstaller
       run: |
         # x86_64 Build
-        pyinstaller --noconfirm --name "File-Find" --onedir --windowed --icon "./assets/icon.icns" --osx-bundle-identifier "io.github.pixel-master.file-find" --target-architecture "x86_64" --add-data "./FFkit.py:." --add-data "./FFvars.py:."  "./File-Find.py"     
+        pyinstaller --distpath "./" --noconfirm --name "File-Find" --onedir --windowed --icon "./assets/icon.icns" --osx-bundle-identifier "io.github.pixel-master.file-find" --target-architecture "x86_64" --add-data "./FFkit.py:." --add-data "./FFvars.py:."  "./File-Find.py"     
     - name: Zip .app
       run: |
-        cd dist
         zip -r File-Find.app.zip File-Find.app
     
     - name: Upload File-Find.app
       uses: actions/upload-artifact@v2
       with:
+          if-no-files-found: error
           name: File Find.zip
           path: File-Find.app.zip             
       
