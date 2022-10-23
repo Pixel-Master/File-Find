@@ -57,6 +57,7 @@ jobs:
         python-version: "3.10"
     - name: Install dependencies
       run: |
+        pip3 install pyinstaller
         python -m pip install --upgrade pip
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     
@@ -88,13 +89,13 @@ jobs:
         python-version: "3.10"
     - name: Install dependencies
       run: |
-        pip install nuitka
+        pip3 install nuitka
         python -m pip install --upgrade pip
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
         
     - name: Build .app with Nuitka
       run: |
-        python3 -m nuitka File-Find.app --standalone -o --output-dir=./ --disable-console --enable-plugin=PyQt5 --macos-app-icon=./assets/icon.icns --macos-create-app-bundle  File-Find.app FFKit.py FFVars.py
+        python3 -m nuitka File-Find.app --standalone -o --output-dir=./ --disable-console --enable-plugin=pyqt5 --macos-app-icon=./assets/icon.icns --macos-create-app-bundle  File-Find.app FFKit.py FFVars.py
 
     - name: Zip .app
       run: |
