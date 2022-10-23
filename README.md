@@ -5,6 +5,14 @@
 
 <h3 align="center">A macOS UI Utility that helps you find Files easier.</h3>
 
+## Content
+- [Features](#features)
+- [FAQ](#faq)
+- [Download](#download)
+- [Running from Source](#running-from-source)
+- [Roadmap](#roadmap)
+
+
 ## Features
 - Choose Filter which Files to include:
 	* Name
@@ -66,7 +74,7 @@ A: File-Find is saving the cache under `/Users/USERNAME/Library/Application Supp
 **File Find won't work properly on Linux or Windows, because the UI displays different depending on the OS and some Features are depending on the system.** 
 
 
-### Install dependencies (when running from source)
+### Dependencies
 - [Python](https://python.org/) 3.9 or higher
 - [Pyperclip](https://pypi.org/project/pyperclip/) 1.8.2 or higher
 - [PyQt 5](https://pypi.org/project/PyQt5/) 5.15 or higher
@@ -84,13 +92,15 @@ A: File-Find is saving the cache under `/Users/USERNAME/Library/Application Supp
 `pip3 install PyQt5`
 
 ### Running
-1. Install dependencies
-2. Run:
+1. Clone the File-Find Repository: `git clone https://gitlab.com/Pixel-Mqster/File-Find.git`
+2. cd into the repository: `cd File-Find`
+3. [Install dependencies](#dependencies)
+4. Run:
 
 `python3 File-Find.py` 
 
 ## Roadmap
-1. [ ] UI:
+1. [x] UI:
    1. [x] Filter UI
    2. [x] Help UI
    3. [x] Search Result UI
@@ -113,7 +123,7 @@ A: File-Find is saving the cache under `/Users/USERNAME/Library/Application Supp
    3. [x] Modified
    4. [x] Created
    5. [x] Reverse
-6. [ ] Filter:
+6. [ ] Searching:
     1. [x] Name
     2. [x] In Name
     3. [x] File Ending
@@ -121,7 +131,8 @@ A: File-Find is saving the cache under `/Users/USERNAME/Library/Application Supp
     5. [x] Directory to search in
     6. [x] Search for Folders
     7. [ ] Search for Alias
-    8. [x] Contains:
-    9. [x] Date Modified
-   10. [x] Date Created
+    8. [x] Contains
+    9. [ ] Search with root privileges
+    10. [x] Date Modified
+    11. [x] Date Created
 7. [ ] Compatible with Linux and Windows?

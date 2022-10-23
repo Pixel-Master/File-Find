@@ -119,15 +119,15 @@ def search_ui(time_total, time_searching, time_indexing, time_sorting, matched_l
             if os.path.exists(matched_file):
                 continue
             else:
-                # result_listbox.takeItem()
-                matched_list.index(result_listbox.currentItem().text())
-                print(f"File Does Not exist: {file}")
-                removed_list.append(file)
+                result_listbox.takeItem(matched_list.index(matched_file) + 1)
+                matched_list.remove(matched_file)
+                print(f"File Does Not exist: {matched_file}")
+                removed_list.append(matched_file)
         with open(os.path.join(Cached_SearchesFolder, search_path.replace("/", "-") + ".FFSearch"), "rb") as SearchFile:
             cached_files = list(load(SearchFile))
         for cached_file in cached_files:
             if cached_file in removed_list:
-                cached_files.remove(file)
+                cached_files.remove(cached_file)
         with open(os.path.join(Cached_SearchesFolder, search_path.replace("/", "-") + ".FFSearch"), "wb") as SearchFile:
             dump(cached_files, SearchFile)
         print(f"Reloaded found Files and removed {len(removed_list)} in"
@@ -854,7 +854,7 @@ if __name__ == "__main__":
     global root, Root_Window
 
     # Creating File-Find dir and deleting Cache
-    Version = "dev-pre-alpha 19.oct.22-pyqt5"
+    Version = "dev-pre-alpha 23.oct.22-pyqt5"
     userpath = os.path.expanduser("~")
     os.chdir(userpath)
 

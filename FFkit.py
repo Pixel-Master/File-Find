@@ -1,6 +1,6 @@
 import os
 
-from PyQt5.QtWidgets import QMainWindow, QMessageBox, QWidget, QLabel, QPushButton, QFrame
+from PyQt5.QtWidgets import QMainWindow, QMessageBox, QWidget, QLabel, QPushButton, QFrame, QStackedWidget
 from PyQt5.QtGui import QFont, QPixmap
 from PyQt5.QtCore import QRect
 
@@ -59,7 +59,6 @@ class SORT:
 
 
 # A help Window
-
 def help_ui(root):
     # A function to generate these Faq texts
     def faq(question, answer, y):
@@ -147,11 +146,11 @@ def help_ui(root):
     sourcecode = generate_link_label("Source Code", "https://gitlab.com/Pixel-Mqster/File-Find", "blue")
     sourcecode.move(120, 300)
 
-    bug_tracker = generate_link_label("Report a Bug", "https://gitlab.com/Pixel-Mqster/File-Find/-/issues", "red")
-    bug_tracker.move(280, 300)
+    update = generate_link_label("Update", "https://gitlab.com/Pixel-Mqster/File-Find/-/releases", "green")
+    update.move(280, 300)
 
-    contribute = generate_link_label("Contribute", "https://gitlab.com/Pixel-Mqster/File-Find/-/issues", "green")
-    contribute.move(450, 300)
+    bug_tracker = generate_link_label("Report a Bug", "https://gitlab.com/Pixel-Mqster/File-Find/-/issues", "red")
+    bug_tracker.move(420, 300)
 
     # Calling the faq functions for the Labels
     faq(question="What is File-Find and how does it work?", y=350,
@@ -204,7 +203,6 @@ def other_options(load_search, generate_command, remove_cache, root: QWidget):
     other_options_window.setFixedWidth(300)
     # Display the Window
     other_options_window.show()
-
     # File-Find Label
     # Define the Label
     main_label = QLabel("Choose:", parent=other_options_window)
