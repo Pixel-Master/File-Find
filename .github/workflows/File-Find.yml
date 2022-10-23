@@ -95,7 +95,7 @@ jobs:
         
     - name: Build .app with Nuitka
       run: |
-        python3 -m nuitka File-Find.app --standalone -o --output-dir=./ --disable-console --enable-plugin=pyqt5 --macos-app-icon=./assets/icon.icns --macos-create-app-bundle  File-Find.app FFKit.py FFVars.py
+        python3 -m nuitka File-Find.app --standalone --output-dir=./ --disable-console --enable-plugin=pyqt5 --macos-app-icon=./assets/icon.icns --macos-create-app-bundle -o File-Find.app FFKit.py FFVars.py
 
     - name: Zip .app
       run: |
