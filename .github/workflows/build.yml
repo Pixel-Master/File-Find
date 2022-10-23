@@ -10,11 +10,43 @@ on:
     branches: [ "main" ]
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  build:
+  check-syntax:
+    name: "Checking Syntax"
+    runs-on: macos-11
+    
+    steps:
+    
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.10"
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install flake8 pytest
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        
+    - name: Testing Syntax
+      run: |
+        # stop the build if there are Python syntax errors or undefined names
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+    
+    #- name: Test with pytest
+      #run: |
+        #pytest
 
+
+
+  build-with-pyinstaller:
+    name: "Building macOS App with pyinstaller"
     runs-on: macos-11
 
     steps:
@@ -25,34 +57,8 @@ jobs:
         python-version: "3.10"
     - name: Install dependencies
       run: |
-        #mkdir nuitka-build
         python -m pip install --upgrade pip
-        pip install flake8 pytest pyinstaller
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-        pip install pyqt5 pyperclip
-        
-    - name: Testing Syntax
-      run: |
-        # stop the build if there are Python syntax errors or undefined names
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-        
-    #- name: Test with pytest
-      #run: |
-        #pytest
-        
-    #- name: Build App from Python Script (Nuitka)
-      #uses: Nuitka/Nuitka-Action@v0.4
-      #with:
-          #script-name: File-Find.py
-          #macos-create-app-bundle: true
-          #disable-console: true
-          #output-file: File-Find-nuitka.app
-          #include-package: FFKit
-          #include-package: FFvars
-          #enable-plugins: pyqt5
-          #output-dir: ./nuitka-build
     
     - name: Build .app with pyinstaller
       run: |
@@ -66,6 +72,37 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
           if-no-files-found: error
-          name: File Find.zip
-          path: File-Find.app.zip             
-      
+          name: File Find-pyinstaller
+          path: File-Find.app.zip
+          
+
+  build-with-nuitka:
+    name: "Building macOS App with nuitka"
+    runs-on: macos-11
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.10"
+    - name: Install dependencies
+      run: |
+        pip install nuitka
+        python -m pip install --upgrade pip
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        
+    - name: Build .app with Nuitka
+      run: |
+        python3 -m nuitka File-Find.app --standalone -o --output-dir=./ --disable-console --enable-plugin=PyQt5 --macos-app-icon=./assets/icon.icns --macos-create-app-bundle  File-Find.app FFKit.py FFVars.py
+
+    - name: Zip .app
+      run: |
+        zip -r File-Find.app.zip File-Find.app
+    
+    - name: Upload File-Find.app
+      uses: actions/upload-artifact@v2
+      with:
+          if-no-files-found: error
+          name: File Find-nuitka
+          path: File-Find.app.zip
