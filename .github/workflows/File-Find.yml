@@ -5,9 +5,9 @@ name: Test and Build File-Find
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "*" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "*" ]
 
 permissions:
   contents: read
@@ -89,22 +89,23 @@ jobs:
         python-version: "3.10"
     - name: Install dependencies
       run: |
-        pip3 install nuitka
+        pip3 install py2app
         python -m pip install --upgrade pip
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
         
-    - name: Build .app with Nuitka
+    - name: Build .app with py2app
       run: |
         # x86_64 Build
-        python3 -m nuitka File-Find.py --standalone --output-dir=./ --disable-console --enable-plugin=pyqt5 --macos-app-icon=./assets/icon.icns --macos-create-app-bundle --onefile
+        py2applet --make-setup File-Find.py assets/icon.icns
+        python3 setup.py py2app
 
     - name: Zip .app
       run: |
-        zip -r File-Find.app.zip File-Find.app
+        zip -r dist/File-Find.app.zip dist/File-Find.app
     
     - name: Upload File-Find.app
       uses: actions/upload-artifact@v2
       with:
           if-no-files-found: error
-          name: File Find-nuitka
-          path: File-Find.app.zip
+          name: File Find-py2app
+          path: dist/File-Find.app.zip
