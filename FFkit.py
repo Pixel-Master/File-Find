@@ -1,8 +1,8 @@
 import os
 
-from PyQt5.QtWidgets import QMainWindow, QMessageBox, QWidget, QLabel, QPushButton, QFrame, QStackedWidget
-from PyQt5.QtGui import QFont, QPixmap
 from PyQt5.QtCore import QRect
+from PyQt5.QtGui import QFont, QPixmap
+from PyQt5.QtWidgets import QMainWindow, QMessageBox, QWidget, QLabel, QPushButton, QFrame
 
 
 # Sorting algorithms

@@ -424,7 +424,7 @@ def setup():
     global root, Root_Window
     # Create the window
     root = QApplication([])
-    root.setStyle("macos")
+    # root.setStyle("macos")
 
     Root_Window = QWidget()
     # Set the Title of the Window
