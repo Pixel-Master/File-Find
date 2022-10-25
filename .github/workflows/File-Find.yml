@@ -5,9 +5,9 @@ name: Test and Build File-Find
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "*" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "*" ]
 
 permissions:
   contents: read
@@ -64,9 +64,10 @@ jobs:
     - name: Build .app with pyinstaller
       run: |
         # x86_64 Build
-        pyinstaller --distpath "./" --noconfirm --name "File-Find" --onedir --windowed --icon "./assets/icon.icns" --osx-bundle-identifier "io.github.pixel-master.file-find" --target-architecture "x86_64" --add-data "./FFkit.py:." --add-data "./FFvars.py:."  "./File-Find.py"     
+        pyinstaller --noconfirm --name "File-Find" --onedir --windowed --icon "./assets/icon.icns" --osx-bundle-identifier "io.github.pixel-master.file-find" --target-architecture "x86_64" --add-data "./FFkit.py:." --add-data "./FFvars.py:."  "./File-Find.py"     
     - name: Zip .app
       run: |
+        cd dist
         zip -r File-Find.app.zip File-Find.app
     
     - name: Upload File-Find.app
@@ -74,11 +75,11 @@ jobs:
       with:
           if-no-files-found: error
           name: File Find-pyinstaller
-          path: File-Find.app.zip
+          path: dist/File-Find.app.zip
           
 
-  build-with-nuitka:
-    name: "Building macOS App with nuitka"
+  build-with-py2app:
+    name: "Building macOS App with py2app"
     runs-on: macos-11
 
     steps:
@@ -89,22 +90,24 @@ jobs:
         python-version: "3.10"
     - name: Install dependencies
       run: |
-        pip3 install nuitka
+        pip3 install py2app
         python -m pip install --upgrade pip
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
         
-    - name: Build .app with Nuitka
+    - name: Build .app with py2app
       run: |
         # x86_64 Build
-        python3 -m nuitka File-Find.py --standalone --output-dir=./ --disable-console --enable-plugin=pyqt5 --macos-app-icon=./assets/icon.icns --macos-create-app-bundle --onefile
+        py2applet --make-setup File-Find.py assets/icon.icns
+        python3 setup.py py2app
 
     - name: Zip .app
       run: |
+        cd dist
         zip -r File-Find.app.zip File-Find.app
     
     - name: Upload File-Find.app
       uses: actions/upload-artifact@v2
       with:
           if-no-files-found: error
-          name: File Find-nuitka
-          path: File-Find.app.zip
+          name: File Find-py2app
+          path: dist/File-Find.app.zip
