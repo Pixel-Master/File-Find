@@ -1,8 +1,8 @@
 import os
 
-from PyQt5.QtCore import QRect
-from PyQt5.QtGui import QFont, QPixmap
-from PyQt5.QtWidgets import QMainWindow, QMessageBox, QWidget, QLabel, QPushButton, QFrame
+from PyQt6.QtCore import QRect
+from PyQt6.QtGui import QFont, QPixmap
+from PyQt6.QtWidgets import QMainWindow, QMessageBox, QWidget, QLabel, QPushButton, QFrame
 
 
 # Sorting algorithms
@@ -122,8 +122,7 @@ def help_ui(root):
     # The Frame
     fflogo_frame = QFrame(help_window)
     fflogo_frame.setGeometry(QRect(100, 90, 500, 250))
-    fflogo_frame.setFrameShape(QFrame.StyledPanel)
-    fflogo_frame.setFrameShadow(QFrame.Raised)
+    fflogo_frame.setFrameShape(QFrame.Shape.StyledPanel)
     fflogo_frame.show()
 
     # Links using QPushButton
@@ -147,7 +146,7 @@ def help_ui(root):
     sourcecode.move(120, 300)
 
     update = generate_link_label("Update", "https://gitlab.com/Pixel-Mqster/File-Find/-/releases", "green")
-    update.move(280, 300)
+    update.move(290, 300)
 
     bug_tracker = generate_link_label("Report a Bug", "https://gitlab.com/Pixel-Mqster/File-Find/-/issues", "red")
     bug_tracker.move(420, 300)
@@ -242,7 +241,7 @@ def other_options(load_search, generate_command, remove_cache, root: QWidget):
 # Error PopUp
 def show_critical_messagebox(title, text, parent):
     msg = QMessageBox(parent)
-    msg.setIcon(QMessageBox.Critical)
+    msg.setIcon(QMessageBox.Icon.Critical)
 
     # setting message for Message Box
     msg.setText(text)
@@ -251,20 +250,20 @@ def show_critical_messagebox(title, text, parent):
     msg.setWindowTitle(title)
 
     # declaring buttons on Message Box
-    msg.setStandardButtons(QMessageBox.Ok)
+    msg.setStandardButtons(QMessageBox.StandardButton.Ok)
 
-    msg.exec_()
+    msg.exec()
 
 
 # Info PopUp
 def show_info_messagebox(title, text, parent):
     # Warning
     msg = QMessageBox(parent)
-    msg.setIcon(QMessageBox.NoIcon)
+    msg.setIcon(QMessageBox.Icon.NoIcon)
     msg.setText(text)
     msg.setWindowTitle(title)
 
-    msg.exec_()
+    msg.exec()
 
     # Return the Value of the Message Box
     return msg

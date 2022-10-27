@@ -3,11 +3,12 @@
 import os
 from pickle import dump, load
 from time import time, ctime, mktime
+from fnmatch import fnmatch
 
 # PyQt5 Gui Imports
-from PyQt5.QtCore import QSize, QRect
-from PyQt5.QtGui import QFont, QIntValidator, QIcon
-from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QLabel, QPushButton, QRadioButton, QFileDialog, \
+from PyQt6.QtCore import QSize, QRect
+from PyQt6.QtGui import QFont, QIntValidator, QIcon
+from PyQt6.QtWidgets import QApplication, QWidget, QMainWindow, QLabel, QPushButton, QRadioButton, QFileDialog, \
     QListWidget, QLineEdit, QButtonGroup, QDateEdit, QFrame, QComboBox, QMessageBox
 from pyperclip import copy
 
@@ -135,6 +136,7 @@ def search_ui(time_total, time_searching, time_indexing, time_sorting, matched_l
         FFkit.show_info_messagebox("Reloaded!", f"Reloaded found Files and removed {len(removed_list)}"
                                                 f" in {round(time() - time_before_reload, 3)} sec.", search_result_ui)
         objects_text.setText(f"Files found: {len(matched_list)}")
+        objects_text.adjustSize()
         del cached_files, removed_list
 
     # Save Search
@@ -223,7 +225,7 @@ def search_ui(time_total, time_searching, time_indexing, time_sorting, matched_l
 
 # The search engine
 def search(data_name, data_in_name, data_filetype, data_file_size_min, data_file_size_max, data_library,
-           data_search_from, data_folders, data_content, data_time, data_sort_by, data_reverse_sort):
+           data_search_from, data_folders, data_content, data_time, data_sort_by, data_reverse_sort, data_fnmatch):
     # Creates empty lists for the files
     matched_path_list = []
     found_path_list = []
@@ -236,7 +238,7 @@ def search(data_name, data_in_name, data_filetype, data_file_size_min, data_file
     data_in_name = data_in_name.lower()
 
     # Checking if data_time is needed
-    if data_time == [946681200.0, 946681200.0, 946681200.0, 946681200.0]:
+    if data_time == [946681200.0, 946767600.0, 946681200.0, 946767600.0]:
         data_time_needed = False
     else:
         data_time_needed = True
@@ -287,6 +289,10 @@ def search(data_name, data_in_name, data_filetype, data_file_size_min, data_file
             pass
         else:
             continue
+        # Fn match
+        if data_fnmatch != "":
+            if not fnmatch(found_file, data_fnmatch):
+                continue
 
         # Search in System Files
         if not data_library:
@@ -302,15 +308,17 @@ def search(data_name, data_in_name, data_filetype, data_file_size_min, data_file
         # Checking if
         if data_time_needed:
             # Using os.stat because os.path.getctime returns a wrong date
-            file_c_time = os.stat(found_file).st_birthtime
-            file_m_time = os.path.getmtime(found_file)
-
+            try:
+                file_c_time = os.stat(found_file).st_birthtime
+                file_m_time = os.path.getmtime(found_file)
+            except FileNotFoundError:
+                continue
             # Checking for file time and which values in data_time are modified
             if data_time[0] <= file_c_time <= data_time[1] != 946681200.0:
                 pass
-            elif data_time[0] != 946681200.0 and data_time[1] != 946681200.0:
+            elif data_time[0] != 946681200.0 and data_time[1] != 946767600.0:
                 continue
-            if data_time[2] <= file_m_time <= data_time[3] != 946681200.0:
+            if data_time[2] <= file_m_time <= data_time[3] != 946767600.0:
                 pass
             elif data_time[3] != 946681200.0 and data_time[2] != 946681200.0:
                 continue
@@ -415,7 +423,7 @@ def load_search():
 
 
 # Setup of the main window
-def setup():
+def setup_ui():
     # Debug
     print("Launching UI...")
 
@@ -475,8 +483,7 @@ def setup():
     sorting_frame_label.move(5, 70)
     basic_search_frame = QFrame(Root_Window)
     basic_search_frame.setGeometry(QRect(5, 90, 385, 170))
-    basic_search_frame.setFrameShape(QFrame.StyledPanel)
-    basic_search_frame.setFrameShadow(QFrame.Raised)
+    basic_search_frame.setFrameShape(QFrame.Shape.StyledPanel)
     basic_search_frame.show()
 
     # Creating the Labels
@@ -498,28 +505,29 @@ def setup():
     sorting_frame_label.move(395, 70)
     advanced_search_frame = QFrame(Root_Window)
     advanced_search_frame.setGeometry(QRect(395, 90, 400, 290))
-    advanced_search_frame.setFrameShape(QFrame.StyledPanel)
-    advanced_search_frame.setFrameShadow(QFrame.Raised)
+    advanced_search_frame.setFrameShape(QFrame.Shape.StyledPanel)
     advanced_search_frame.show()
 
-    l5 = large_filter_label("File Size(Byte): min:")
+    l5 = large_filter_label("Contains:")
     l5.move(400, 100)
-    l5_2 = large_filter_label("max:")
-    l5_2.move(680, 100)
-    l6 = large_filter_label("Created from:")
+    l6 = large_filter_label("fnmatch:")
     l6.move(400, 140)
-    l6_2 = large_filter_label("to:")
-    l6_2.move(660, 140)
-    l7 = large_filter_label("Modified from:")
+    l7 = large_filter_label("File Size(Byte): min:")
     l7.move(400, 180)
-    l7_2 = large_filter_label("to:")
-    l7_2.move(660, 180)
-    l8 = large_filter_label("Contains:")
+    l7_2 = large_filter_label("max:")
+    l7_2.move(680, 180)
+    l8 = large_filter_label("Created from:")
     l8.move(400, 220)
-    l19 = large_filter_label("Search in System Files:")
-    l19.move(400, 300)
-    l10 = large_filter_label("Search for Folders:")
-    l10.move(400, 340)
+    l8_2 = large_filter_label("to:")
+    l8_2.move(660, 220)
+    l9 = large_filter_label("Modified from:")
+    l9.move(400, 260)
+    l9_2 = large_filter_label("to:")
+    l9_2.move(660, 260)
+    l10 = large_filter_label("Search in System Files:")
+    l10.move(400, 300)
+    l11 = large_filter_label("Search for Folders:")
+    l11.move(400, 340)
 
     # -----Sorting-----
     # Frame and Label
@@ -527,8 +535,7 @@ def setup():
     sorting_frame_label.move(5, 270)
     sorting_search_frame = QFrame(Root_Window)
     sorting_search_frame.setGeometry(QRect(5, 290, 385, 90))
-    sorting_search_frame.setFrameShape(QFrame.StyledPanel)
-    sorting_search_frame.setFrameShadow(QFrame.Raised)
+    sorting_search_frame.setFrameShape(QFrame.Shape.StyledPanel)
     sorting_search_frame.show()
 
     l12 = large_filter_label("Sort by:")
@@ -557,22 +564,34 @@ def setup():
         return entry
 
     # Create an Entry for every Filter with the Function, defined above
+    # Name
     e1 = filter_entry(False)
+    e1.resize(230, 25)
     e1.move(150, 104)
+    # In Name
     e2 = filter_entry(False)
+    e2.resize(230, 25)
     e2.move(150, 144)
+    # File ending
     e3 = filter_entry(False)
+    e3.resize(230, 25)
     e3.move(150, 184)
+    # File size min
     e4 = filter_entry(True)
-    e4.resize(50, 20)
-    e4.move(625, 104)
+    e4.resize(50, 29)
+    e4.move(625, 184)
+    # File size max
     e5 = filter_entry(True)
     e5.resize(50, 19)
-    e5.move(740, 104)
-    # Plain Text Edit for Contains
+    e5.move(740, 184)
+    # Contains
     e6 = filter_entry(False)
     e6.resize(270, 25)
-    e6.move(510, 224)
+    e6.move(510, 104)
+    # fn match, Unix shell-style wildcards
+    e7 = filter_entry(False)
+    e7.resize(270, 25)
+    e7.move(510, 144)
 
     # Radio Button
     # Function for automating
@@ -653,15 +672,15 @@ def setup():
 
     # Date Created
     c_date_from_drop_down = generate_day_entry()
-    c_date_from_drop_down.move(558, 144)
+    c_date_from_drop_down.move(558, 224)
     c_date_to_drop_down = generate_day_entry()
-    c_date_to_drop_down.move(690, 144)
+    c_date_to_drop_down.move(690, 224)
 
     # Date Modified
     m_date_from_drop_down = generate_day_entry()
-    m_date_from_drop_down.move(558, 184)
+    m_date_from_drop_down.move(558, 264)
     m_date_to_drop_down = generate_day_entry()
-    m_date_to_drop_down.move(690, 184)
+    m_date_to_drop_down.move(690, 264)
 
     # Push Buttons
     # Search from Button
@@ -721,7 +740,8 @@ def setup():
         # Warning
         elif QMessageBox.information(Root_Window, "This may take some Time!",
                                      "This may take some Time!\nPress OK to Start Searching",
-                                     QMessageBox.Ok | QMessageBox.Cancel) == QMessageBox.Cancel:
+                                     QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel) \
+                == QMessageBox.StandardButton.Cancel:
             print("Cancelled Searching!")
 
         # Start Searching
@@ -736,11 +756,17 @@ def setup():
             Yea it would be easier if Qt had a function to get the unix time
             '''
             unix_time_list = []
-            for time_drop_down in [c_date_from_drop_down, c_date_to_drop_down, m_date_from_drop_down,
-                                   m_date_to_drop_down]:
-                time_list = str(time_drop_down.date().toPyDate()).split("-")
-                unix_time_list.append(
-                    mktime((int(time_list[0]), int(time_list[1]), int(time_list[2]), 0, 0, 0, 0, 0, 0)))
+
+            def conv_qdate_to_unix_time(input_Edit: QDateEdit, pos: int = 1):
+                time_list = str(input_Edit.date().toPyDate()).split("-")
+                unix_time = mktime((int(time_list[0]), int(time_list[1]), int(time_list[2]) + pos, 0, 0, 0, 0, 0, 0))
+                return unix_time
+
+            QDateEdits = [c_date_from_drop_down, c_date_to_drop_down, m_date_from_drop_down, m_date_to_drop_down]
+
+            for time_drop_down in QDateEdits:
+                time_to_add_to_time_list = conv_qdate_to_unix_time(time_drop_down, QDateEdits.index(time_drop_down) % 2)
+                unix_time_list.append(time_to_add_to_time_list)
 
             search(data_name=e1.text(),
                    data_in_name=e2.text(),
@@ -750,8 +776,9 @@ def setup():
                    data_search_from=os.getcwd(),
                    data_content=e6.text(),
                    data_folders=rb_folder1.isChecked(),
-                   data_sort_by=combobox_sorting.currentText(),
                    data_time=unix_time_list,
+                   data_fnmatch=e7.text(),
+                   data_sort_by=combobox_sorting.currentText(),
                    data_reverse_sort=rb_reverse_sort1.isChecked())
 
     # Generate a shell command, that displays in the UI
@@ -881,7 +908,7 @@ if __name__ == "__main__":
         ver_file.write(f"Version: {Version}\n")
 
     FFvars.setup(AssetsFolder)
-    setup()
+    setup_ui()
 
     root.exec()
     print("End")
