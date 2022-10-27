@@ -22,6 +22,7 @@
 	* Directory to search in
 	* File Size
 	* Search for Folders
+    * Fn-match (Unix shell-style wildcards)
     * Search for File Content
     * Date Created and Modified
 - Search for Files and export Searches
@@ -104,7 +105,6 @@ A: File-Find is saving the cache under `/Users/USERNAME/Library/Application Supp
    1. [x] Filter UI
    2. [x] Help UI
    3. [x] Search Result UI
-   4. [x] ~~Cache UI~~ (replaced with Clear Cache)
 2. [x] Exporting and Importing Searches:
    1. [x] Importing
    2. [x] Exporting 
@@ -112,7 +112,7 @@ A: File-Find is saving the cache under `/Users/USERNAME/Library/Application Supp
 	1. [x] Creating Caches
 	2. [x] Using Caches
 	3. [x] Deleting Caches
-    4. [x] ~~Cache UI~~ (replaced with Clear Cache)
+    4. [x] Clear Cache option
 4. [ ] Multithreading:
 	1. [ ] UI using different thread as Search engine
 	2. [ ] Searching trough different threads
@@ -133,6 +133,7 @@ A: File-Find is saving the cache under `/Users/USERNAME/Library/Application Supp
     7. [ ] Search for Alias
     8. [x] Contains
     9. [ ] Search with root privileges
-    10. [x] Date Modified
-    11. [x] Date Created
+    10. [x] Regex (used fn match instead (Unix shell-style wildcards))
+    11. [x] Date Modified
+    12. [x] Date Created
 7. [ ] Compatible with Linux and Windows?
