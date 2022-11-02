@@ -15,16 +15,16 @@ permissions:
 jobs:
   check-syntax:
     name: "Checking Syntax"
-    runs-on: macos-11
+    runs-on: macos-latest
     
     steps:
     
     - uses: actions/checkout@v3
     
-    - name: Set up Python 3.9
+    - name: Set up Python 3.11
       uses: actions/setup-python@v3
       with:
-        python-version: "3.10"
+        python-version: "3.11"
     
     - name: Install dependencies
       run: |
