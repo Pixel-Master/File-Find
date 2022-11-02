@@ -78,13 +78,13 @@ File FInd isn't ready for Release yet Run from source or download pre-build macO
 
     Download the installer: https://python.org/download or use
 
-    Homebrew: `brew install python@3.10`
+    Homebrew: `brew install python@3.11`
     
 2. Install pyperclip with pip:
 `pip3 install pyperclip`
 
-3. Install PyQt 5 with pip:
-`pip3 install PyQt5`
+3. Install PyQt 6 with pip:
+`pip3 install PyQt6`
 
 ### Running
 1. Clone the File-Find Repository: `git clone https://gitlab.com/Pixel-Mqster/File-Find.git`
