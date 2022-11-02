@@ -57,22 +57,16 @@ Q: **How to clean the Cache?**
 A: File-Find is saving the cache under `/Users/USERNAME/Library/Application Support/File-Find/Cached Searches`. The Cache gets cleaned up on start up, that means to clean the cache just restart File Find
 
 ## Download
-### **[Version 1.0:](https://github.com/Pixel-Master/File-Find/releases/tag/v1.0.0)**
-#### Changelog:
-
-- Release
-
-#### Downloads:
-
-- [Mac](https://github.com/Pixel-Master/File-Find-Bot/releases/download/v1.0.0/File-Find.app.zip)
-- [Building from Source](https://gitlab.com/Pixel-Mqster/File-Find/-/blob/main/README.md#running-from-source)
+File FInd isn't ready for Release yet Run from source or download pre-build macOS Apps from the GitHub action Page.
+- [Running from Source](#running-from-source)
+- [GitHub Action Page](https://github.com/Pixel-Master/File-Find/actions/workflows/File-Find.yml)
 
 
 ## Running from Source
 
 ### Note:
 
-**File Find won't work properly on Linux or Windows, because the UI displays different depending on the OS and some Features are depending on the system.** 
+###### File Find won't work properly on Linux or Windows, because the UI displays different depending on the OS and some Features depends on the system. 
 
 
 ### Dependencies
