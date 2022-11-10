@@ -55,7 +55,6 @@ jobs:
       uses: actions/setup-python@v3
       with:
         python-version: "3.11"
-        architecture: "universal2"
     - name: Install dependencies
       run: |
         pip3 install pyinstaller
@@ -65,7 +64,7 @@ jobs:
     - name: Build .app with pyinstaller
       run: |
         # x86_64 Build
-        pyinstaller --noconfirm --name "File-Find" --onedir --windowed --icon "./assets/icon.icns" --osx-bundle-identifier "io.github.pixel-master.file-find" --target-architecture "universal2"  "./File-Find.py"     
+        pyinstaller --noconfirm --name "File-Find" --onedir --windowed --icon "./assets/icon.icns" --osx-bundle-identifier "io.github.pixel-master.file-find" --target-architecture "x86_64"  "./File-Find.py"     
     - name: Zip .app
       run: |
         cd dist
