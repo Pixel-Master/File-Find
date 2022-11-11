@@ -4,7 +4,9 @@
 
 
 <h3 align="center">A macOS UI Utility that helps you find Files easier.</h3>
+
 [![File Find](https://github.com/Pixel-Master/File-Find/actions/workflows/File-Find.yml/badge.svg?branch=main)](https://github.com/Pixel-Master/File-Find/actions/workflows/File-Find.yml)
+
 ## Content
 - [Features](#features)
 - [FAQ](#faq)
