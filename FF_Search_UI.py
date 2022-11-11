@@ -15,6 +15,7 @@ from pyperclip import copy
 
 # Projects Libraries
 import FF_Additional_UI
+import FF_Help_UI
 import FF_Files
 
 
@@ -38,22 +39,26 @@ class Search_Window:
         # Define the Label
         main_label = QLabel("Search Results", parent=search_result_ui)
         # Change Font
-        main_label.setFont(QFont("Baloo Bhaina", 70))
+        main_label_font = QFont("Futura", 50)
+        main_label_font.setBold(True)
+        main_label.setFont(main_label_font)
         # Display the Label
-        main_label.move(0, -20)
+        main_label.move(0, 0)
         main_label.show()
         main_label.adjustSize()
 
         # Seconds needed Label
         seconds_text = QLabel(search_result_ui)
-        seconds_text.setFont(QFont("Baloo Bhaina", 20))
+        small_text_font = QFont("Futura", 20)
+        small_text_font.setBold(True)
+        seconds_text.setFont(small_text_font)
         seconds_text.show()
         seconds_text.move(10, 90)
 
         # Files found label
         objects_text = QLabel(search_result_ui)
         objects_text.setText(f"Files found: {len(matched_list)}")
-        objects_text.setFont(QFont("Baloo Bhaina", 20))
+        objects_text.setFont(small_text_font)
         objects_text.show()
         objects_text.move(420, 90)
         objects_text.adjustSize()
@@ -195,7 +200,7 @@ class Search_Window:
         clipboard_file.move(570, 650)
 
         # Help Button
-        help_button = generate_button(" Help", command=lambda: FF_Additional_UI.Help_Window(parent))
+        help_button = generate_button(" Help", command=lambda: FF_Help_UI.Help_Window(parent))
         help_button.move(740, 0)
         help_button_font = QFont("Arial", 25)
         help_button_font.setBold(True)
@@ -250,6 +255,6 @@ class Search_Window:
                                                   f"Path: {file}\n"
                                                   f"\n"
                                                   f"File Name: {os.path.basename(file)}\n"
-                                                  f"Size: {os.path.getsize(file)} Bytes\n"
+                                                  f"Size: {FF_Files.conv_file_size(FF_Files.get_file_size(file))}\n"
                                                   f"Date Created: {ctime(os.stat(file).st_birthtime)}\n"
                                                   f"Date Modified: {ctime(os.path.getmtime(file))}\n", parent)

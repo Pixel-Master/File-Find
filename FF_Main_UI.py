@@ -3,22 +3,18 @@
 
 # Imports
 import os
-import concurrent.futures
-from pickle import dump, load
-from time import time, ctime, mktime
-from fnmatch import fnmatch
 
 # PyQt6 Gui Imports
-from PyQt6.QtCore import QSize, QRect, QThreadPool
+from PyQt6.QtCore import QSize, QRect
 from PyQt6.QtGui import QFont, QIntValidator, QIcon
-from PyQt6.QtWidgets import QApplication, QWidget, QMainWindow, QLabel, QPushButton, QRadioButton, QFileDialog, \
-    QListWidget, QLineEdit, QButtonGroup, QDateEdit, QFrame, QComboBox, QMessageBox
+from PyQt6.QtWidgets import QWidget, QLabel, QPushButton, QRadioButton, QFileDialog, \
+    QLineEdit, QButtonGroup, QDateEdit, QFrame, QComboBox
 from pyperclip import copy
 
 # Projects Libraries
-import FF_Files
 import FF_Additional_UI
-import FF_Search_UI
+import FF_Files
+import FF_Help_UI
 import FF_Search
 
 
@@ -44,9 +40,11 @@ class Main_Window:
         # Define the Label
         main_label = QLabel("File Find", parent=Root_Window)
         # Change Font
-        main_label.setFont(QFont("Baloo Bhaina", 70))
+        main_label_font = QFont("Futura", 50)
+        main_label_font.setBold(True)
+        main_label.setFont(main_label_font)
         # Display the Label
-        main_label.move(0, -30)
+        main_label.move(0, 0)
         main_label.show()
 
         # Labels
@@ -117,7 +115,7 @@ class Main_Window:
         l13 = self.generate_large_filter_label("Reverse Results:")
         l13.move(10, 340)
 
-        # Label for the Shell Command
+        # Label for the Terminal Command
         command_label2 = QLabel("", Root_Window)
         command_label2.setFont(QFont("Arial", 20))
         command_label2.setMaximumWidth(310)
@@ -139,7 +137,7 @@ class Main_Window:
         e3.move(150, 184)
         # File size min
         e4 = self.generate_filter_entry(True)
-        e4.resize(50, 29)
+        e4.resize(50, 19)
         e4.move(625, 184)
         # File size max
         e5 = self.generate_filter_entry(True)
@@ -231,7 +229,7 @@ class Main_Window:
                 os.chdir(search_from)
                 l4_small.setText(search_from)
                 l4_small.adjustSize()
-            except FileNotFoundError:
+            except (FileNotFoundError, OSError):
                 pass
 
         search_from_button = self.generate_edit_button(open_dialog)
@@ -331,7 +329,7 @@ class Main_Window:
         search_button.resize(100, 50)
         search_button.move(620, 440)
 
-        # Button for more Options: Load Searches, Generate shell Command and Info about the Cache
+        # Button for more Options: Load Searches, Generate Bash Command and Clear the Cache
         more_options_button = self.generate_large_button(None, lambda: FF_Additional_UI.other_options(
             generate_shell_command,
             Root_Window), 50)
@@ -343,7 +341,7 @@ class Main_Window:
         more_options_button.move(730, 440)
 
         # Help Button, that calls FF_Additional_UI.Help_Window
-        help_button = self.generate_large_button(" Help", lambda: FF_Additional_UI.Help_Window(Root_Window), 25)
+        help_button = self.generate_large_button(" Help", lambda: FF_Help_UI.Help_Window(Root_Window), 25)
         # Color
         help_button.setStyleSheet("color: #b50104;")
         # Icon

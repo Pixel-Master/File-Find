@@ -25,8 +25,9 @@
     * Fn-match (Unix shell-style wildcards)
     * Search for File Content
     * Date Created and Modified
+- Exclude Folders
 - Search for Files and export Searches
-
+- Dark-mode
 - Choose options for Files:
 	* Show in Finder
 	* Open
@@ -38,7 +39,7 @@
 	* Date Created
 - Reverse Results
 
-- Generate Shell command from Filters, supports:
+- Generate Terminal command from Filters, supports:
 	* Name
 	* In Name
 	* File Ending
@@ -72,14 +73,14 @@ File FInd isn't ready for Release yet Run from source or download pre-build macO
 ### Dependencies
 - [Python](https://python.org/) 3.9 or higher
 - [Pyperclip](https://pypi.org/project/pyperclip/) 1.8.2 or higher
-- [PyQt 5](https://pypi.org/project/PyQt5/) 5.15 or higher
+- [PyQt 6](https://pypi.org/project/PyQt6/) 6.4 or higher
 
 1. Install Python:
 
     Download the installer: https://python.org/download or use
 
     Homebrew: `brew install python@3.11`
-    
+
 2. Install pyperclip with pip:
 `pip3 install pyperclip`
 
@@ -125,9 +126,20 @@ File FInd isn't ready for Release yet Run from source or download pre-build macO
     5. [x] Directory to search in
     6. [x] Search for Folders
     7. [ ] Search for Alias
-    8. [x] Contains
-    9. [ ] Search with root privileges
-    10. [x] Regex (used fn match instead (Unix shell-style wildcards))
-    11. [x] Date Modified
-    12. [x] Date Created
+    8. [ ] Exclude Sub-folders
+    9. [x] Contains
+    10. [ ] Search with root privileges
+    11. [x] Regex (used fn match instead (Unix shell-style wildcards))
+    12. [x] Date Modified
+    13. [x] Date Created
+    14. [x] Excluded Files
+7. [ ] Language
+   1. [x] Language UI
+   2. [ ] Languages apply
+   3. [ ] Languages:
+      1. [x] English
+      2. [ ] German
+      3. [ ] Frensh
+      4. [ ] Spanish
+      5. [ ] Chinese
 7. [ ] Compatible with Linux and Windows?

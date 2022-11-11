@@ -23,26 +23,7 @@ class sort:
     # Sort by Size
     @staticmethod
     def size(file):
-        if os.path.isdir(file):
-            file_size_list_obj = 0
-            # Gets the size
-            for path, dirs, files in os.walk(file):
-                for file in files:
-                    try:
-                        file_size_list_obj += os.path.getsize(os.path.join(path, file))
-                    except FileNotFoundError or ValueError:
-                        continue
-        elif os.path.isfile(file):
-            try:
-                file_size_list_obj = os.path.getsize(file)
-            except FileNotFoundError or ValueError:
-                return -1
-        else:
-            return -1
-        if os.path.islink(file):
-            return -1
-        else:
-            return file_size_list_obj
+        return FF_Files.get_file_size(file)
 
     # Sort by Name
     @staticmethod
@@ -134,9 +115,9 @@ class search:
                                                                    edits_list.index(time_drop_down) % 2)
                 unix_time_list.append(time_to_add_to_time_list)
 
-            self.search_start(data_name, data_in_name, data_filetype, data_file_size_min, data_file_size_max,
-                              data_library, data_search_from, data_folders, data_content, unix_time_list, data_sort_by,
-                              data_reverse_sort, data_fn_match, parent)
+            self.searching(data_name, data_in_name, data_filetype, data_file_size_min, data_file_size_max,
+                           data_library, data_search_from, data_folders, data_content, unix_time_list, data_sort_by,
+                           data_reverse_sort, data_fn_match, parent)
             '''future = executor.submit(lambda: search(data_name=e1.text(), data_in_name=e2.text(),                   
                                          data_filetype=e3.text(), data_file_size_min=e4.text(), 
                                          data_file_size_max=e5.text(), data_library=rb_library1.isChecked(), 
@@ -148,9 +129,9 @@ class search:
 
     # The search engine
     @staticmethod
-    def search_start(data_name, data_in_name, data_filetype, data_file_size_min, data_file_size_max, data_library,
-                     data_search_from, data_folders, data_content, data_time, data_sort_by, data_reverse_sort,
-                     data_fn_match, parent):
+    def searching(data_name, data_in_name, data_filetype, data_file_size_min, data_file_size_max, data_library,
+                  data_search_from, data_folders, data_content, data_time, data_sort_by, data_reverse_sort,
+                  data_fn_match, parent):
         # Creates empty lists for the files
         matched_path_list = []
         found_path_list = []
@@ -168,6 +149,14 @@ class search:
             data_time_needed = False
         else:
             data_time_needed = True
+
+        # Loading excluded files
+        with open(os.path.join(FF_Files.LibFolder, "Excluded_Files.FFSave"), "rb") as ExcludedFile:
+            data_excluded_files = load(ExcludedFile)
+        if not data_excluded_files:
+            data_excluded_files_needed = False
+        else:
+            data_excluded_files_needed = True
 
         # Debug
         print("\nStarting Scanning...")
@@ -251,26 +240,8 @@ class search:
 
             # Filter File Size
             if data_file_size_min != "":
-                if os.path.isfile(found_file):
-                    if int(data_file_size_max) >= int(
-                            os.path.getsize(found_file)) >= int(data_file_size_min):
-                        pass
-                    else:
-                        continue
-                elif os.path.isdir(found_file):
-                    folder_size = 0
-                    # Gets the size
-                    for path, dirs, files in os.walk(found_file):
-                        for file in files:
-                            try:
-                                folder_size += os.path.getsize(os.path.join(path, file))
-                            except FileNotFoundError:
-                                print("File Not Found!", str(os.path.join(path, file)))
-                                continue
-                    if int(data_file_size_max) >= folder_size >= int(data_file_size_min):
-                        pass
-                    else:
-                        continue
+                if not int(data_file_size_max) >= int(FF_Files.get_file_size(found_file)) >= int(data_file_size_min):
+                    continue
 
             # Contains
             if data_content != "":
@@ -292,6 +263,15 @@ class search:
                     or basename == "Thumbs.db":
                 continue
 
+            # Excluded Files
+            if data_excluded_files_needed:
+                file_in_excluded = False
+                for excluded_file in data_excluded_files:
+                    if found_file.startswith(excluded_file):
+                        file_in_excluded = True
+                        break
+                if file_in_excluded:
+                    continue
             # Add the File to matched_path_list
             matched_path_list.append(found_file)
 

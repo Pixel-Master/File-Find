@@ -3,7 +3,7 @@
 
 # Imports
 import os
-
+from pickle import load, dump, UnpicklingError
 
 # Project Libraries
 import FF_Additional_UI
@@ -15,17 +15,64 @@ os.chdir(userpath)
 LibFolder = os.path.join(os.path.join(os.path.join(os.getcwd(), "Library"), "Application Support"), "File-Find")
 Cached_SearchesFolder = os.path.join(LibFolder, "Cached Searches")
 Saved_SearchFolder = os.path.join(LibFolder, "Saved Searches")
-AssetsFolder = os.path.join(LibFolder, "assets")
+AssetsFolder = os.path.join(LibFolder, ".assets")
 
 # Versions
 VERSION: str = "pre-beta 30.oct.22-pyqt6"
 VERSION_SHORT: str = "0.0"
 
 
+def get_file_size(file):
+    if os.path.isdir(file):
+        file_size_list_obj = 0
+        # Gets the size
+        for path, dirs, files in os.walk(file):
+            for file in files:
+                try:
+                    file_size_list_obj += os.path.getsize(os.path.join(path, file))
+                except FileNotFoundError or ValueError:
+                    continue
+    elif os.path.isfile(file):
+        try:
+            file_size_list_obj = os.path.getsize(file)
+        except FileNotFoundError or ValueError:
+            return -1
+    else:
+        return -1
+    if os.path.islink(file):
+        return -1
+    else:
+        return file_size_list_obj
+
+
+def conv_file_size(byte_size: int) -> str:
+    if byte_size == -1:
+        return f"**ERROR** (File does not exist or isn't valid)"
+    elif byte_size > 1000000000:
+        return f"{round(byte_size / 1000000000, 2)} GB"
+    elif byte_size > 1000000:
+        return f"{round(byte_size / 1000000, 2)} MB"
+    elif byte_size > 1000:
+        return f"{round(byte_size / 1000, 2)} KB"
+    else:
+        return f"{byte_size} Bytes"
+
+
 def setup():
     os.makedirs(Saved_SearchFolder, exist_ok=True)
     os.makedirs(Cached_SearchesFolder, exist_ok=True)
     os.makedirs(AssetsFolder, exist_ok=True)
+
+    # Write File for Excluded Files
+    try:
+        with open(os.path.join(LibFolder, "Excluded_Files.FFSave"), "rb") as ExcludedLoadFile:
+            excluded_file = load(ExcludedLoadFile)
+    except (UnpicklingError, EOFError, FileNotFoundError):
+        excluded_file = []
+
+    with open(os.path.join(LibFolder, "Excluded_Files.FFSave"), "wb") as ExcludedDumpFile:
+        dump(excluded_file, ExcludedDumpFile)
+
     # Write the File-Find Logo in an Image
     open(os.path.join(AssetsFolder, "FFlogo_small.png"), "wb").write(
         b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00x\x00\x00\x00x\x08\x03\x00\x00\x00\x0e\xba\xc6\xe0\x00\x00'

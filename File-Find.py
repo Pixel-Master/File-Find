@@ -21,10 +21,11 @@ if __name__ == "__main__":
     app = QApplication([])
 
     # Files
-    with open(os.path.join(FF_Files.LibFolder, "Info.txt"), "w") as ver_file:
-        ver_file.write(f"Version: {FF_Files.VERSION}\n")
     FF_Files.remove_cache()
     FF_Files.setup()
+    with open(os.path.join(FF_Files.LibFolder, "Info.txt"), "w") as ver_file:
+        ver_file.write(f"Version: {FF_Files.VERSION}\n")
+
 
     # Launches the Main Window
     Main_UI = FF_Main_UI.Main_Window()
