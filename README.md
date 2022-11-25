@@ -1,17 +1,19 @@
 <p align="center">
   <img src="https://gitlab.com/Pixel-Mqster/File-Find/-/raw/main/assets/icon.png" height="128">
-  <h1 align="center">File-Find for macOS</h1>
+  <h1 align="center">File Find for macOS</h1>
 
 
 <h3 align="center">A macOS UI Utility that helps you find Files easier.</h3>
 
 [![File Find](https://github.com/Pixel-Master/File-Find/actions/workflows/File-Find.yml/badge.svg?branch=main)](https://github.com/Pixel-Master/File-Find/actions/workflows/File-Find.yml)
 
+
 ## Content
 - [Features](#features)
 - [FAQ](#faq)
 - [Download](#download)
 - [Running from Source](#running-from-source)
+- [Building File Find.app](#building-file-findapp)
 - [Roadmap](#roadmap)
 
 
@@ -47,17 +49,17 @@
 	* File Ending
 
 ## FAQ
-Q: **What is File-Find and how does it work?**
+Q: **What is File Find and how does it work?**
 
-A: File-Find is an open-source macOS Utility, that makes it easy to find Files. To search fill in the filters you need and leave the filters you don't need empty.
+A: File Find is an open-source macOS Utility, that makes it easy to find Files. To search fill in the filters you need and leave the filters you don't need empty.
 
-Q: **Why does File-Find crash when searching?**
+Q: **Why does File Find crash when searching?**
 
-A: File-Find is only using one thread. That's why it looks like File-Find "doesn't react".
+A: File Find is only using one thread. That's why it looks like File Find "doesn't react".
 
 Q: **How to clean the Cache?**
 
-A: File-Find is saving the cache under `/Users/USERNAME/Library/Application Support/File-Find/Cached Searches`. The Cache gets cleaned up on start up, that means to clean the cache just restart File Find
+A: File Find is saving the cache under `/Users/$USERNAME/Library/Application Support/File-Find/Cached Searches`. The Cache gets cleaned up on start up, that means to clean the cache just restart File Find
 
 ## Download
 File FInd isn't ready for Release yet Run from source or download pre-build macOS Apps from the GitHub action Page.
@@ -72,7 +74,7 @@ File FInd isn't ready for Release yet Run from source or download pre-build macO
 ###### File Find won't work properly on Linux or Windows, because the UI displays different depending on the OS and some Features depends on the system. 
 
 
-### Dependencies
+### Dependencies for running
 - [Python](https://python.org/) 3.9 or higher
 - [Pyperclip](https://pypi.org/project/pyperclip/) 1.8.2 or higher
 - [PyQt 6](https://pypi.org/project/PyQt6/) 6.4 or higher
@@ -83,19 +85,47 @@ File FInd isn't ready for Release yet Run from source or download pre-build macO
 
     Homebrew: `brew install python@3.11`
 
-2. Install pyperclip with pip:
-`pip3 install pyperclip`
-
-3. Install PyQt 6 with pip:
-`pip3 install PyQt6`
+2. Install pyperclip and PyQt6 with pip:
+`pip3 install pyperclip PyQt6`
 
 ### Running
-1. Clone the File-Find Repository: `git clone https://gitlab.com/Pixel-Mqster/File-Find.git`
+1. Clone the File Find Repository: `git clone https://gitlab.com/Pixel-Mqster/File-Find.git`
 2. cd into the repository: `cd File-Find`
-3. [Install dependencies](#dependencies)
+3. [Install dependencies](#dependencies-for-running)
 4. Run:
 
 `python3 File-Find.py` 
+
+## Building File Find.app
+
+### Note:
+
+###### File Find won't work properly on Linux or Windows, because the UI displays different depending on the OS and some Features depends on the system. 
+
+
+### Dependencies for building
+- [Python](https://python.org/) 3.9 or higher
+- [Pyperclip](https://pypi.org/project/pyperclip/) 1.8.2 or higher
+- [PyQt 6](https://pypi.org/project/PyQt6/) 6.4 or higher
+- [pyinstaller](https://pypi.org/project/pyinstaller/) 5.6.2 or higher
+
+1. Install Python:
+
+    Download the installer: https://python.org/download or use
+
+    Homebrew: `brew install python@3.11`
+
+2. Install pyperclip, PyQt6 and pyinstaller with pip:
+`pip3 install pyperclip PyQt6 pyinstaller`
+
+### Building
+1. Clone the File Find Repository: `git clone https://gitlab.com/Pixel-Mqster/File-Find.git`
+2. cd into the repository: `cd File-Find`
+3. [Install dependencies](#dependencies-for-building)
+4. Run:
+
+`python3 -m pyinstaller --noconfirm --name "File Find" --onedir --windowed --icon "./assets/icon.icns" --osx-bundle-identifier "io.github.pixel-master.file-find" "./File-Find.py"` 
+
 
 ## Roadmap
 1. [x] UI:
@@ -106,14 +136,14 @@ File FInd isn't ready for Release yet Run from source or download pre-build macO
    1. [x] Importing
    2. [x] Exporting 
 3. [x] Caching:
-	1. [x] Creating Caches
-	2. [x] Using Caches
-	3. [x] Deleting Caches
+    1. [x] Creating Caches
+    2. [x] Using Caches
+    3. [x] Deleting Caches
     4. [x] Clear Cache option
 4. [ ] Multithreading:
-	1. [ ] UI using different thread as Search engine
-	2. [ ] Searching trough different threads
-	3. [ ] Indexing trough different threads
+    1. [ ] UI using different thread as Search engine
+    2. [ ] Searching trough different threads
+    3. [ ] Indexing trough different threads
 5. [x] Sorting:
    1. [x] Size
    2. [x] File Name
@@ -144,4 +174,4 @@ File FInd isn't ready for Release yet Run from source or download pre-build macO
       3. [ ] Frensh
       4. [ ] Spanish
       5. [ ] Chinese
-7. [ ] Compatible with Linux and Windows?
+8. [ ] Compatible with Linux and Windows?
