@@ -3,6 +3,7 @@
 
 # Imports
 import os
+import sys
 
 # PyQt6 Gui Imports
 from PyQt6.QtCore import QSize, QRect
@@ -614,7 +615,7 @@ class Main_Window:
 
         # Quit File Find
         quit_action = QAction("Quit File Find", Root_Window)
-        quit_action.triggered.connect(quit)
+        quit_action.triggered.connect(lambda: sys.exit(0))
         quit_action.setShortcut(QKeySequence.StandardKey.Quit)
 
         # Constructing menubar_icon_menu
