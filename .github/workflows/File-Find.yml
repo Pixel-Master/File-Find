@@ -70,7 +70,7 @@ jobs:
     - name: Zip .app
       run: |
         cd dist
-        zip -r File Find.app.zip File Find.app
+        zip -r "File Find.app.zip" "File Find.app"
     
     - name: Upload File Find.app
       uses: actions/upload-artifact@v2
