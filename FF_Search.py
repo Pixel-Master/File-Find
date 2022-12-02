@@ -1,4 +1,4 @@
-# This File is a part of File-Find made by Pixel-Master and licensed under the GNU GPL v3
+# This File is a part of File Find made by Pixel-Master and licensed under the GNU GPL v3
 # This script contains the class for the search engine
 
 # Imports
@@ -8,8 +8,7 @@ from pickle import dump, load
 from time import time, mktime
 
 # PyQt6 Gui Imports
-from PyQt6.QtWidgets import QFileDialog, \
-    QDateEdit, QMessageBox
+from PyQt6.QtWidgets import QFileDialog, QDateEdit, QMessageBox, QWidget
 
 # Projects Libraries
 import FF_Additional_UI
@@ -51,10 +50,34 @@ class sort:
             return -1
 
 
+# Class for Generating the terminal command
+class generate_terminal_command:
+    def __init__(self, name, inname, file_ending, fn_match):
+        self.shell_command = f"find {os.getcwd()}"
+        self.name_string = ""
+        if name != "":
+            self.name_string += f"{name}"
+        elif fn_match != "":
+            self.name_string = fn_match
+
+        else:
+            if inname != "":
+                self.name_string += f"*{inname}*"
+            if file_ending != "":
+                self.name_string += f"*.{file_ending}"
+
+        if self.name_string != "":
+            self.shell_command += f" -name \"{self.name_string}\""
+        print(f"\nCommand: -name \"{self.name_string}\"")
+
+    def __str__(self):
+        return self.shell_command
+
+
 # Loading a saved search
 class load_search:
     def __init__(self, parent):
-        load_dialog = QFileDialog.getOpenFileName(parent, "Export File-Find Search", FF_Files.Saved_SearchFolder,
+        load_dialog = QFileDialog.getOpenFileName(parent, "Export File Find Search", FF_Files.Saved_SearchFolder,
                                                   "*.FFSave;")
         load_file = load_dialog[0]
 
@@ -69,14 +92,14 @@ class load_search:
                                            f"loaded from {load_file}.FFSearch".replace("/", "-")),
                               "wb") as CachedSearch:
                         dump(saved_file_content, file=CachedSearch)
-                FF_Search_UI.Search_Window(0, 0, 0, 0, saved_file_content, f"loaded from {load_file}", parent)
+                FF_Search_UI.Search_Window([0, 0, 0, 0, saved_file_content, f"loaded from {load_file}", parent])
 
 
 # The Search Engine
 class search:
     def __init__(self, data_name, data_in_name, data_filetype, data_file_size_min, data_file_size_max, data_library,
                  data_search_from, data_folders, data_content, edits_list, data_sort_by, data_reverse_sort,
-                 data_fn_match, parent):
+                 data_fn_match, parent: QWidget):
 
         # Fetching Errors
         if data_name != "" and data_in_name != "" or data_name != "" and data_filetype != "":
@@ -115,17 +138,11 @@ class search:
                                                                    edits_list.index(time_drop_down) % 2)
                 unix_time_list.append(time_to_add_to_time_list)
 
-            self.searching(data_name, data_in_name, data_filetype, data_file_size_min, data_file_size_max,
-                           data_library, data_search_from, data_folders, data_content, unix_time_list, data_sort_by,
-                           data_reverse_sort, data_fn_match, parent)
-            '''future = executor.submit(lambda: search(data_name=e1.text(), data_in_name=e2.text(),                   
-                                         data_filetype=e3.text(), data_file_size_min=e4.text(), 
-                                         data_file_size_max=e5.text(), data_library=rb_library1.isChecked(), 
-                                         data_search_from=os.getcwd(), data_content=e6.text(), 
-                                         data_folders=rb_folder1.isChecked(), data_time=unix_time_list, 
-                                         data_fn_match=e7.text(), data_sort_by=combobox_sorting.currentText(), 
-                                         data_reverse_sort=rb_reverse_sort1.isChecked())) return_value = 
-                                         future.result() print(return_value) '''
+            # Starting the Search
+            FF_Search_UI.Search_Window(
+                self.searching(data_name, data_in_name, data_filetype, data_file_size_min, data_file_size_max,
+                               data_library, data_search_from, data_folders, data_content, unix_time_list, data_sort_by,
+                               data_reverse_sort, data_fn_match, parent))
 
     # The search engine
     @staticmethod
@@ -142,6 +159,7 @@ class search:
         # Lower Arguments
         data_name = data_name.lower()
         data_in_name = data_in_name.lower()
+        data_filetype = data_filetype.lower()
 
         # Checking if data_time is needed
         DEFAULT_TIME_INPUT_LIST = [946681200.0, 946767600.0, 946681200.0, 946767600.0]
@@ -151,7 +169,7 @@ class search:
             data_time_needed = True
 
         # Loading excluded files
-        with open(os.path.join(FF_Files.LibFolder, "Excluded_Files.FFSave"), "rb") as ExcludedFile:
+        with open(os.path.join(FF_Files.LibFolder, "Excluded_Files.FFExc"), "rb") as ExcludedFile:
             data_excluded_files = load(ExcludedFile)
         if not data_excluded_files:
             data_excluded_files_needed = False
@@ -182,42 +200,43 @@ class search:
 
         # Debug
         print("\nStarting Indexing...\n")
+
         # Applies filters, when they don't match it continues.
-        for found_file in found_path_list:
+        def check_file(found_file):
 
             # Looks for basename to be faster
             basename = os.path.basename(found_file)
             lower_basename = os.path.basename(found_file).lower()
 
             # Name
-            if data_name == lower_basename or data_name == "":
-                pass
-            else:
-                continue
+            if data_name != "":
+                if data_name != lower_basename:
+                    return False
+
             # In name
-            if data_in_name in lower_basename or data_in_name == "":
-                pass
-            else:
-                continue
+            if data_in_name != "":
+                if not (data_in_name in lower_basename):
+                    return False
+
             # File Ending
-            if basename.endswith(f".{data_filetype}") or data_filetype == "":
-                pass
-            else:
-                continue
+            if data_filetype != "":
+                if not lower_basename.endswith(f".{data_filetype}"):
+                    return False
+
             # Fn match
             if data_fn_match != "":
-                if not fnmatch(found_file, data_fn_match):
-                    continue
+                if not fnmatch(basename, data_fn_match):
+                    return False
 
             # Search in System Files
             if not data_library:
                 if "/Library" in found_file:
-                    continue
+                    return False
 
             # Search for Folders
             if not data_folders:
                 if os.path.isdir(found_file):
-                    continue
+                    return False
 
             # Search for Date Modified, Created
             # Checking if
@@ -227,21 +246,23 @@ class search:
                     file_c_time = os.stat(found_file).st_birthtime
                     file_m_time = os.path.getmtime(found_file)
                 except FileNotFoundError:
-                    continue
+                    return False
                 # Checking for file time and which values in data_time are modified
                 if data_time[0] <= file_c_time <= data_time[1] != DEFAULT_TIME_INPUT_LIST[1]:
                     pass
                 elif data_time[0] != DEFAULT_TIME_INPUT_LIST[0] and data_time[1] != DEFAULT_TIME_INPUT_LIST[1]:
-                    continue
+                    return False
                 if data_time[2] <= file_m_time <= data_time[3] != DEFAULT_TIME_INPUT_LIST[3]:
                     pass
                 elif data_time[3] != DEFAULT_TIME_INPUT_LIST[3] and data_time[2] != DEFAULT_TIME_INPUT_LIST[2]:
-                    continue
+                    return False
 
             # Filter File Size
-            if data_file_size_min != "":
-                if not int(data_file_size_max) >= int(FF_Files.get_file_size(found_file)) >= int(data_file_size_min):
-                    continue
+            if data_file_size_min != "" and data_file_size_max != "":
+                if not (float(data_file_size_max) * 1000000) \
+                       >= int(FF_Files.get_file_size(found_file)) \
+                       >= (float(data_file_size_min) * 1000000):
+                    return False
 
             # Contains
             if data_content != "":
@@ -253,15 +274,15 @@ class search:
                                 does_contain = True
                                 break
                 except (UnicodeDecodeError, FileNotFoundError, OSError):
-                    continue
+                    return False
                 else:
                     if not does_contain or os.path.isdir(found_file):
-                        continue
+                        return False
 
             # Filter some unnecessary System Files
             if basename == ".DS_Store" or basename == ".localized" or basename == "desktop.ini" \
                     or basename == "Thumbs.db":
-                continue
+                return False
 
             # Excluded Files
             if data_excluded_files_needed:
@@ -271,10 +292,14 @@ class search:
                         file_in_excluded = True
                         break
                 if file_in_excluded:
-                    continue
+                    return False
             # Add the File to matched_path_list
-            matched_path_list.append(found_file)
+            return True
 
+        for scanned_file in found_path_list:
+            add_file = check_file(scanned_file)
+            if add_file:
+                matched_path_list.append(scanned_file)
         # Prints out seconds needed and the matching files
         print(f"Found {len(matched_path_list)} Files and Folders")
         time_after_indexing = time() - (time_after_searching + time_before_start)
@@ -307,6 +332,6 @@ class search:
               f"{time_after_sorting}\nTotal: {time_total}")
         print("\nFiles found:", len(matched_path_list))
 
-        # Launches the GUI
-        FF_Search_UI.Search_Window(time_total, time_after_searching, time_after_indexing, time_after_sorting,
-                                   matched_path_list, data_search_from, parent)
+        # Returns args that are used to launch the GUI
+        return time_total, time_after_searching, time_after_indexing, time_after_sorting, matched_path_list, \
+               data_search_from, parent

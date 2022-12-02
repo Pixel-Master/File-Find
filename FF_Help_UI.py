@@ -168,20 +168,20 @@ class Help_Window:
         excluded_listbox.show()
 
         # Load Files
-        with open(os.path.join(FF_Files.LibFolder, "Excluded_Files.FFSave"), "rb") as ExcludedFile:
+        with open(os.path.join(FF_Files.LibFolder, "Excluded_Files.FFExc"), "rb") as ExcludedFile:
             files = load(ExcludedFile)
         for file in files:
             excluded_listbox.addItem(file)
 
         # Buttons to add or remove Files
         def edit_excluded(input_file, added=True):
-            with open(os.path.join(FF_Files.LibFolder, "Excluded_Files.FFSave"), "rb") as ExcludedUpdateFile:
+            with open(os.path.join(FF_Files.LibFolder, "Excluded_Files.FFExc"), "rb") as ExcludedUpdateFile:
                 old_files = load(ExcludedUpdateFile)
             if added:
                 old_files.append(input_file)
             if not added:
                 old_files.remove(input_file)
-            with open(os.path.join(FF_Files.LibFolder, "Excluded_Files.FFSave"), "wb") as ExcludedUpdateFile:
+            with open(os.path.join(FF_Files.LibFolder, "Excluded_Files.FFExc"), "wb") as ExcludedUpdateFile:
                 dump(old_files, ExcludedUpdateFile)
 
         def remove_file():

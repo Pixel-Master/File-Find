@@ -1,33 +1,58 @@
-# This File is a part of File-Find made by Pixel-Master and licensed under the GNU GPL v3
+# This File is a part of File Find made by Pixel-Master and licensed under the GNU GPL v3
 # This script contains the class for the Search Results window
 
 # Imports
 import os
 from pickle import dump, load
 from time import time, ctime
+import hashlib
 
 # PyQt6 Gui Imports
 from PyQt6.QtCore import QSize
 from PyQt6.QtGui import QFont, QIcon
 from PyQt6.QtWidgets import QMainWindow, QLabel, QPushButton, QFileDialog, \
     QListWidget
-from pyperclip import copy
 
 # Projects Libraries
 import FF_Additional_UI
-import FF_Help_UI
 import FF_Files
+import FF_Help_UI
+import FF_Main_UI
+
+
+class Search_Status:
+    def __init__(self, parent):
+        # Define the Label
+        self.report_label = QLabel("Starting Search...", parent=parent)
+        # Change Font
+        label_font = QFont("Futura", 15)
+        label_font.setBold(True)
+        self.report_label.setFont(label_font)
+        # Display the Label
+        self.report_label.move(200, 0)
+        self.report_label.show()
+        self.report_label.adjustSize()
 
 
 class Search_Window:
-    def __init__(self, time_total, time_searching, time_indexing, time_sorting, matched_list, search_path, parent):
+    def __init__(self, search_output):
+        # Converting parameter
+        time_total = search_output[0]
+        time_searching = search_output[1]
+        time_indexing = search_output[2]
+        time_sorting = search_output[3]
+        matched_list = search_output[4]
+        search_path = search_output[5]
+        parent = search_output[6]
+
+        # Saves Time
         time_before_building = time()
 
         # Window setup
         # Define the window
         search_result_ui = QMainWindow(parent)
         # Set the Title of the Window
-        search_result_ui.setWindowTitle(f"File-Find Search Results | {search_path}")
+        search_result_ui.setWindowTitle(f"File Find Search Results | {search_path}")
         # Set the Size of the Window and make it not resizable
         search_result_ui.setFixedHeight(700)
         search_result_ui.setFixedWidth(800)
@@ -35,7 +60,7 @@ class Search_Window:
         # Display the Window
         search_result_ui.show()
 
-        # File-Find Label
+        # Search Results Label
         # Define the Label
         main_label = QLabel("Search Results", parent=search_result_ui)
         # Change Font
@@ -81,37 +106,65 @@ class Search_Window:
         result_listbox.show()
 
         # Options for paths
+        # Opens a file
         def open_with_program():
-            selected_file = result_listbox.currentItem().text()
-            if os.system("open " + str(selected_file.replace(" ", "\\ "))) != 0:
-                FF_Additional_UI.msg.show_critical_messagebox("Error!", f"No Program found to open {selected_file}",
-                                                              search_result_ui)
-            print(f"Opened: {selected_file}")
+            try:
+                selected_file = result_listbox.currentItem().text()
+                if os.system("open " + str(selected_file.replace(" ", "\\ "))) != 0:
+                    FF_Additional_UI.msg.show_critical_messagebox("Error!", f"No Program found to open {selected_file}",
+                                                                  search_result_ui)
+                else:
+                    print(f"Opened: {selected_file}")
+            except AttributeError:
+                FF_Additional_UI.msg.show_critical_messagebox("Error!", "Select a File!", search_result_ui)
 
+        # Reveals a file
         def open_in_finder():
-            selected_file = result_listbox.currentItem().text()
+            try:
+                selected_file = result_listbox.currentItem().text()
 
-            if os.system("open -R " + str(selected_file.replace(" ", "\\ "))) != 0:
-                FF_Additional_UI.msg.show_critical_messagebox("Error!", f"File not Found {selected_file}",
-                                                              search_result_ui)
-            print(f"Opened in Finder: {selected_file}")
+                if os.system("open -R " + str(selected_file.replace(" ", "\\ "))) != 0:
+                    FF_Additional_UI.msg.show_critical_messagebox("Error!", f"File not Found {selected_file}",
+                                                                  search_result_ui)
+                else:
+                    print(f"Opened in Finder: {selected_file}")
+            except AttributeError:
+                FF_Additional_UI.msg.show_critical_messagebox("Error!", "Select a File!", search_result_ui)
 
-        def copy_path():
-            selected_file = result_listbox.currentItem().text()
-            copy(selected_file)
-            print(f"Copied Path: {selected_file}")
-            FF_Additional_UI.msg.show_info_messagebox("Successfully copied!",
-                                                      f"Successfully copied Path:\n{selected_file}!",
-                                                      search_result_ui)
+        # Get basic information about a file
+        def file_info():
+            try:
+                self.onclick(result_listbox.currentItem().text(), search_result_ui)
+            except AttributeError:
+                FF_Additional_UI.msg.show_critical_messagebox("Error!", "Select a File!", search_result_ui)
 
-        def copy_name():
-            selected_file = result_listbox.currentItem().text()
-            copy(os.path.basename(selected_file))
-            print(f"Copied File-Name: {os.path.basename(selected_file)}")
-            FF_Additional_UI.msg.show_info_messagebox("Successfully copied!",
-                                                      f"Successfully copied File Name:"
-                                                      f"\n{os.path.basename(selected_file)} !",
-                                                      search_result_ui)
+        # View the hashes
+        def view_hashes():
+            try:
+                hash_file = result_listbox.currentItem().text()
+                if os.path.isdir(hash_file):
+                    file_content = b""
+                    for root, dirs, files in os.walk(hash_file):
+                        for i in files:
+                            with open(os.path.join(root, i), "rb") as HashFile:
+                                file_content = HashFile.read() + file_content
+
+                else:
+                    with open(hash_file, "rb") as HashFile:
+                        file_content = HashFile.read()
+
+                md5_hasher = hashlib.md5(file_content)
+                sha1_hasher = hashlib.sha1(file_content)
+                sha265_hasher = hashlib.sha256(file_content)
+                FF_Additional_UI.msg.show_info_messagebox(f"Hashes of {hash_file}",
+                                                          f"Hashes of {hash_file}\n\n"
+                                                          f"MD5: {md5_hasher.hexdigest()}\n"
+                                                          f"SHA1: {sha1_hasher.hexdigest()}\n"
+                                                          f"SHA265: {sha265_hasher.hexdigest()}",
+                                                          search_result_ui)
+
+            except AttributeError:
+                FF_Additional_UI.msg.show_critical_messagebox("Error!", "Select a File!", search_result_ui)
 
         # Show more time info's
         def show_time_stats():
@@ -156,9 +209,9 @@ class Search_Window:
 
         # Save Search
         def save_search():
-            save_dialog = QFileDialog.getSaveFileName(search_result_ui, "Export File-Find Search",
+            save_dialog = QFileDialog.getSaveFileName(search_result_ui, "Export File Find Search",
                                                       FF_Files.Saved_SearchFolder,
-                                                      "File-Find Search (*.FFSave);;Plain Text File (*.txt)")
+                                                      "File Find Search (*.FFSave);;Plain Text File (*.txt)")
             save_file = save_dialog[0]
             if save_file.endswith(".txt") and not os.path.exists(save_file):
                 with open(save_file, "w") as ExportFile:
@@ -184,20 +237,20 @@ class Search_Window:
             return button
 
         # Button to open the File in Finder
-        show_in_finder = generate_button("Show in Finder", open_in_finder)
+        show_in_finder = generate_button("Reveal in Finder", open_in_finder)
         show_in_finder.move(10, 650)
 
         # Button to open the File
         open_file = generate_button("Open", open_with_program)
-        open_file.move(210, 650)
+        open_file.move(200, 650)
 
-        # Button to copy the File path to the clipboard using pyperclip
-        clipboard_path = generate_button("Copy Path to clipboard", copy_path)
-        clipboard_path.move(360, 650)
+        # Button to open File Info
+        file_info_button = generate_button("Info", file_info)
+        file_info_button.move(400, 650)
 
-        # Button to copy the File name to the clipboard using pyperclip
-        clipboard_file = generate_button("Copy File Name to clipboard", copy_name)
-        clipboard_file.move(570, 650)
+        # Button to open view the hashes of the File
+        file_hash = generate_button("File Hashes", view_hashes)
+        file_hash.move(600, 650)
 
         # Help Button
         help_button = generate_button(" Help", command=lambda: FF_Help_UI.Help_Window(parent))
@@ -221,7 +274,7 @@ class Search_Window:
         show_time.setIconSize(QSize(23, 23))
         # Place
         show_time.resize(50, 40)
-        show_time.move(230, 85)
+        show_time.move(260, 85)
 
         # Reload Button
         reload_button = generate_button("Reload", reload_files)
@@ -239,6 +292,10 @@ class Search_Window:
         result_listbox.itemDoubleClicked.connect(lambda: self.onclick(result_listbox.currentItem().text(),
                                                                       search_result_ui))
 
+        # Update search-results-ui
+        search_result_ui.hide()
+        search_result_ui.show()
+
         # Update Seconds needed Label
         seconds_text.setText(f"Time needed: {round(time_total + (time() - time_before_building), 3)}")
         seconds_text.adjustSize()
@@ -246,6 +303,10 @@ class Search_Window:
         # Time building UI
         time_building = time() - time_before_building
         print("Time spent building the UI:", time_building)
+
+        # Push Notification
+        FF_Main_UI.menubar_icon.showMessage("File Find - Search finished!", f"Your Search finished!\nin {search_path}",
+                                            QIcon(os.path.join(FF_Files.AssetsFolder, "Find_button_img_small.png")), 100000)
 
     @staticmethod
     def onclick(file, parent):

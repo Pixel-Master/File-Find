@@ -1,4 +1,4 @@
-# This File is a part of File-Find made by Pixel-Master and licensed under the GNU GPL v3
+# This File is a part of File Find made by Pixel-Master and licensed under the GNU GPL v3
 # This script contains the classes for additional GUI components like the options window
 
 # Imports
@@ -14,9 +14,41 @@ import FF_Search
 
 
 class test_access:
-    def __int__(self):
-        with open(os.path.join(os.path.join(FF_Files.userpath, "Documents"), "TestFile.FFTestFile"), "a") as TestFile:
-            TestFile.write("This is a Message from File FInd to Test Permission!")
+    def __init__(self):
+        if not self.test():
+            self.ui()
+
+    @staticmethod
+    def ui():
+        Message_Box = QMessageBox(QMessageBox.Icon.Critical, "No Permission", "No File Access\n\n"
+                                                                              "File Find needs Permission to search in "
+                                                                              "your Files!\n\n"
+                                                                              "Go to:  -> "
+                                                                              "System Preferences -> "
+                                                                              "Security and Privacy -> "
+                                                                              "Full Disk Access -> "
+                                                                              "File Find",
+                                  QMessageBox.StandardButton.Ignore)
+        Open_button = Message_Box.addButton("Open Settings", QMessageBox.ButtonRole.HelpRole)
+        Quit_button = Message_Box.addButton("Quit", QMessageBox.ButtonRole.DestructiveRole)
+        Message_Box.exec()
+        if Message_Box.clickedButton() == Open_button:
+            os.system("open x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles")
+            raise PermissionError("No File Access")
+        elif Message_Box.clickedButton() == Quit_button:
+            raise PermissionError("No File Access")
+
+    @staticmethod
+    def test():
+        try:
+            with open(os.path.join(os.path.join(FF_Files.userpath, "Documents"), "TestFile.FFTestFile"),
+                      "w") as TestFile:
+                TestFile.write("This is a Message from File Find to Test Permission!")
+            os.remove(os.path.join(os.path.join(FF_Files.userpath, "Documents"), "TestFile.FFTestFile"))
+        except PermissionError:
+            return False
+        else:
+            return True
 
 
 # Other Options, displayed on Main Window
@@ -25,7 +57,7 @@ class other_options:
         # Using QMainWindow as a Child Window
         other_options_window = QMainWindow(parent)
         # Set the Title of the Window
-        other_options_window.setWindowTitle("File-Find | Other Options")
+        other_options_window.setWindowTitle("File Find | Other Options")
         # Set the Size of the Window and make it not resizable
         other_options_window.setFixedHeight(220)
         other_options_window.setFixedWidth(300)
@@ -36,10 +68,12 @@ class other_options:
         # Define the Label
         main_label = QLabel("Choose:", parent=other_options_window)
         # Change Font
-        main_label.setFont(QFont("Baloo Bhaina", 40))
+        font = QFont("Futura", 40)
+        font.setBold(True)
+        main_label.setFont(font)
         # Display the Label correctly
         main_label.adjustSize()
-        main_label.move(10, -15)
+        main_label.move(10, 0)
         main_label.show()
 
         def generate_button(command, text):

@@ -47,6 +47,7 @@
 	* Name
 	* In Name
 	* File Ending
+    * Fn-match
 
 ## FAQ
 Q: **What is File Find and how does it work?**
@@ -64,6 +65,7 @@ A: File Find is saving the cache under `/Users/$USERNAME/Library/Application Sup
 ## Download
 File FInd isn't ready for Release yet Run from source or download pre-build macOS Apps from the GitHub action Page.
 - [Running from Source](#running-from-source)
+- [Building File Find.app](#building-file-findapp)
 - [GitHub Action Page](https://github.com/Pixel-Master/File-Find/actions/workflows/File-Find.yml)
 
 
@@ -76,8 +78,9 @@ File FInd isn't ready for Release yet Run from source or download pre-build macO
 
 ### Dependencies for running
 - [Python](https://python.org/) 3.9 or higher
-- [Pyperclip](https://pypi.org/project/pyperclip/) 1.8.2 or higher
 - [PyQt 6](https://pypi.org/project/PyQt6/) 6.4 or higher
+- [pyperclip](https://pypi.org/project/pyperclip/) 1.8.2 or higher
+
 
 1. Install Python:
 
@@ -85,8 +88,8 @@ File FInd isn't ready for Release yet Run from source or download pre-build macO
 
     Homebrew: `brew install python@3.11`
 
-2. Install pyperclip and PyQt6 with pip:
-`pip3 install pyperclip PyQt6`
+2. Install PyQt6 and pyperclip with pip:
+`pip3 install PyQt6 pyperclip`
 
 ### Running
 1. Clone the File Find Repository: `git clone https://gitlab.com/Pixel-Mqster/File-Find.git`
@@ -105,8 +108,8 @@ File FInd isn't ready for Release yet Run from source or download pre-build macO
 
 ### Dependencies for building
 - [Python](https://python.org/) 3.9 or higher
-- [Pyperclip](https://pypi.org/project/pyperclip/) 1.8.2 or higher
 - [PyQt 6](https://pypi.org/project/PyQt6/) 6.4 or higher
+- [pyperclip](https://pypi.org/project/pyperclip/) 1.8.2 or higher
 - [pyinstaller](https://pypi.org/project/pyinstaller/) 5.6.2 or higher
 
 1. Install Python:
@@ -115,8 +118,8 @@ File FInd isn't ready for Release yet Run from source or download pre-build macO
 
     Homebrew: `brew install python@3.11`
 
-2. Install pyperclip, PyQt6 and pyinstaller with pip:
-`pip3 install pyperclip PyQt6 pyinstaller`
+2. Install PyQt6, pyperclip and pyinstaller with pip:
+`pip3 install PyQt6 pyperclip pyinstaller`
 
 ### Building
 1. Clone the File Find Repository: `git clone https://gitlab.com/Pixel-Mqster/File-Find.git`
