@@ -65,8 +65,9 @@ jobs:
     - name: Build .app with pyinstaller
       run: |
         # x86_64 Build
-        pyinstaller --noconfirm --name "File Find" --onedir --windowed --icon "./assets/icon.icns"  "./File-Find.py"     
-        rm -rf ./File\ Find.app/Contents/_CodeSignature
+        pyinstaller --noconfirm --name "File Find" --onedir --windowed --icon "./assets/icon.icns"  "./File-Find.py"
+    - name: Remove Signing
+      run: rm -rf ./File\ Find.app/Contents/_CodeSignature
         
     - name: Zip .app
       run: |
