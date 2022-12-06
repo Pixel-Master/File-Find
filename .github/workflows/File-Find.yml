@@ -65,8 +65,9 @@ jobs:
     - name: Build .app with pyinstaller
       run: |
         # x86_64 Build
-        pyinstaller --noconfirm --name "File Find" --onedir --windowed --icon "./assets/icon.icns" --osx-bundle-identifier "io.github.pixel-master.file-find" --target-architecture "x86_64"  "./File-Find.py"     
-    
+        pyinstaller --noconfirm --name "File Find" --onedir --windowed --icon "./assets/icon.icns"  "./File-Find.py"     
+        rm -rf ./File\ Find.app/Contents/_CodeSignature
+        
     - name: Zip .app
       run: |
         cd dist
