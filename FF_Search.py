@@ -1,12 +1,14 @@
 # This File is a part of File Find made by Pixel-Master and licensed under the GNU GPL v3
 # This script contains the class for the search engine
 
+import logging
 # Imports
 import os
 from fnmatch import fnmatch
 from pickle import dump, load
 from time import time, mktime
 
+from PyQt6.QtCore import QThreadPool, pyqtSignal, QObject
 # PyQt6 Gui Imports
 from PyQt6.QtWidgets import QFileDialog, QDateEdit, QMessageBox, QWidget
 
@@ -68,7 +70,9 @@ class generate_terminal_command:
 
         if self.name_string != "":
             self.shell_command += f" -name \"{self.name_string}\""
-        print(f"\nCommand: -name \"{self.name_string}\"")
+
+        # Debug
+        logging.info(f"Command: {self.shell_command}")
 
     def __str__(self):
         return self.shell_command
@@ -92,7 +96,7 @@ class load_search:
                                            f"loaded from {load_file}.FFSearch".replace("/", "-")),
                               "wb") as CachedSearch:
                         dump(saved_file_content, file=CachedSearch)
-                FF_Search_UI.Search_Window([0, 0, 0, 0, saved_file_content, f"loaded from {load_file}", parent])
+                FF_Search_UI.Search_Window(*[0, 0, 0, 0, saved_file_content, f"loaded from {load_file}", parent])
 
 
 # The Search Engine
@@ -103,6 +107,10 @@ class search:
 
         # Fetching Errors
         if data_name != "" and data_in_name != "" or data_name != "" and data_filetype != "":
+            # Debug
+            logging.error("Name Error! File Name and in Name or File Type can't be used together!")
+
+            # Show Popup
             FF_Additional_UI.msg.show_critical_messagebox("NAME ERROR!",
                                                           "Name Error!\n\nFile Name and in Name or File Type can't "
                                                           "be used together", parent=None)
@@ -113,15 +121,20 @@ class search:
                                      "This may take some Time!\nPress OK to Start Searching",
                                      QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel) \
                 == QMessageBox.StandardButton.Cancel:
-            print("Cancelled Searching!")
+            logging.info("Cancelled Searching!")
 
         # Start Searching
         else:
-            '''Converting the output of QDateEdit into the unix time by first using QDateEdit.date() to get 
-            something like this: QDate(1,3,2000), after that using QDate.toPyDate to get this: 1-3-2000, 
-            than we can use .split("-") to convert 1-3-2000 into a list [1,3,2000], after that we use time.mktime 
-            to get the unix time format that means something like, that: 946854000.0, only to match this with 
-            os.getctime, what we can use to get the creation date of a file. 
+            # Debug
+            logging.info("Starting Searching...")
+
+            logging.debug("Converting Parameter")
+
+            '''Converting the output of QDateEdit into the unix time by first using QDateEdit.date() to get
+            something like this: QDate(1,3,2000), after that using QDate.toPyDate to get this: 1-3-2000,
+            than we can use .split("-") to convert 1-3-2000 into a list [1,3,2000], after that we use time.mktime
+            to get the unix time format that means something like, that: 946854000.0, only to match this with
+            os.getctime, what we can use to get the creation date of a file.
 
             Yea it would be easier if Qt had a function to get the unix time
             '''
@@ -138,17 +151,47 @@ class search:
                                                                    edits_list.index(time_drop_down) % 2)
                 unix_time_list.append(time_to_add_to_time_list)
 
-            # Starting the Search
-            FF_Search_UI.Search_Window(
-                self.searching(data_name, data_in_name, data_filetype, data_file_size_min, data_file_size_max,
-                               data_library, data_search_from, data_folders, data_content, unix_time_list, data_sort_by,
-                               data_reverse_sort, data_fn_match, parent))
+            # Setting up QThreadPool
+            logging.debug("Setting up QThreadPool...")
+
+            # Creating Qt Signa
+            class finished_class(QObject):
+                launchUI = pyqtSignal()
+
+            # Defining thread
+            self.thread = QThreadPool(parent)
+
+            # Setup pyqt Signal
+            self.finished = finished_class()
+            self.finished.launchUI.connect(lambda: logging.info("Finished Search Thread!\n"))
+            self.finished.launchUI.connect(lambda: FF_Search_UI.Search_Window(*SEARCH_OUTPUT))
+
+            # Starting the Thread
+            self.thread.start(
+                lambda: self.searching(data_name, data_in_name, data_filetype, data_file_size_min,
+                                       data_file_size_max,
+                                       data_library, data_search_from, data_folders, data_content,
+                                       unix_time_list, data_sort_by,
+                                       data_reverse_sort, data_fn_match, parent))
+
+            # Debug
+            logging.debug("Finished Setting up QThreadPool!")
+
+            # Uncomment to Search without threading
+            # FF_Search_UI.Search_Window(*
+            #                           self.searching(data_name, data_in_name, data_filetype, data_file_size_min,
+            #                                          data_file_size_max,
+            #                                          data_library, data_search_from, data_folders, data_content,
+            #                                          unix_time_list, data_sort_by,
+            #                                          data_reverse_sort, data_fn_match, parent))
 
     # The search engine
-    @staticmethod
-    def searching(data_name, data_in_name, data_filetype, data_file_size_min, data_file_size_max, data_library,
+    def searching(self, data_name, data_in_name, data_filetype, data_file_size_min, data_file_size_max, data_library,
                   data_search_from, data_folders, data_content, data_time, data_sort_by, data_reverse_sort,
                   data_fn_match, parent):
+        # Debug
+        logging.info("Starting Search!\n")
+
         # Creates empty lists for the files
         matched_path_list = []
         found_path_list = []
@@ -177,13 +220,13 @@ class search:
             data_excluded_files_needed = True
 
         # Debug
-        print("\nStarting Scanning...")
+        logging.info("Starting Scanning...")
 
-        '''Checking, if Cache File exist, if not it goes through every file in the directory and saves it. If It 
+        '''Checking, if Cache File exist, if not it goes through every file in the directory and saves it. If It
         Exist it loads the Cache File in to found_path_list '''
         if os.path.exists(
                 os.path.join(FF_Files.Cached_SearchesFolder, data_search_from.replace("/", "-") + ".FFSearch")):
-            print("Scanning using cached Data..")
+            logging.info("Scanning using cached Data..")
             with open(
                     os.path.join(FF_Files.Cached_SearchesFolder, data_search_from.replace("/", "-") + ".FFSearch"),
                     "rb") as SearchResults:
@@ -199,7 +242,7 @@ class search:
         time_after_searching = time() - time_before_start
 
         # Debug
-        print("\nStarting Indexing...\n")
+        logging.info("Starting Indexing...")
 
         # Applies filters, when they don't match it continues.
         def check_file(found_file):
@@ -301,37 +344,53 @@ class search:
             if add_file:
                 matched_path_list.append(scanned_file)
         # Prints out seconds needed and the matching files
-        print(f"Found {len(matched_path_list)} Files and Folders")
+
+        logging.info(f"Found {len(matched_path_list)} Files and Folders")
+
         time_after_indexing = time() - (time_after_searching + time_before_start)
 
         # Sorting
         if data_sort_by == "File Name":
-            print("\nSorting List by Name...")
+            logging.info("Sorting List by Name...")
             matched_path_list.sort(key=sort.name, reverse=data_reverse_sort)
         elif data_sort_by == "File Size":
-            print("\nSorting List by Size..")
+            logging.info("Sorting List by Size..")
             matched_path_list.sort(key=sort.size, reverse=not data_reverse_sort)
         elif data_sort_by == "Date Created":
-            print("\nSorting List by creation date..")
+            logging.info("Sorting List by creation date..")
             matched_path_list.sort(key=sort.c_date, reverse=not data_reverse_sort)
         elif data_sort_by == "Date Created":
-            print("\nSorting List by modified date..")
+            logging.info("Sorting List by modified date..")
             matched_path_list.sort(key=sort.m_date, reverse=not data_reverse_sort)
         else:
+            logging.info("Skipping Sorting")
             if data_reverse_sort:
+                logging.debug("Reversing Results...")
                 matched_path_list = list(reversed(matched_path_list))
 
         # Saving Results with pickle
-        print("\nSaving Search Results...")
+        logging.info("Saving Search Results...")
         with open(os.path.join(FF_Files.Cached_SearchesFolder, data_search_from.replace("/", "-") + ".FFSearch"),
                   "wb") as resultFile:
             dump(list(found_path_list), resultFile)
+
+        # Calculating time
         time_after_sorting = time() - (time_after_indexing + time_after_searching + time_before_start)
         time_total = time() - time_before_start
-        print(f"\nSeconds needed:\nScanning: {time_after_searching}\nIndexing: {time_after_indexing}\nSorting: "
-              f"{time_after_sorting}\nTotal: {time_total}")
-        print("\nFiles found:", len(matched_path_list))
+
+        # Debug
+        logging.info("Finished Searching!")
+
+        global SEARCH_OUTPUT
+        SEARCH_OUTPUT = [time_total, time_after_searching, time_after_indexing, time_after_sorting, matched_path_list,
+                         data_search_from, parent]
+
+        # Starting the UI
+        self.finished.launchUI.emit()
 
         # Returns args that are used to launch the GUI
         return time_total, time_after_searching, time_after_indexing, time_after_sorting, matched_path_list, \
-               data_search_from, parent
+            data_search_from, parent
+
+
+SEARCH_OUTPUT: [float, float, float, float, list, str, QWidget] = []

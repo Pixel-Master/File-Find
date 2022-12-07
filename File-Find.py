@@ -4,6 +4,7 @@
 # Find Files easier with File Find
 
 # Imports
+import logging
 
 # PyQt6 Gui Imports
 from PyQt6.QtWidgets import QApplication
@@ -13,8 +14,10 @@ import FF_Files
 import FF_Main_UI
 
 if __name__ == "__main__":
-    # Debug
-    print("Launching...")
+    # Setup Logging
+    logging.basicConfig(level=logging.DEBUG,
+                        format='File Find[%(asctime)s] with %(levelname)s in %(pathname)s: %(message)s',)
+    logging.info(f"Launching File Find with Version {FF_Files.VERSION_SHORT}[{FF_Files.VERSION}]...\n")
 
     # Creating QApplication
     app = QApplication([])
@@ -31,4 +34,4 @@ if __name__ == "__main__":
 
     app.setQuitOnLastWindowClosed(False)
     app.exec()
-    print("Quit")
+    logging.info("User closed")

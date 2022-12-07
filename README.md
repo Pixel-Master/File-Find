@@ -49,21 +49,29 @@
 	* File Ending
     * Fn-match
 
+- View File Hashes (md5, sha1, sha265)
+
 ## FAQ
 Q: **What is File Find and how does it work?**
 
 A: File Find is an open-source macOS Utility, that makes it easy to find Files. To search fill in the filters you need and leave the filters you don't need empty.
 
-Q: **Why does File Find crash when searching?**
+Q: **Why does File Find sometimes freeze?**
 
-A: File Find is only using one thread. That's why it looks like File Find "doesn't react".
+A: It is possible that for example reloading Files or Building the UI at the end of a search can cause File Find to freeze.
 
 Q: **How to clean the Cache?**
 
 A: File Find is saving the cache under `/Users/$USERNAME/Library/Application Support/File-Find/Cached Searches`. The Cache gets cleaned up on start up, that means to clean the cache just restart File Find
 
+Q: **Why does File Find ask for permission for Contacts, Calenders, Photos, Downloads, etc...?**
+
+A: File Find scans the entire specified directory, even if files are excluded they are scanned first and then sorted out. 
+Your photos, calendar data, contacts etc. are stored in a library folder, which means that File Find scans them. 
+**File Find does not connect to the internet**, everything stays on your machine. If you are still uncomfortable, you can also press "Do not allow", the associated files will not appear in your searches. **If File Find asks for your Downloads or Desktop folder, you can decline, File Find will still be able to scan those files.**
+
 ## Download
-File FInd isn't ready for Release yet Run from source or download pre-build macOS Apps from the GitHub action Page.
+File Find isn't ready for Release yet Run from source or download pre-build macOS Apps from the GitHub action Page.
 - [Running from Source](#running-from-source)
 - [Building File Find.app](#building-file-findapp)
 - [GitHub Action Page](https://github.com/Pixel-Master/File-Find/actions/workflows/File-Find.yml)
@@ -144,7 +152,7 @@ File FInd isn't ready for Release yet Run from source or download pre-build macO
     3. [x] Deleting Caches
     4. [x] Clear Cache option
 4. [ ] Multithreading:
-    1. [ ] UI using different thread as Search engine
+    1. [x] UI using different thread as Search engine
     2. [ ] Searching trough different threads
     3. [ ] Indexing trough different threads
 5. [x] Sorting:

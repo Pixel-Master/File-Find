@@ -4,6 +4,7 @@
 # Imports
 import os
 import sys
+import logging
 
 # PyQt6 Gui Imports
 from PyQt6.QtCore import QSize, QRect
@@ -22,11 +23,11 @@ import FF_Search
 class Main_Window:
     def __init__(self):
         # Debug
-        print("Launching UI...")
+        logging.info("Launching UI...")
+        logging.debug("Setting up Root_Window...")
 
         # Main Window
         # Create the window
-        # app.setStyle("macos")
         global Root_Window
         Root_Window = QWidget()
         # Set the Title of the Window
@@ -49,6 +50,7 @@ class Main_Window:
         main_label.show()
 
         # Labels
+        logging.debug("Setting up Labels...")
         # Create a Label for every Filter with the Function, defined above
         # -----Basic Search-----
         # Frame and Label
@@ -221,7 +223,7 @@ class Main_Window:
         command_label2.setMaximumWidth(310)
 
         # Entries
-
+        logging.debug("Setting up Entries...")
         # Create an Entry for every Filter with the Function, defined above
         # Name
         e1 = self.generate_filter_entry()
@@ -253,6 +255,7 @@ class Main_Window:
         e7.move(520, 140)
 
         # Radio Button
+        logging.debug("Setting up Radio Buttons...")
         # Search for Library Files
         # Group for Radio Buttons
         library_group = QButtonGroup(Root_Window)
@@ -296,6 +299,7 @@ class Main_Window:
         rb_reverse_sort2.setChecked(True)
 
         # Drop Down Menus
+        logging.debug("Setting up Combo Box...")
         # Sorting Menu
         # Defining
         combobox_sorting = QComboBox(Root_Window)
@@ -306,7 +310,7 @@ class Main_Window:
         combobox_sorting.move(240, 300)
 
         # Date-Time Entries
-
+        logging.debug("Setting up Day Entries...")
         # Date Created
         c_date_from_drop_down = self.generate_day_entry()
         c_date_from_drop_down.move(558, 224)
@@ -320,6 +324,8 @@ class Main_Window:
         m_date_to_drop_down.move(690, 264)
 
         # Push Buttons
+        logging.debug("Setting up Push Buttons...")
+
         # Search from Button
         # Opens the File dialogue and changes the current working dir into the returned value
         def open_dialog():
@@ -337,23 +343,25 @@ class Main_Window:
 
         # Print the given data
         def print_data():
-
-            print(f"Filters:\n"
-                  f"Name: {e1.text()}\n"
-                  f"In name: {e2.text()}\n"
-                  f"File Ending: {e3.text()}\n"
-                  f"Search from: {os.getcwd()}\n\n"
-                  f"File size(MB): min:{e4.text()} max: {e5.text()}\n"
-                  f"Date Modified from: {m_date_from_drop_down.text()} to: {m_date_to_drop_down.text()}\n"
-                  f"Date Created from: {c_date_from_drop_down.text()} to: {c_date_to_drop_down.text()}\n"
-                  f"Content: {e6.text()}\n"
-                  f"Search for System files: {rb_library1.isChecked()}\n"
-                  f"Search for Folders: {rb_folder1.isChecked()}\n\n"
-                  f"Sort results by: {combobox_sorting.currentText()}\n"
-                  f"Reverse Results: {rb_reverse_sort1.isChecked()}")
+            logging.info(f"\nFilters:\n"
+                         f"Name: {e1.text()}\n"
+                         f"In name: {e2.text()}\n"
+                         f"File Ending: {e3.text()}\n"
+                         f"Search from: {os.getcwd()}\n\n"
+                         f"File size(MB): min:{e4.text()} max: {e5.text()}\n"
+                         f"Date Modified from: {m_date_from_drop_down.text()} to: {m_date_to_drop_down.text()}\n"
+                         f"Date Created from: {c_date_from_drop_down.text()} to: {c_date_to_drop_down.text()}\n"
+                         f"Content: {e6.text()}\n"
+                         f"Search for System files: {rb_library1.isChecked()}\n"
+                         f"Search for Folders: {rb_folder1.isChecked()}\n\n"
+                         f"Sort results by: {combobox_sorting.currentText()}\n"
+                         f"Reverse Results: {rb_reverse_sort1.isChecked()}\n")
 
         # Start Search for files locally
         def search_entry():
+            # Debug
+            logging.debug("User clicked Find")
+
             # Print Input
             print_data()
             # Start Searching
@@ -374,20 +382,23 @@ class Main_Window:
 
         # Generate a shell command, that displays in the UI
         def generate_shell_command():
+            # Debug
+            logging.debug("User clicked Generate Terminal Command")
+
+            # Print the data
             print_data()
 
             def copy_command():
                 # Copying the command
                 copy(shell_command)
                 # Feedback to the User
-                print(f"Copied Command: {shell_command}")
+                logging.info(f"Copied Command: {shell_command}")
                 # Messagebox
                 FF_Additional_UI.msg.show_info_messagebox("Successful copied!",
                                                           f"Successful copied Command:\n{shell_command} !", Root_Window)
 
             # Generate a shell command
             shell_command = str(FF_Search.generate_terminal_command(e1.text(), e2.text(), e3.text(), e5.text()))
-            print(f"\nCommand: {shell_command}")
 
             # Label, saying command
             command_label = QLabel(Root_Window)
@@ -447,7 +458,11 @@ class Main_Window:
         help_button.move(670, 10)
 
         # Set up the menu bar
+        logging.info("Setting up Menu Bar...")
         self.menubar_icon = self.setup_menu_bar(generate_shell_command)
+
+        # Debug
+        logging.info("Finished Setting up Main UI\n")
 
     # Functions to automate Labels
     @staticmethod
@@ -592,7 +607,7 @@ class Main_Window:
         edit_menu.addAction(reopen)
 
         # Menubar icon
-
+        logging.debug("Menubar icon...")
         # Menu for menubar_icon
         menubar_icon_menu = QMenu(Root_Window)
 

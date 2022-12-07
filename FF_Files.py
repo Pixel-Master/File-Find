@@ -3,6 +3,7 @@
 
 # Imports
 import os
+import logging
 from pickle import load, dump, UnpicklingError
 
 # Project Libraries
@@ -18,17 +19,19 @@ Saved_SearchFolder = os.path.join(LibFolder, "Saved Searches")
 AssetsFolder = os.path.join(LibFolder, ".assets")
 
 # Versions
-VERSION: str = "alpha_1-dec-2022_pyqt6"
+VERSION: str = "beta_7-dec-2022_threading0"
 VERSION_SHORT: str = "0.0"
 
 
 # Remove File Find cache
 def remove_cache(show_popup: bool = False, parent=None):
+    logging.debug("Starting cleaning Cache..")
     for (main, folder, data) in os.walk(Cached_SearchesFolder):
         for cacheobj in data:
             os.remove(os.path.join(main, cacheobj))
     if show_popup:
         FF_Additional_UI.msg.show_info_messagebox("Cleared Cache", "Cleared Cache successfully!", parent)
+    logging.info("Cleared Cache successfully!\n")
 
 
 # Function to get the File Size of a directory
@@ -39,7 +42,8 @@ def get_file_size(file: str) -> int:
         for path, dirs, files in os.walk(file):
             for file in files:
                 try:
-                    file_size_list_obj += os.path.getsize(os.path.join(path, file))
+                    if not os.path.islink(file):
+                        file_size_list_obj += os.path.getsize(os.path.join(path, file))
                 except FileNotFoundError or ValueError:
                     continue
     elif os.path.isfile(file):
@@ -50,14 +54,18 @@ def get_file_size(file: str) -> int:
     else:
         return -1
     if os.path.islink(file):
-        return -1
+        return -2
     else:
         return file_size_list_obj
 
 
+# Convert File Size to a String
 def conv_file_size(byte_size: int) -> str:
+    logging.debug("Called conv_file_size")
     if byte_size == -1:
-        return "**ERROR** (File does not exist or isn't valid)"
+        return "ERROR! (File does not exist or isn't valid)"
+    elif byte_size == -2:
+        return "ERROR! (File is a Link to an other File)"
     elif byte_size > 1000000000:
         return f"{round(byte_size / 1000000000, 2)} GB"
     elif byte_size > 1000000:
@@ -68,8 +76,9 @@ def conv_file_size(byte_size: int) -> str:
         return f"{byte_size} Bytes"
 
 
-# Setup FIle-Find dir
+# Setup File-Find dir
 def setup():
+    logging.info("Setting up Library Folder...")
     os.makedirs(Saved_SearchFolder, exist_ok=True)
     os.makedirs(Cached_SearchesFolder, exist_ok=True)
     os.makedirs(AssetsFolder, exist_ok=True)
@@ -529,3 +538,6 @@ def setup():
         b'\x1a\x8d\xd6\xc4\x9e\x16\xa8v\x03{zz\xb8\xbd{\xf7^\x9c\xc9dZ0\xc6\xe13g\xce4g\xb3Y\xadP('
         b'@\xd1~\x03\x00\x10\xcf\xf3iQ\x14\x8fg\xb3\xd9S\x9a\xa6\xbd\xdb\xd0\xd0ph\xdf\xbe}\xa7\xdc&\xee\x8a+\xae\xb8'
         b'\xe2J\xbd\xc8\x7f\x01TC\xbe}r\xbb|\xfc\x00\x00\x00\x00IEND\xaeB`\x82')
+
+    # Debug
+    logging.info("Finished Setting up Library Folder...\n")
