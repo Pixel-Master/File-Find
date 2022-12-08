@@ -43,7 +43,7 @@ jobs:
 
 
 
-  build-with-pyinstaller:
+  build-macos:
     name: "Building macOS App"
     runs-on: macos-latest
 
