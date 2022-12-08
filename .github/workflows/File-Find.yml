@@ -58,16 +58,15 @@ jobs:
         
     - name: Install dependencies
       run: |
-        pip3 install pyinstaller
+        pip3 install py2app
         python -m pip install --upgrade pip
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     
-    - name: Build .app with pyinstaller
+    - name: Build .app with py2app
       run: |
         # x86_64 Build
-        pyinstaller --noconfirm --name "File Find" --onedir --windowed --icon "./assets/icon.icns"  "./File-Find.py"
-    - name: Remove Signing
-      run: rm -rf ./dist/File\ Find.app/Contents/_CodeSignature
+        py2applet --make-setup --arch=intel File-Find.py assets/icon.icns
+        python3 setup.py py2app
         
     - name: Zip .app
       run: |
