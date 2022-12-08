@@ -7,11 +7,12 @@ Usage:
 
 from setuptools import setup
 import subprocess
+import os
 
 APP = ['File-Find.py']
 DATA_FILES = []
 OPTIONS = {'arch': subprocess.run(["arch"], capture_output=True, text=True, check=True).stdout.replace("\n", ""),
- 'iconfile': '/Users/constipixel/File-Find/assets/icon.icns',}
+ 'iconfile': os.path.join(os.getcwd(),'/assets/icon.icns')}
 
 setup(
     app=APP,
