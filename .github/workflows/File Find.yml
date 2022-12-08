@@ -64,8 +64,8 @@ jobs:
     
     - name: Build .app with py2app
       run: |
-        # x86_64 Build
-        py2applet --make-setup --arch=intel File-Find.py assets/icon.icns
+        # Building File Find
+        # Build arch is depending on system arch
         python3 setup.py py2app
         
     - name: Zip .app
