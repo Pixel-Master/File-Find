@@ -66,7 +66,7 @@ jobs:
       run: |
         # Building File Find
         # Build arch is depending on system arch
-        python3 setup.py py2app
+        python3 build-with-py2app.py py2app
         
     - name: Zip .app
       run: |
