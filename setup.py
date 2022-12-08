@@ -11,7 +11,7 @@ import os
 
 arch =  subprocess.run(["arch"], capture_output=True, text=True, check=True).stdout.replace("\n", "")
 print("On:", arch)
-if arch != "arm64"
+if arch != "arm64":
     arch = "x86_64"
 
 APP = ['File-Find.py']
