@@ -9,9 +9,14 @@ from setuptools import setup
 import subprocess
 import os
 
+arch =  subprocess.run(["arch"], capture_output=True, text=True, check=True).stdout.replace("\n", "")
+print("On:", arch)
+if arch != "arm64"
+    arch = "x86_64"
+
 APP = ['File-Find.py']
 DATA_FILES = []
-OPTIONS = {'arch': subprocess.run(["arch"], capture_output=True, text=True, check=True).stdout.replace("\n", ""),
+OPTIONS = {'arch':arch,
  'iconfile': os.path.join(os.getcwd(),'assets/icon.icns')}
 
 setup(
