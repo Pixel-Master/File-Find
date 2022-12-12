@@ -43,7 +43,7 @@ jobs:
 
 
 
-  build-with-pyinstaller:
+  build-macos:
     name: "Building macOS App"
     runs-on: macos-latest
 
@@ -58,15 +58,16 @@ jobs:
         
     - name: Install dependencies
       run: |
-        pip3 install pyinstaller
+        pip3 install py2app
         python -m pip install --upgrade pip
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     
-    - name: Build .app with pyinstaller
+    - name: Build .app with py2app
       run: |
-        # x86_64 Build
-        pyinstaller --noconfirm --name "File Find" --onedir --windowed --icon "./assets/icon.icns" --osx-bundle-identifier "io.github.pixel-master.file-find" --target-architecture "x86_64"  "./File-Find.py"     
-    
+        # Building File Find
+        # Build arch is depending on system arch
+        python3 build-with-py2app.py py2app
+        
     - name: Zip .app
       run: |
         cd dist

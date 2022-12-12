@@ -58,7 +58,7 @@ A: File Find is an open-source macOS Utility, that makes it easy to find Files. 
 
 Q: **Why does File Find sometimes freeze?**
 
-A: It is possible that for example reloading Files or Building the UI at the end of a search can cause File Find to freeze.
+A: It is possible that for example reloading Files or Building the UI at the end of a search can cause File Find to freeze. Just wait a minute!
 
 Q: **How to clean the Cache?**
 
@@ -118,7 +118,7 @@ File Find isn't ready for Release yet Run from source or download pre-build macO
 - [Python](https://python.org/) 3.9 or higher
 - [PyQt 6](https://pypi.org/project/PyQt6/) 6.4 or higher
 - [pyperclip](https://pypi.org/project/pyperclip/) 1.8.2 or higher
-- [pyinstaller](https://pypi.org/project/pyinstaller/) 5.6.2 or higher
+- [py2app](https://pypi.org/project/py2app/) 5.6.2 or higher
 
 1. Install Python:
 
@@ -126,8 +126,8 @@ File Find isn't ready for Release yet Run from source or download pre-build macO
 
     Homebrew: `brew install python@3.11`
 
-2. Install PyQt6, pyperclip and pyinstaller with pip:
-`pip3 install PyQt6 pyperclip pyinstaller`
+2. Install PyQt6, pyperclip and py2app with pip:
+`pip3 install PyQt6 pyperclip py2app`
 
 ### Building
 1. Clone the File Find Repository: `git clone https://gitlab.com/Pixel-Mqster/File-Find.git`
@@ -135,7 +135,7 @@ File Find isn't ready for Release yet Run from source or download pre-build macO
 3. [Install dependencies](#dependencies-for-building)
 4. Run:
 
-`python3 -m pyinstaller --noconfirm --name "File Find" --onedir --windowed --icon "./assets/icon.icns" --osx-bundle-identifier "io.github.pixel-master.file-find" "./File-Find.py"` 
+`"python3 build-with-py2app.py py2app"` 
 
 
 ## Roadmap
