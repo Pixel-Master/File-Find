@@ -1,9 +1,10 @@
-# This File is a part of File-Find made by Pixel-Master and licensed under the GNU GPL v3
+# This File is a part of File Find made by Pixel-Master and licensed under the GNU GPL v3
 # This script contains the classes for additional GUI components like the Help Window
 
 # Imports
 import os
 from pickle import load, dump
+import logging
 
 # PyQt6 Gui Imports
 from PyQt6.QtCore import QRect
@@ -17,6 +18,10 @@ import FF_Files
 # The class for the Help_window
 class Help_Window:
     def __init__(self, parent):
+        # Debug
+        logging.debug("Called Help UI")
+        logging.info("Building Help UI...")
+
         # A function to generate these Faq texts
         def faq(question, answer, y):
             # The Question
@@ -186,7 +191,7 @@ class Help_Window:
 
         def remove_file():
             try:
-                print(f"Removed Excluded Folder: {excluded_listbox.currentItem().text()}")
+                logging.info(f"Removed Excluded Folder: {excluded_listbox.currentItem().text()}")
                 edit_excluded(excluded_listbox.currentItem().text(), False)
             except AttributeError:
                 pass
@@ -197,7 +202,7 @@ class Help_Window:
             if selected_folder != "":
                 edit_excluded(selected_folder)
                 excluded_listbox.addItem(selected_folder)
-                print(f"Added Excluded Folder: {selected_folder}")
+                logging.info(f"Added Excluded Folder: {selected_folder}")
 
         remove_button = generate_button("-", remove_file)
         remove_button.move(440, 650)
@@ -224,3 +229,6 @@ class Help_Window:
         # Display
         combobox_language.show()
         combobox_language.move(120, 580)
+
+        # Debug
+        logging.info("Finished Setting up Help UI\n")
