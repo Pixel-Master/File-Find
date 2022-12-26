@@ -2,7 +2,6 @@
 # This script contains the classes for additional GUI components like the options window
 
 # Imports
-import os
 
 # PyQt6 Gui Imports
 from PyQt6.QtGui import QFont
@@ -11,45 +10,6 @@ from PyQt6.QtWidgets import QWidget, QMainWindow, QLabel, QPushButton, QMessageB
 # Projects Libraries
 import FF_Files
 import FF_Search
-
-
-# CAN BE DELETED!!! ---NOT USED!!!---
-class test_access:
-    def __init__(self):
-        if not self.test():
-            self.ui()
-
-    @staticmethod
-    def ui():
-        Message_Box = QMessageBox(QMessageBox.Icon.Critical, "No Permission", "No File Access\n\n"
-                                                                              "File Find needs Permission to search in "
-                                                                              "your Files!\n\n"
-                                                                              "Go to:  -> "
-                                                                              "System Preferences -> "
-                                                                              "Security and Privacy -> "
-                                                                              "Full Disk Access -> "
-                                                                              "File Find",
-                                  QMessageBox.StandardButton.Ignore)
-        Open_button = Message_Box.addButton("Open Settings", QMessageBox.ButtonRole.HelpRole)
-        Quit_button = Message_Box.addButton("Quit", QMessageBox.ButtonRole.DestructiveRole)
-        Message_Box.exec()
-        if Message_Box.clickedButton() == Open_button:
-            os.system("open x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles")
-            raise PermissionError("No File Access")
-        elif Message_Box.clickedButton() == Quit_button:
-            raise PermissionError("No File Access")
-
-    @staticmethod
-    def test():
-        try:
-            with open(os.path.join(os.path.join(FF_Files.userpath, "Documents"), "TestFile.FFTestFile"),
-                      "w") as TestFile:
-                TestFile.write("This is a Message from File Find to Test Permission!")
-            os.remove(os.path.join(os.path.join(FF_Files.userpath, "Documents"), "TestFile.FFTestFile"))
-        except PermissionError:
-            return False
-        else:
-            return True
 
 
 # Other Options, displayed on Main Window

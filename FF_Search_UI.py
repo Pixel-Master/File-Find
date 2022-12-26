@@ -4,9 +4,10 @@
 # Imports
 import os
 from pickle import dump, load
-from time import time, ctime
+from time import perf_counter, ctime, time
 import hashlib
 import logging
+from threading import Thread
 
 # PyQt6 Gui Imports
 from PyQt6.QtCore import QSize
@@ -21,26 +22,12 @@ import FF_Help_UI
 import FF_Main_UI
 
 
-class Search_Status:
-    def __init__(self, parent):
-        # Define the Label
-        self.report_label = QLabel("Starting Search...", parent=parent)
-        # Change Font
-        label_font = QFont("Futura", 15)
-        label_font.setBold(True)
-        self.report_label.setFont(label_font)
-        # Display the Label
-        self.report_label.move(200, 0)
-        self.report_label.show()
-        self.report_label.adjustSize()
-
-
 class Search_Window:
     def __init__(self, time_total, time_searching, time_indexing, time_sorting, matched_list, search_path, parent):
         logging.info("Setting up Search UI...")
 
         # Saves Time
-        time_before_building = time()
+        time_before_building = perf_counter()
 
         # Window setup
         # Define the window
@@ -154,33 +141,57 @@ class Search_Window:
                             file_content = HashFile.read()
                     except FileNotFoundError:
                         logging.error(f"{HashFile} does not exist!")
-                        FF_Additional_UI.msg.show_critical_messagebox(f"{HashFile} does not exist!")
+                        FF_Additional_UI.msg.show_critical_messagebox("File not found! ", f"{HashFile} does not exist!",
+                                                                      self.search_result_ui)
                         file_content = 0
 
                 # Computing Hashes
                 logging.info(f"Computing Hashes of {hash_file}...")
-
-                # md5 Hash
-                logging.debug("Computing md5 Hash...")
-                md5_hash = hashlib.md5(file_content)
-                logging.debug(f"{md5_hash.hexdigest() = }")
+                hash_list = []
+                saved_time = perf_counter()
 
                 # sha1 Hash
                 logging.debug("Computing sha1 Hash...")
-                sha1_hash = hashlib.sha1(file_content)
-                logging.debug(f"{sha1_hash.hexdigest() = }")
+                sha1_hash_thread = Thread(target=lambda: hash_list.insert(0, hashlib.sha1(file_content).hexdigest()))
+                sha1_hash_thread.start()
 
-                # sha265 Hash
-                logging.debug("Computing sha265 Hash...")
-                sha265_hash = hashlib.sha256(file_content)
-                logging.debug(f"{sha265_hash.hexdigest() = }")
+                # md5 Hash
+                logging.debug("Computing md5 Hash...")
+                md5_hash_thread = Thread(target=lambda: hash_list.insert(1, hashlib.md5(file_content).hexdigest()))
+                md5_hash_thread.start()
+
+                # sha256 Hash
+                logging.debug("Computing sha256 Hash...")
+                sha256_hash_thread = Thread(
+                    target=lambda: hash_list.insert(2, hashlib.sha256(file_content).hexdigest()))
+                sha256_hash_thread.start()
+
+                # Waiting for hashes
+                logging.debug("Waiting for Hashes to complete...")
+
+                sha1_hash_thread.join()
+                sha1_hash = hash_list[0]
+                logging.debug(f"{sha1_hash = }")
+
+                md5_hash_thread.join()
+                md5_hash = hash_list[1]
+                logging.debug(f"{md5_hash = }")
+
+                sha256_hash_thread.join()
+                sha256_hash = hash_list[2]
+                logging.debug(f"{sha256_hash = }")
+
+                # Time Feedback
+                final_time = perf_counter() - saved_time
+                logging.debug(f"Took {final_time}")
 
                 # Give Feedback
                 FF_Additional_UI.msg.show_info_messagebox(f"Hashes of {hash_file}",
                                                           f"Hashes of {hash_file}:\n\n"
-                                                          f"MD5: {md5_hash.hexdigest()}\n"
-                                                          f"SHA1: {sha1_hash.hexdigest()}\n"
-                                                          f"SHA265: {sha265_hash.hexdigest()}",
+                                                          f"MD5:\n {md5_hash}\n\n"
+                                                          f"SHA1:\n {sha1_hash}\n\n"
+                                                          f"SHA265:\n {sha256_hash}\n\n\n"
+                                                          f"Took: {round(final_time, 3)} sec.",
                                                           self.search_result_ui)
 
             except AttributeError:
@@ -199,7 +210,7 @@ class Search_Window:
         # Reloads File, check all collected files, if they still exist
         def reload_files():
             logging.info("Reload...")
-            time_before_reload = time()
+            time_before_reload = perf_counter()
             removed_list = []
             for matched_file in matched_list:
                 if os.path.exists(matched_file):
@@ -219,10 +230,10 @@ class Search_Window:
                       "wb") as SearchFile:
                 dump(cached_files, SearchFile)
             logging.info(f"Reloaded found Files and removed {len(removed_list)} in"
-                         f" {round(time() - time_before_reload, 3)} sec.")
+                         f" {round(perf_counter() - time_before_reload, 3)} sec.")
             FF_Additional_UI.msg.show_info_messagebox("Reloaded!",
                                                       f"Reloaded found Files and removed {len(removed_list)}"
-                                                      f" in {round(time() - time_before_reload, 3)} sec.",
+                                                      f" in {round(perf_counter() - time_before_reload, 3)} sec.",
                                                       self.search_result_ui)
             objects_text.setText(f"Files found: {len(matched_list)}")
             objects_text.adjustSize()
@@ -320,14 +331,14 @@ class Search_Window:
         self.search_result_ui.show()
 
         # Update Seconds needed Label
-        seconds_text.setText(f"Time needed: {round(time_total + (time() - time_before_building), 3)}")
+        seconds_text.setText(f"Time needed: {round(time_total + (perf_counter() - time_before_building), 3)}")
         seconds_text.adjustSize()
 
         # Debug
         logging.info("Finished Setting up Search UI")
 
         # Time building UI
-        time_building = time() - time_before_building
+        time_building = perf_counter() - time_before_building
         logging.info(f"\nSeconds needed:\nScanning: {time_searching}\nIndexing: {time_indexing}\nSorting: "
                      f"{time_sorting}\nBuilding UI: {time_building}\nTotal: {time_total + time_building}")
 

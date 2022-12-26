@@ -2,16 +2,17 @@
 # This script contains the class for the main window
 
 # Imports
-import os
-import sys
 import logging
+import os
+from sys import exit
+from pyperclip import copy
 
 # PyQt6 Gui Imports
 from PyQt6.QtCore import QSize, QRect
 from PyQt6.QtGui import QFont, QDoubleValidator, QIcon, QAction, QKeySequence
 from PyQt6.QtWidgets import QWidget, QLabel, QPushButton, QRadioButton, QFileDialog, \
     QLineEdit, QButtonGroup, QDateEdit, QFrame, QComboBox, QMenuBar, QSystemTrayIcon, QMenu
-from pyperclip import copy
+
 
 # Projects Libraries
 import FF_Additional_UI
@@ -24,23 +25,22 @@ class Main_Window:
     def __init__(self):
         # Debug
         logging.info("Launching UI...")
-        logging.debug("Setting up Root_Window...")
+        logging.debug("Setting up self.Root_Window...")
 
         # Main Window
         # Create the window
-        global Root_Window
-        Root_Window = QWidget()
+        self.Root_Window = QWidget()
         # Set the Title of the Window
-        Root_Window.setWindowTitle("File Find")
+        self.Root_Window.setWindowTitle("File Find")
         # Set the Size of the Window and make it not resizable
-        Root_Window.setFixedHeight(500)
-        Root_Window.setFixedWidth(800)
+        self.Root_Window.setFixedHeight(500)
+        self.Root_Window.setFixedWidth(800)
         # Display the Window
-        Root_Window.show()
+        self.Root_Window.show()
 
         # File Find Label
         # Define the Label
-        main_label = QLabel("File Find", parent=Root_Window)
+        main_label = QLabel("File Find", parent=self.Root_Window)
         # Change Font
         main_label_font = QFont("Futura", 50)
         main_label_font.setBold(True)
@@ -56,7 +56,7 @@ class Main_Window:
         # Frame and Label
         sorting_frame_label = self.generate_small_filter_label("Basic Search")
         sorting_frame_label.move(5, 70)
-        basic_search_frame = QFrame(Root_Window)
+        basic_search_frame = QFrame(self.Root_Window)
         basic_search_frame.setGeometry(QRect(5, 90, 385, 170))
         basic_search_frame.setFrameShape(QFrame.Shape.StyledPanel)
         basic_search_frame.show()
@@ -105,7 +105,7 @@ class Main_Window:
         # Frame and Label
         sorting_frame_label = self.generate_small_filter_label("Advanced Search")
         sorting_frame_label.move(395, 70)
-        advanced_search_frame = QFrame(Root_Window)
+        advanced_search_frame = QFrame(self.Root_Window)
         advanced_search_frame.setGeometry(QRect(395, 90, 400, 290))
         advanced_search_frame.setFrameShape(QFrame.Shape.StyledPanel)
         advanced_search_frame.show()
@@ -199,7 +199,7 @@ class Main_Window:
         # Frame and Label
         sorting_frame_label = self.generate_small_filter_label("Sorting")
         sorting_frame_label.move(5, 270)
-        sorting_search_frame = QFrame(Root_Window)
+        sorting_search_frame = QFrame(self.Root_Window)
         sorting_search_frame.setGeometry(QRect(5, 290, 385, 90))
         sorting_search_frame.setFrameShape(QFrame.Shape.StyledPanel)
         sorting_search_frame.show()
@@ -218,7 +218,7 @@ class Main_Window:
         l13.move(10, 340)
 
         # Label for the Terminal Command
-        command_label2 = QLabel("", Root_Window)
+        command_label2 = QLabel("", self.Root_Window)
         command_label2.setFont(QFont("Arial", 20))
         command_label2.setMaximumWidth(310)
 
@@ -239,11 +239,11 @@ class Main_Window:
         e3.move(150, 180)
         # File size min
         e4 = self.generate_filter_entry(True)
-        e4.resize(60, 19)
+        e4.resize(60, 25)
         e4.move(600, 180)
         # File size max
         e5 = self.generate_filter_entry(True)
-        e5.resize(60, 19)
+        e5.resize(60, 25)
         e5.move(730, 180)
         # Contains
         e6 = self.generate_filter_entry()
@@ -258,7 +258,7 @@ class Main_Window:
         logging.debug("Setting up Radio Buttons...")
         # Search for Library Files
         # Group for Radio Buttons
-        library_group = QButtonGroup(Root_Window)
+        library_group = QButtonGroup(self.Root_Window)
         # Radio Button 1
         rb_library1 = self.create_radio_button(library_group, "Yes")
         # Move the Button
@@ -272,7 +272,7 @@ class Main_Window:
 
         # Search for Folders
         # Group for Radio Buttons
-        folder_group = QButtonGroup(Root_Window)
+        folder_group = QButtonGroup(self.Root_Window)
         # Radio Button 1
         rb_folder1 = self.create_radio_button(folder_group, "Yes")
         # Move the Button
@@ -286,7 +286,7 @@ class Main_Window:
 
         # Reverse Sort
         # Group for Radio Buttons
-        reverse_sort_group = QButtonGroup(Root_Window)
+        reverse_sort_group = QButtonGroup(self.Root_Window)
         # Radio Button 1
         rb_reverse_sort1 = self.create_radio_button(reverse_sort_group, "Yes")
         # Move the Button
@@ -302,7 +302,7 @@ class Main_Window:
         logging.debug("Setting up Combo Box...")
         # Sorting Menu
         # Defining
-        combobox_sorting = QComboBox(Root_Window)
+        combobox_sorting = QComboBox(self.Root_Window)
         # Adding Options
         combobox_sorting.addItems(["None", "File Size", "File Name", "Date Modified", "Date Created"])
         # Display
@@ -373,12 +373,12 @@ class Main_Window:
                              data_search_from=os.getcwd(),
                              data_content=e6.text(),
                              data_folders=rb_folder1.isChecked(),
-                             edits_list=[c_date_from_drop_down, c_date_to_drop_down, m_date_from_drop_down,
-                                         m_date_to_drop_down],
+                             data_edits_list=[c_date_from_drop_down, c_date_to_drop_down, m_date_from_drop_down,
+                                              m_date_to_drop_down],
                              data_fn_match=e7.text(),
                              data_sort_by=combobox_sorting.currentText(),
                              data_reverse_sort=rb_reverse_sort1.isChecked(),
-                             parent=Root_Window)
+                             parent=self.Root_Window)
 
         # Generate a shell command, that displays in the UI
         def generate_shell_command():
@@ -395,13 +395,14 @@ class Main_Window:
                 logging.info(f"Copied Command: {shell_command}")
                 # Messagebox
                 FF_Additional_UI.msg.show_info_messagebox("Successful copied!",
-                                                          f"Successful copied Command:\n{shell_command} !", Root_Window)
+                                                          f"Successful copied Command:\n{shell_command} !",
+                                                          self.Root_Window)
 
             # Generate a shell command
             shell_command = str(FF_Search.generate_terminal_command(e1.text(), e2.text(), e3.text(), e5.text()))
 
             # Label, saying command
-            command_label = QLabel(Root_Window)
+            command_label = QLabel(self.Root_Window)
             command_label.setText("Command:")
             command_label.setFont(QFont("Arial", 20))
             command_label.show()
@@ -416,7 +417,7 @@ class Main_Window:
             command_label2.show()
 
             # Copy Command Button
-            command_copy_button = QPushButton(Root_Window)
+            command_copy_button = QPushButton(self.Root_Window)
             # Change the Text
             command_copy_button.setText("Copy")
             # Change the click event
@@ -438,7 +439,7 @@ class Main_Window:
         # Button for more Options: Load Searches, Generate Bash Command and Clear the Cache
         more_options_button = self.generate_large_button(None, lambda: FF_Additional_UI.other_options(
             generate_shell_command,
-            Root_Window), 50)
+            self.Root_Window), 50)
         # Icon
         more_options_button.setIcon(QIcon(os.path.join(FF_Files.AssetsFolder, "More_button_img_small.png")))
         more_options_button.setIconSize(QSize(100, 100))
@@ -447,7 +448,7 @@ class Main_Window:
         more_options_button.move(730, 440)
 
         # Help Button, that calls FF_Additional_UI.Help_Window
-        help_button = self.generate_large_button(" Help", lambda: FF_Help_UI.Help_Window(Root_Window), 25)
+        help_button = self.generate_large_button(" Help", lambda: FF_Help_UI.Help_Window(self.Root_Window), 25)
         # Color
         help_button.setStyleSheet("color: #b50104;")
         # Icon
@@ -459,16 +460,15 @@ class Main_Window:
 
         # Set up the menu bar
         logging.info("Setting up Menu Bar...")
-        self.menubar_icon = self.setup_menu_bar(generate_shell_command)
+        self.setup_menu_bar(generate_shell_command)
 
         # Debug
         logging.info("Finished Setting up Main UI\n")
 
     # Functions to automate Labels
-    @staticmethod
-    def generate_large_filter_label(name: str, tooltip: str = ""):
+    def generate_large_filter_label(self, name: str, tooltip: str = ""):
         # Define the Label
-        label = QLabel(name, parent=Root_Window)
+        label = QLabel(name, parent=self.Root_Window)
         # Change Font
         label.setFont(QFont("Arial", 20))
         # Hover tool tip
@@ -479,10 +479,9 @@ class Main_Window:
         # Return the Label to move it
         return label
 
-    @staticmethod
-    def generate_small_filter_label(name: str, limit_length: bool = False):
+    def generate_small_filter_label(self, name: str, limit_length: bool = False):
         # Define the Label
-        label = QLabel(name, parent=Root_Window)
+        label = QLabel(name, parent=self.Root_Window)
         # Change Font
         label.setFont(QFont("Arial", 15))
         # Set the Maximum Length if needed
@@ -494,25 +493,23 @@ class Main_Window:
         return label
 
     # Function to automate Entry creation
-    @staticmethod
-    def generate_filter_entry(only_int: bool = False):
+    def generate_filter_entry(self, only_int: bool = False):
         # Define the Entry
-        entry = QLineEdit(Root_Window)
+        entry = QLineEdit(self.Root_Window)
         # Set the Length
         entry.resize(230, 20)
         # If only_int true, configure the label
         if only_int:
-            entry.setValidator(QDoubleValidator(Root_Window))
+            entry.setValidator(QDoubleValidator(self.Root_Window))
         # Display the Entry
         entry.show()
         # Return the Label to place it
         return entry
 
     # Function for automating radio buttons
-    @staticmethod
-    def create_radio_button(group, text):
+    def create_radio_button(self, group, text):
         # Create Radio Button
-        rb = QRadioButton(Root_Window)
+        rb = QRadioButton(self.Root_Window)
         # Set the Text
         rb.setText(text)
         # Add the Button to the Group
@@ -523,10 +520,9 @@ class Main_Window:
         return rb
 
     # Function for automating day edits
-    @staticmethod
-    def generate_day_entry():
+    def generate_day_entry(self):
         # Define dt_entry
-        dt_entry = QDateEdit(Root_Window)
+        dt_entry = QDateEdit(self.Root_Window)
         # Change dd.mm.yy to dd.MM.yyyy (e.g. 13.1.01 = 13.Jan.2001)
         dt_entry.setDisplayFormat("dd.MMM.yyyy")
         # Display
@@ -535,10 +531,9 @@ class Main_Window:
         return dt_entry
 
     # Functions to automate Buttons
-    @staticmethod
-    def generate_edit_button(command):
+    def generate_edit_button(self, command):
         # Generate the Button
-        button = QPushButton(Root_Window)
+        button = QPushButton(self.Root_Window)
         # Change the Text
         button.setText("Select")
         # Set the command
@@ -548,10 +543,9 @@ class Main_Window:
         # Return the value of the Button, to move the Button
         return button
 
-    @staticmethod
-    def generate_large_button(text, command, font_size):
+    def generate_large_button(self, text, command, font_size):
         # Define the Button
-        button = QPushButton(Root_Window)
+        button = QPushButton(self.Root_Window)
         # Set the Text
         button.setText(text)
         # Set the Font
@@ -566,78 +560,77 @@ class Main_Window:
         return button
 
     # Setting up the menu bar
-    @staticmethod
-    def setup_menu_bar(shell_cmd):
+    def setup_menu_bar(self, shell_cmd):
 
         # Menu Bar
-        menu_bar = QMenuBar(Root_Window)
-        edit_menu = menu_bar.addMenu("Edit")
-        other_menu = menu_bar.addMenu("Other")
-        help_menu = menu_bar.addMenu("Help")
+        menu_bar = QMenuBar(self.Root_Window)
+        edit_menu = menu_bar.addMenu("&Edit")
+        other_menu = menu_bar.addMenu("&Other")
+        help_menu = menu_bar.addMenu("&Help")
 
         # Load Saved Search
-        load_search_action = QAction("Load Saved Search", Root_Window)
-        load_search_action.triggered.connect(lambda: FF_Search.load_search(Root_Window))
+        load_search_action = QAction("Load Saved Search", self.Root_Window)
+        load_search_action.triggered.connect(lambda: FF_Search.load_search(self.Root_Window))
         other_menu.addAction(load_search_action)
 
         # Clear Cache
-        cache_action = QAction("Clear Cache", Root_Window)
-        cache_action.triggered.connect(lambda: FF_Files.remove_cache(True, Root_Window))
+        cache_action = QAction("Clear Cache", self.Root_Window)
+        cache_action.triggered.connect(lambda: FF_Files.remove_cache(True, self.Root_Window))
         other_menu.addAction(cache_action)
 
         # Generate Terminal Command
-        cmd_action = QAction("Generate Shell Command", Root_Window)
+        cmd_action = QAction("Generate Shell Command", self.Root_Window)
         cmd_action.triggered.connect(shell_cmd)
         other_menu.addAction(cmd_action)
 
         # About File Find
-        about_action = QAction("About File Find", Root_Window)
-        about_action.triggered.connect(lambda: FF_Help_UI.Help_Window(Root_Window))
+        about_action = QAction("About File Find", self.Root_Window)
+        about_action.triggered.connect(lambda: FF_Help_UI.Help_Window(self.Root_Window))
         help_menu.addAction(about_action)
 
         # Help
-        help_action = QAction("File Find Help and Settings", Root_Window)
-        help_action.triggered.connect(lambda: FF_Help_UI.Help_Window(Root_Window))
+        help_action = QAction("File Find Help and Settings", self.Root_Window)
+        help_action.triggered.connect(lambda: FF_Help_UI.Help_Window(self.Root_Window))
         help_action.setShortcut(QKeySequence.StandardKey.HelpContents)
         help_menu.addAction(help_action)
 
-        # Show File Find
-        reopen = QAction("Show Main Window", Root_Window)
-        reopen.triggered.connect(Root_Window.show)
+        # Show File Find window
+        reopen = QAction("Show File Find Window", self.Root_Window)
+        reopen.triggered.connect(self.Root_Window.show)
+
         edit_menu.addAction(reopen)
 
         # Menubar icon
         logging.debug("Menubar icon...")
-        # Menu for menubar_icon
-        menubar_icon_menu = QMenu(Root_Window)
+
+        # Menu for menubar_icon_menu
+        global menubar_icon_menu
+        menubar_icon_menu = QMenu(self.Root_Window)
 
         # Add this icon to the menu bar
         global menubar_icon
-        menubar_icon = QSystemTrayIcon(Root_Window)
+        menubar_icon = QSystemTrayIcon(self.Root_Window)
         menubar_icon.setIcon(QIcon(os.path.join(FF_Files.AssetsFolder, "FFlogo_small.png")))
 
         # File Find Title
-        ff_title = QAction("File Find", Root_Window)
+        ff_title = QAction("File Find", self.Root_Window)
         ff_title.setDisabled(True)
 
-        # Search Status Title
-        search_status_title = QAction("Search Status:", Root_Window)
-        search_status_title.setDisabled(True)
-
-        # Search Status (Real Implementation comes with multithreading)
-        search_status = QAction("Idle", Root_Window)
-        search_status.setDisabled(True)
+        # Search Status Menu
+        global search_status_menu
+        search_status_menu = QMenu("Searches:", self.Root_Window)
+        search_status_menu.setDisabled(True)
 
         # Quit File Find
-        quit_action = QAction("Quit File Find", Root_Window)
-        quit_action.triggered.connect(lambda: sys.exit(0))
+        quit_action = QAction("Quit File Find", self.Root_Window)
+        quit_action.triggered.connect(lambda: exit(0))
         quit_action.setShortcut(QKeySequence.StandardKey.Quit)
 
         # Constructing menubar_icon_menu
         menubar_icon_menu.addAction(ff_title)
         menubar_icon_menu.addSeparator()
-        menubar_icon_menu.addAction(search_status_title)
-        menubar_icon_menu.addAction(search_status)
+        menubar_icon_menu.addMenu(search_status_menu)
+        menubar_icon_menu.addMenu(search_status_menu)
         menubar_icon_menu.addSeparator()
         menubar_icon_menu.addAction(reopen)
         menubar_icon_menu.addSeparator()
@@ -657,4 +650,33 @@ class Main_Window:
         return tooltip
 
 
-global menubar_icon
+class search_update:
+    def __init__(self, stopping_search, path: str):
+        # Assigning local values
+        self.menubar_icon_menu: QMenu = menubar_icon_menu
+        self.search_status_menu: QMenu = search_status_menu
+
+        # Path action
+        self.search_path: QAction = QAction(f"In {path}:")
+        self.search_path.setDisabled(True)
+
+        # Setup search status
+        self.search_status: QAction = QAction("Setup Search Status...")
+        self.search_status.setDisabled(True)
+
+        # Setup stop search (doesn't work)
+        self.stop_search: QAction = QAction("Stop")
+        self.stop_search.triggered.connect(stopping_search)
+
+        # Setup
+        search_status_menu.addSeparator()
+
+        search_status_menu.addAction(self.search_path)
+        search_status_menu.addAction(self.search_status)
+        # search_status_menu.addAction(self.stop_search)
+
+    def update(self, text: str):
+        self.search_status.setText(text)
+
+
+global menubar_icon_menu, search_status_menu, menubar_icon

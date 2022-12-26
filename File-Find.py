@@ -1,5 +1,5 @@
 # This File is a part of File Find made by Pixel-Master and licensed under the GNU GPL v3
-# Main Script, execute this for running File-Find
+# Main Script, execute this for running File Find
 
 # Find Files easier with File Find
 
@@ -21,9 +21,6 @@ if __name__ == "__main__":
 
     # Creating QApplication
     app = QApplication([])
-
-    # Testing File Access (not needed)
-    # FF_Additional_UI.test_access()
 
     # File Operation
     FF_Files.remove_cache()

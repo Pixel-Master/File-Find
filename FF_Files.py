@@ -19,7 +19,7 @@ Saved_SearchFolder = os.path.join(LibFolder, "Saved Searches")
 AssetsFolder = os.path.join(LibFolder, ".assets")
 
 # Versions
-VERSION: str = "beta_7-dec-2022_threading0"
+VERSION: str = "beta_26-dec-2022_threading1"
 VERSION_SHORT: str = "0.0"
 
 

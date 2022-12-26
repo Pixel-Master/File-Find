@@ -4,17 +4,19 @@
 import logging
 # Imports
 import os
+import sys
 from fnmatch import fnmatch
 from pickle import dump, load
-from time import time, mktime
+from time import perf_counter, mktime
 
-from PyQt6.QtCore import QThreadPool, pyqtSignal, QObject
 # PyQt6 Gui Imports
+from PyQt6.QtCore import QThreadPool, pyqtSignal, QObject
 from PyQt6.QtWidgets import QFileDialog, QDateEdit, QMessageBox, QWidget
 
 # Projects Libraries
 import FF_Additional_UI
 import FF_Files
+import FF_Main_UI
 import FF_Search_UI
 
 
@@ -102,20 +104,74 @@ class load_search:
 # The Search Engine
 class search:
     def __init__(self, data_name, data_in_name, data_filetype, data_file_size_min, data_file_size_max, data_library,
-                 data_search_from, data_folders, data_content, edits_list, data_sort_by, data_reverse_sort,
+                 data_search_from, data_folders, data_content, data_edits_list, data_sort_by, data_reverse_sort,
                  data_fn_match, parent: QWidget):
+        # Debug
+        logging.debug("Converting Date-times...")
+
+        """
+        Converting Date-times
+        Converting the output of QDateEdit into the unix time by first using QDateEdit.date() to get
+        something like this: QDate(1,3,2000), after that using QDate.toPyDate to get this: 1-3-2000,
+        than we can use .split("-") to convert 1-3-2000 into a list [1,3,2000], after that we use time.mktime
+        to get the unix time format that means something like, that: 946854000.0, only to match this with
+        os.getctime, what we can use to get the creation date of a file.
+
+        Yes it would be easier if Qt had a function to get the unix time
+        """
+        unix_time_list = []
+
+        def conv_qdate_to_unix_time(input_edit: QDateEdit, pos: int = 1):
+            time_list = str(input_edit.date().toPyDate()).split("-")
+            unix_time = mktime(
+                (int(time_list[0]), int(time_list[1]), int(time_list[2]) + pos, 0, 0, 0, 0, 0, 0))
+            return unix_time
+
+        for time_drop_down in data_edits_list:
+            time_to_add_to_time_list = conv_qdate_to_unix_time(time_drop_down,
+                                                               data_edits_list.index(time_drop_down) % 2)
+            unix_time_list.append(time_to_add_to_time_list)
 
         # Fetching Errors
+        # Name contains and Name can't be used together
         if data_name != "" and data_in_name != "" or data_name != "" and data_filetype != "":
             # Debug
-            logging.error("Name Error! File Name and in Name or File Type can't be used together!")
+            logging.error("Name Error! File Name and Name contains or File Type can't be used together!")
 
             # Show Popup
             FF_Additional_UI.msg.show_critical_messagebox("NAME ERROR!",
                                                           "Name Error!\n\nFile Name and in Name or File Type can't "
-                                                          "be used together", parent=None)
+                                                          "be used together",
+                                                          parent=None)
+        # File Size max must be larger than File Size min
+        elif data_file_size_min >= data_file_size_max and not data_file_size_min == data_file_size_max:
+            # Debug
+            logging.error("Size Error! File Size min is larger than File Size max!")
 
-        # Warning
+            # Show Popup
+            FF_Additional_UI.msg.show_critical_messagebox("SIZE ERROR!",
+                                                          "Size Error!\n\nFile Size min is larger than File Size max!",
+                                                          parent=None)
+        # First Date must be earlier than second Date
+        elif unix_time_list[0] >= unix_time_list[1] or unix_time_list[2] >= unix_time_list[3]:
+            # Debug
+            logging.error(f"Date Error! First Date is later than second Date!")
+
+            # Show Popup
+            FF_Additional_UI.msg.show_critical_messagebox("DATE ERROR!",
+                                                          "Date Error!\n\nFirst Date is later than second Date!",
+                                                          parent=None)
+        # Search in System Files disabled, but Search path is in library Folder
+        elif not data_library and "/Library" in data_search_from or data_search_from.startswith("/System"):
+            # Debug
+            logging.error(f"System Files Error! Search in System Files disabled, but Search path is in library Folder")
+
+            # Show Popup
+            FF_Additional_UI.msg.show_critical_messagebox("System Files Error!",
+                                                          "System Files Error!\n\nSearch in System Files disabled,"
+                                                          " but Search path is in library Folder!",
+                                                          parent=None)
+        # QMessageBox to confirm searching
         elif QMessageBox.information(parent,
                                      "This may take some Time!",
                                      "This may take some Time!\nPress OK to Start Searching",
@@ -125,33 +181,13 @@ class search:
 
         # Start Searching
         else:
-            # Debug
-            logging.info("Starting Searching...")
+            # Defining menubar log
+            self.ui_logger = FF_Main_UI.search_update(lambda: sys.exit(0), data_search_from)
 
-            logging.debug("Converting Parameter")
-
-            '''Converting the output of QDateEdit into the unix time by first using QDateEdit.date() to get
-            something like this: QDate(1,3,2000), after that using QDate.toPyDate to get this: 1-3-2000,
-            than we can use .split("-") to convert 1-3-2000 into a list [1,3,2000], after that we use time.mktime
-            to get the unix time format that means something like, that: 946854000.0, only to match this with
-            os.getctime, what we can use to get the creation date of a file.
-
-            Yea it would be easier if Qt had a function to get the unix time
-            '''
-            unix_time_list = []
-
-            def conv_qdate_to_unix_time(input_edit: QDateEdit, pos: int = 1):
-                time_list = str(input_edit.date().toPyDate()).split("-")
-                unix_time = mktime(
-                    (int(time_list[0]), int(time_list[1]), int(time_list[2]) + pos, 0, 0, 0, 0, 0, 0))
-                return unix_time
-
-            for time_drop_down in edits_list:
-                time_to_add_to_time_list = conv_qdate_to_unix_time(time_drop_down,
-                                                                   edits_list.index(time_drop_down) % 2)
-                unix_time_list.append(time_to_add_to_time_list)
+            logging.info("Starting Search...")
 
             # Setting up QThreadPool
+            self.ui_logger.update("Setting up Thread...")
             logging.debug("Setting up QThreadPool...")
 
             # Creating Qt Signa
@@ -168,11 +204,9 @@ class search:
 
             # Starting the Thread
             self.thread.start(
-                lambda: self.searching(data_name, data_in_name, data_filetype, data_file_size_min,
-                                       data_file_size_max,
-                                       data_library, data_search_from, data_folders, data_content,
-                                       unix_time_list, data_sort_by,
-                                       data_reverse_sort, data_fn_match, parent))
+                lambda: self.searching(data_name, data_in_name, data_filetype, data_file_size_min, data_file_size_max,
+                                       data_library, data_search_from, data_folders, data_content, unix_time_list,
+                                       data_sort_by, data_reverse_sort, data_fn_match, parent))
 
             # Debug
             logging.debug("Finished Setting up QThreadPool!")
@@ -190,14 +224,15 @@ class search:
                   data_search_from, data_folders, data_content, data_time, data_sort_by, data_reverse_sort,
                   data_fn_match, parent):
         # Debug
-        logging.info("Starting Search!\n")
+        logging.info("Starting Search...")
+        self.ui_logger.update("Starting Search...")
 
         # Creates empty lists for the files
         matched_path_list = []
         found_path_list = []
 
         # Saving time before scanning
-        time_before_start = time()
+        time_before_start = perf_counter()
 
         # Lower Arguments
         data_name = data_name.lower()
@@ -221,6 +256,7 @@ class search:
 
         # Debug
         logging.info("Starting Scanning...")
+        self.ui_logger.update("Scanning...")
 
         '''Checking, if Cache File exist, if not it goes through every file in the directory and saves it. If It
         Exist it loads the Cache File in to found_path_list '''
@@ -239,10 +275,11 @@ class search:
                 for directory in dirs:
                     found_path_list.append(os.path.join(roots, directory))
 
-        time_after_searching = time() - time_before_start
+        time_after_searching = perf_counter() - time_before_start
 
         # Debug
         logging.info("Starting Indexing...")
+        self.ui_logger.update("Indexing...")
 
         # Applies filters, when they don't match it continues.
         def check_file(found_file):
@@ -273,7 +310,7 @@ class search:
 
             # Search in System Files
             if not data_library:
-                if "/Library" in found_file:
+                if "/Library" in found_file or found_file.startswith("/System"):
                     return False
 
             # Search for Folders
@@ -347,39 +384,47 @@ class search:
 
         logging.info(f"Found {len(matched_path_list)} Files and Folders")
 
-        time_after_indexing = time() - (time_after_searching + time_before_start)
+        time_after_indexing = perf_counter() - (time_after_searching + time_before_start)
 
         # Sorting
         if data_sort_by == "File Name":
             logging.info("Sorting List by Name...")
+            self.ui_logger.update("Sorting List by Name...")
             matched_path_list.sort(key=sort.name, reverse=data_reverse_sort)
         elif data_sort_by == "File Size":
-            logging.info("Sorting List by Size..")
+            logging.info("Sorting List by Size...")
+            self.ui_logger.update("Sorting List by Size...")
             matched_path_list.sort(key=sort.size, reverse=not data_reverse_sort)
         elif data_sort_by == "Date Created":
-            logging.info("Sorting List by creation date..")
+            logging.info("Sorting List by creation date...")
+            self.ui_logger.update("Sorting List by creation date...")
             matched_path_list.sort(key=sort.c_date, reverse=not data_reverse_sort)
         elif data_sort_by == "Date Created":
-            logging.info("Sorting List by modified date..")
+            logging.info("Sorting List by modification date...")
+            self.ui_logger.update("Sorting List by modification date...")
             matched_path_list.sort(key=sort.m_date, reverse=not data_reverse_sort)
         else:
             logging.info("Skipping Sorting")
+            self.ui_logger.update("Skipping Sorting...")
             if data_reverse_sort:
                 logging.debug("Reversing Results...")
                 matched_path_list = list(reversed(matched_path_list))
 
         # Saving Results with pickle
         logging.info("Saving Search Results...")
+        self.ui_logger.update("Saving Search Results...")
+
         with open(os.path.join(FF_Files.Cached_SearchesFolder, data_search_from.replace("/", "-") + ".FFSearch"),
                   "wb") as resultFile:
             dump(list(found_path_list), resultFile)
 
         # Calculating time
-        time_after_sorting = time() - (time_after_indexing + time_after_searching + time_before_start)
-        time_total = time() - time_before_start
+        time_after_sorting = perf_counter() - (time_after_indexing + time_after_searching + time_before_start)
+        time_total = perf_counter() - time_before_start
 
         # Debug
         logging.info("Finished Searching!")
+        self.ui_logger.update("Building UI...")
 
         global SEARCH_OUTPUT
         SEARCH_OUTPUT = [time_total, time_after_searching, time_after_indexing, time_after_sorting, matched_path_list,
@@ -387,10 +432,6 @@ class search:
 
         # Starting the UI
         self.finished.launchUI.emit()
-
-        # Returns args that are used to launch the GUI
-        return time_total, time_after_searching, time_after_indexing, time_after_sorting, matched_path_list, \
-            data_search_from, parent
 
 
 SEARCH_OUTPUT: [float, float, float, float, list, str, QWidget] = []

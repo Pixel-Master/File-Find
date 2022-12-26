@@ -40,16 +40,16 @@ class Help_Window:
             answer_label.setFont(QFont("Arial", 15))
             answer_label.adjustSize()
             answer_label.show()
-            answer_label.move(25, y + 40)
+            answer_label.move(25, y + 27)
 
         # The Base Window with Labels
         help_window = QMainWindow(parent)
-        help_window.setWindowTitle("File-Find Help")
+        help_window.setWindowTitle("File Find Help")
         help_window.setFixedHeight(700)
         help_window.setFixedWidth(700)
         help_window.show()
 
-        # File-Find Help Label
+        # File Find Help Label
         # Define the Label
         help_label = QLabel("File Find Help", parent=help_window)
         # Change Font
@@ -64,7 +64,7 @@ class Help_Window:
         # File Find for macOS Label
         ff_info = QLabel(help_window)
         # Change Font and Text
-        ff_info.setText("File-Find for macOS")
+        ff_info.setText("File Find for macOS")
         ff_info.setFont(QFont("Futura", 30))
         # Display the Label
         ff_info.move(200, 230)
@@ -120,18 +120,18 @@ class Help_Window:
         sourcecode.move(120, 300)
 
         update = generate_link_button("Update", "https://gitlab.com/Pixel-Mqster/File-Find/-/releases", "green")
-        update.move(290, 300)
+        update.move(310, 300)
 
-        bug_tracker = generate_link_button("Report a Bug", "https://gitlab.com/Pixel-Mqster/File-Find/-/issues",
-                                           "red")
-        bug_tracker.move(420, 300)
+        faq_link = generate_link_button("FaQ", "https://gitlab.com/Pixel-Mqster/File-Find#faq", "red")
+        faq_link.move(470, 300)
 
         # Calling the faq functions for the Labels
-        faq(question="What is File-Find and how does it work?", y=350,
-            answer="File-Find is an open-source \"Finder extension\", that makes it easy to find Files.\nTo search just"
+        faq(question="What is File Find and how does it work?", y=350,
+            answer="File Find is an open-source \"Finder extension\", that makes it easy to find Files.\nTo search just"
                    " leave filters you don't need empty and fill out the filters do need ")
-        faq(question="Why does File-Find crash when searching?", y=430,
-            answer="File-Find is only using one thread. That's why it looks like File-Find \"doesn't react\".")
+        faq(question="Why does File Find sometimes freeze?", y=410,
+            answer="It is possible that for example reloading Files or Building the UI at the end of a search"
+                   "\ncan cause File Find to freeze. Just wait a minute!")
 
         # Settings
 

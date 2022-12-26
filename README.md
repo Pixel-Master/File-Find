@@ -135,7 +135,7 @@ File Find isn't ready for Release yet Run from source or download pre-build macO
 3. [Install dependencies](#dependencies-for-building)
 4. Run:
 
-`"python3 build-with-py2app.py py2app"` 
+`python3 build-with-py2app.py py2app` 
 
 
 ## Roadmap
@@ -153,8 +153,9 @@ File Find isn't ready for Release yet Run from source or download pre-build macO
     4. [x] Clear Cache option
 4. [ ] Multithreading:
     1. [x] UI using different thread as Search engine
-    2. [ ] Searching trough different threads
-    3. [ ] Indexing trough different threads
+    2. [x] Hashing with different Threads
+    3. [ ] Searching trough different threads
+    4. [ ] Indexing trough different threads
 5. [x] Sorting:
    1. [x] Size
    2. [x] File Name
