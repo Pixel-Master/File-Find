@@ -20,28 +20,31 @@
 ## Features
 - Choose Filter which Files to include:
 	* Name
-	* In Name
+	* Name contains
 	* File Ending
 	* Search in System Files
 	* Directory to search in
 	* File Size
 	* Search for Folders
     * Fn-match (Unix shell-style wildcards)
-    * Search for File Content
+    * File contains
     * Date Created and Modified
-- Exclude Folders
-- Search for Files and export Searches
+
+- Search for Files and export Search Results
+- 
 - Dark-mode
-- Choose options for Files:
+- 
+- Options for found Files:
 	* Show in Finder
 	* Open
-	* Copy Path/File
+	* Basic File Info
+    * File Hashes
+
 - Sort Results:
-	* Size
+	* File Size
 	* File Name
 	* Date Modified
 	* Date Created
-- Reverse Results
 
 - Generate Terminal command from Filters, supports:
 	* Name
@@ -69,6 +72,10 @@ Q: **Why does File Find ask for permission for Contacts, Calenders, Photos, Down
 A: File Find scans the entire specified directory, even if files are excluded they are scanned first and then sorted out. 
 Your photos, calendar data, contacts etc. are stored in a library folder, which means that File Find scans them. 
 **File Find does not connect to the internet**, everything stays on your machine. If you are still uncomfortable, you can also press "Do not allow", the associated files will not appear in your searches. **If File Find asks for your Downloads or Desktop folder, you can decline, File Find will still be able to scan those files.**
+
+Q: **Does File Find connect to the Internet?**
+
+A: File Find does not connect to the internet, everything stays on your machine.
 
 ## Download
 File Find isn't ready for Release yet Run from source or download pre-build macOS Apps from the GitHub action Page.
@@ -135,7 +142,7 @@ File Find isn't ready for Release yet Run from source or download pre-build macO
 3. [Install dependencies](#dependencies-for-building)
 4. Run:
 
-`python3 build-with-py2app.py py2app` 
+`python3 build.py` 
 
 
 ## Roadmap
@@ -183,7 +190,7 @@ File Find isn't ready for Release yet Run from source or download pre-build macO
    3. [ ] Languages:
       1. [x] English
       2. [ ] German
-      3. [ ] Frensh
+      3. [ ] French
       4. [ ] Spanish
       5. [ ] Chinese
 8. [ ] Compatible with Linux and Windows?
