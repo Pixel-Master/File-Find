@@ -13,7 +13,6 @@ from PyQt6.QtGui import QFont, QDoubleValidator, QIcon, QAction, QKeySequence
 from PyQt6.QtWidgets import QWidget, QLabel, QPushButton, QRadioButton, QFileDialog, \
     QLineEdit, QButtonGroup, QDateEdit, QFrame, QComboBox, QMenuBar, QSystemTrayIcon, QMenu
 
-
 # Projects Libraries
 import FF_Additional_UI
 import FF_Files
@@ -380,6 +379,8 @@ class Main_Window:
                              data_reverse_sort=rb_reverse_sort1.isChecked(),
                              parent=self.Root_Window)
 
+        self.search_entry = search_entry
+
         # Generate a shell command, that displays in the UI
         def generate_shell_command():
             # Debug
@@ -448,15 +449,15 @@ class Main_Window:
         more_options_button.move(730, 440)
 
         # Help Button, that calls FF_Additional_UI.Help_Window
-        help_button = self.generate_large_button(" Help", lambda: FF_Help_UI.Help_Window(self.Root_Window), 25)
+        help_button = self.generate_large_button(" About", lambda: FF_Help_UI.Help_Window(self.Root_Window), 25)
         # Color
-        help_button.setStyleSheet("color: #b50104;")
+        help_button.setStyleSheet("color: blue;")
         # Icon
         help_button.setIcon(QIcon(os.path.join(FF_Files.AssetsFolder, "Info_button_img_small.png")))
         help_button.setIconSize(QSize(25, 25))
         # Place
-        help_button.resize(115, 50)
-        help_button.move(670, 10)
+        help_button.resize(120, 50)
+        help_button.move(660, 10)
 
         # Set up the menu bar
         logging.info("Setting up Menu Bar...")
@@ -565,43 +566,55 @@ class Main_Window:
         # Menu Bar
         menu_bar = QMenuBar(self.Root_Window)
         edit_menu = menu_bar.addMenu("&Edit")
-        other_menu = menu_bar.addMenu("&Other")
+        file_menu = menu_bar.addMenu("&File")
+        tools_menu = menu_bar.addMenu("&Tools")
+        window_menu = menu_bar.addMenu("&Window")
         help_menu = menu_bar.addMenu("&Help")
 
         # Load Saved Search
-        load_search_action = QAction("Load Saved Search", self.Root_Window)
+        load_search_action = QAction("&Open Search", self.Root_Window)
         load_search_action.triggered.connect(lambda: FF_Search.load_search(self.Root_Window))
-        other_menu.addAction(load_search_action)
+        load_search_action.setShortcut("Ctrl+O")
+        file_menu.addAction(load_search_action)
 
         # Clear Cache
-        cache_action = QAction("Clear Cache", self.Root_Window)
+        cache_action = QAction("&Clear Cache", self.Root_Window)
         cache_action.triggered.connect(lambda: FF_Files.remove_cache(True, self.Root_Window))
-        other_menu.addAction(cache_action)
+        cache_action.setShortcut("Ctrl+N")
+        tools_menu.addAction(cache_action)
 
         # Generate Terminal Command
-        cmd_action = QAction("Generate Shell Command", self.Root_Window)
+        cmd_action = QAction("&Generate Shell Command", self.Root_Window)
         cmd_action.triggered.connect(shell_cmd)
-        other_menu.addAction(cmd_action)
+        cmd_action.setShortcut("Ctrl+G")
+        tools_menu.addAction(cmd_action)
 
         # About File Find
-        about_action = QAction("About File Find", self.Root_Window)
+        about_action = QAction("&About File Find", self.Root_Window)
         about_action.triggered.connect(lambda: FF_Help_UI.Help_Window(self.Root_Window))
+        about_action.setShortcut("Ctrl+I")
         help_menu.addAction(about_action)
 
         # Help
-        help_action = QAction("File Find Help and Settings", self.Root_Window)
+        help_action = QAction("&File Find Help and Settings", self.Root_Window)
         help_action.triggered.connect(lambda: FF_Help_UI.Help_Window(self.Root_Window))
         help_action.setShortcut(QKeySequence.StandardKey.HelpContents)
         help_menu.addAction(help_action)
 
         # Show File Find window
-        reopen = QAction("Show File Find Window", self.Root_Window)
+        reopen = QAction("&Show File Find Window", self.Root_Window)
+        reopen.setShortcut("Ctrl+S")
         reopen.triggered.connect(self.Root_Window.show)
+        window_menu.addAction(reopen)
 
-        edit_menu.addAction(reopen)
+        # Search Action
+        find_action = QAction("&Search", self.Root_Window)
+        find_action.setShortcut("Ctrl+F")
+        find_action.triggered.connect(self.search_entry)
+        edit_menu.addAction(find_action)
 
         # Menubar icon
-        logging.debug("Menubar icon...")
+        logging.debug("Constructing Menubar icon...")
 
         # Menu for menubar_icon_menu
         global menubar_icon_menu

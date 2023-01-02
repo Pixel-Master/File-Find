@@ -7,7 +7,7 @@ from pickle import load, dump
 import logging
 
 # PyQt6 Gui Imports
-from PyQt6.QtCore import QRect
+from PyQt6.QtCore import QRect, Qt
 from PyQt6.QtGui import QFont, QPixmap
 from PyQt6.QtWidgets import QMainWindow, QLabel, QPushButton, QFrame, QListWidget, QFileDialog, QComboBox
 
@@ -15,7 +15,7 @@ from PyQt6.QtWidgets import QMainWindow, QLabel, QPushButton, QFrame, QListWidge
 import FF_Files
 
 
-# The class for the Help_window
+# The class for the self.Help_Window
 class Help_Window:
     def __init__(self, parent):
         # Debug
@@ -25,7 +25,7 @@ class Help_Window:
         # A function to generate these Faq texts
         def faq(question, answer, y):
             # The Question
-            question_label = QLabel(help_window)
+            question_label = QLabel(self.Help_Window)
             question_label.setText(question)
             bold_font = QFont("Arial", 25)
             bold_font.setBold(True)
@@ -35,7 +35,7 @@ class Help_Window:
             question_label.move(15, y)
 
             # The Answer
-            answer_label = QLabel(help_window)
+            answer_label = QLabel(self.Help_Window)
             answer_label.setText(answer)
             answer_label.setFont(QFont("Arial", 15))
             answer_label.adjustSize()
@@ -43,52 +43,46 @@ class Help_Window:
             answer_label.move(25, y + 27)
 
         # The Base Window with Labels
-        help_window = QMainWindow(parent)
-        help_window.setWindowTitle("File Find Help")
-        help_window.setFixedHeight(700)
-        help_window.setFixedWidth(700)
-        help_window.show()
-
-        # File Find Help Label
-        # Define the Label
-        help_label = QLabel("File Find Help", parent=help_window)
-        # Change Font
-        help_label_font = QFont("Futura", 50)
-        help_label_font.setBold(True)
-        help_label.setFont(help_label_font)
-        # Display the Label
-        help_label.move(0, 0)
-        help_label.adjustSize()
-        help_label.show()
+        self.Help_Window = QMainWindow(parent)
+        self.Help_Window.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint, True)
+        global Help_Window_alias
+        try:
+            Help_Window_alias.show()
+        except NameError:
+            Help_Window_alias = self.Help_Window
+            Help_Window_alias.show()
+        self.Help_Window.setWindowTitle("File Find Help")
+        self.Help_Window.setFixedHeight(700)
+        self.Help_Window.setFixedWidth(700)
 
         # File Find for macOS Label
-        ff_info = QLabel(help_window)
+        ff_info = QLabel(self.Help_Window)
         # Change Font and Text
         ff_info.setText("File Find for macOS")
         ff_info.setFont(QFont("Futura", 30))
         # Display the Label
-        ff_info.move(200, 230)
+        ff_info.move(200, 180)
         ff_info.adjustSize()
         ff_info.show()
 
         # File Find Logo
-        ff_logo = QLabel(help_window)
+        ff_logo = QLabel(self.Help_Window)
         # Set the Icon
         ff_logo_img = QPixmap(os.path.join(FF_Files.AssetsFolder, "FFlogo_small.png"))
         ff_logo.setPixmap(ff_logo_img)
         # Display the Icon
-        ff_logo.move(280, 100)
+        ff_logo.move(280, 50)
         ff_logo.adjustSize()
         ff_logo.show()
 
         # The Frame
-        fflogo_frame = QFrame(help_window)
-        fflogo_frame.setGeometry(QRect(100, 90, 500, 250))
+        fflogo_frame = QFrame(self.Help_Window)
+        fflogo_frame.setGeometry(QRect(100, 40, 500, 250))
         fflogo_frame.setFrameShape(QFrame.Shape.StyledPanel)
         fflogo_frame.show()
 
         # The Version Label
-        version_label = QLabel(help_window)
+        version_label = QLabel(self.Help_Window)
         # Font and Text
         version_label.setText(f"v. {FF_Files.VERSION_SHORT} ({FF_Files.VERSION})")
         version_label.setFont(QFont("Arial", 15))
@@ -97,11 +91,11 @@ class Help_Window:
         # Display the Label
         version_label.adjustSize()
         version_label.show()
-        version_label.move(240, 270)
+        version_label.move(240, 220)
 
         # Links using QPushButton
         def generate_link_button(displayed_text, domain, color):
-            link = QPushButton(help_window)
+            link = QPushButton(self.Help_Window)
             # Font and Text
             link.setText(displayed_text)
             link.setFont(QFont("Arial", 20))
@@ -117,19 +111,19 @@ class Help_Window:
             return link
 
         sourcecode = generate_link_button("Source Code", "https://gitlab.com/Pixel-Mqster/File-Find", "blue")
-        sourcecode.move(120, 300)
+        sourcecode.move(120, 250)
 
         update = generate_link_button("Update", "https://gitlab.com/Pixel-Mqster/File-Find/-/releases", "green")
-        update.move(310, 300)
+        update.move(310, 250)
 
         faq_link = generate_link_button("FaQ", "https://gitlab.com/Pixel-Mqster/File-Find#faq", "red")
-        faq_link.move(470, 300)
+        faq_link.move(470, 250)
 
         # Calling the faq functions for the Labels
-        faq(question="What is File Find and how does it work?", y=350,
-            answer="File Find is an open-source \"Finder extension\", that makes it easy to find Files.\nTo search just"
-                   " leave filters you don't need empty and fill out the filters do need ")
-        faq(question="Why does File Find sometimes freeze?", y=410,
+        faq(question="What is File Find and how does it work?", y=320,
+            answer="File Find is an open-source macOS Utility, that makes it easy to find Files.\n"
+                   "To search fill in the filters you need and leave the filters you don't need empty.")
+        faq(question="Why does File Find sometimes freeze?", y=400,
             answer="It is possible that for example reloading Files or Building the UI at the end of a search"
                    "\ncan cause File Find to freeze. Just wait a minute!")
 
@@ -137,9 +131,11 @@ class Help_Window:
 
         # Settings Label
         # Define the Label
-        settings_label = QLabel("Settings", parent=help_window)
+        settings_label = QLabel("Settings", parent=self.Help_Window)
         # Change Font
-        settings_label.setFont(help_label_font)
+        settings_label_font = QFont("Futura", 50)
+        settings_label_font.setBold(True)
+        settings_label.setFont(settings_label_font)
         # Display the Label
         settings_label.move(0, 480)
         settings_label.adjustSize()
@@ -147,7 +143,7 @@ class Help_Window:
 
         # Excluded Files
         # Define the Label
-        exclude_label = QLabel("Excluded Files", parent=help_window)
+        exclude_label = QLabel("Excluded Files", parent=self.Help_Window)
         # Change Font
         exclude_label.setFont(QFont("Arial", 20))
         # Display the Label
@@ -156,7 +152,7 @@ class Help_Window:
         exclude_label.show()
 
         def generate_button(text, command):
-            button = QPushButton(help_window)
+            button = QPushButton(self.Help_Window)
             button.setText(text)
             button.clicked.connect(command)
             button.show()
@@ -164,7 +160,7 @@ class Help_Window:
             return button
 
         # Listbox
-        excluded_listbox = QListWidget(help_window)
+        excluded_listbox = QListWidget(self.Help_Window)
         # Resize the List-widget
         excluded_listbox.resize(200, 130)
         # Place
@@ -198,7 +194,7 @@ class Help_Window:
             excluded_listbox.takeItem(excluded_listbox.currentRow())
 
         def add_file():
-            selected_folder = QFileDialog.getExistingDirectory(directory=FF_Files.userpath, parent=help_window)
+            selected_folder = QFileDialog.getExistingDirectory(directory=FF_Files.userpath, parent=self.Help_Window)
             if selected_folder != "":
                 edit_excluded(selected_folder)
                 excluded_listbox.addItem(selected_folder)
@@ -212,7 +208,7 @@ class Help_Window:
 
         # Language
         # Define the Label
-        language_label = QLabel("Language:", parent=help_window)
+        language_label = QLabel("Language:", parent=self.Help_Window)
         # Change Font
         language_label.setFont(QFont("Arial", 20))
         # Display the Label
@@ -223,7 +219,7 @@ class Help_Window:
         # Drop Down Menus
         # Sorting Menu
         # Defining
-        combobox_language = QComboBox(help_window)
+        combobox_language = QComboBox(self.Help_Window)
         # Adding Options
         combobox_language.addItems(["English"])
         # Display
@@ -232,3 +228,6 @@ class Help_Window:
 
         # Debug
         logging.info("Finished Setting up Help UI\n")
+
+
+global Help_Window_alias
