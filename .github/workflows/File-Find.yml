@@ -72,7 +72,8 @@ jobs:
       run: |
         cd dist
         zip -r "File Find.app.zip" "File Find.app"
-    
+        
+    # Upload app
     - name: Upload File Find.app
       uses: actions/upload-artifact@v2
       with:
@@ -80,3 +81,10 @@ jobs:
           name: File Find.app.zip
           path: dist/File Find.app.zip
           
+    # Upload dmg
+    - name: Upload File Find.dmg
+      uses: actions/upload-artifact@v2
+      with:
+          if-no-files-found: error
+          name: File Find.dmg
+          path: dist/File Find.dmg     
