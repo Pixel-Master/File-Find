@@ -65,7 +65,7 @@ jobs:
         
         # Install create-dmg 
         cd /usr/local/bin
-        wget https://github.com/create-dmg/create-dmg/blob/master/create-dmg
+        wget https://raw.githubusercontent.com/create-dmg/create-dmg/master/create-dmg
         chmod +X create-dmg
         cd ~/work/File-Find
     
