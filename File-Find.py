@@ -23,8 +23,8 @@ if __name__ == "__main__":
     app = QApplication([])
 
     # File Operation
-    FF_Files.remove_cache()
     FF_Files.setup()
+    FF_Files.cache_test(is_launching=True)
 
     # Launches the Main Window
     FF_Main_UI.Main_Window()

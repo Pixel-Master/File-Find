@@ -106,13 +106,13 @@ class Search_Window:
                         matched_list.remove(matched_file)
                         logging.debug(f"File Does Not exist: {matched_file}")
                         removed_list.append(matched_file)
-                with open(os.path.join(FF_Files.Cached_SearchesFolder, search_path.replace("/", "-") + ".FFSearch"),
+                with open(os.path.join(FF_Files.Cached_SearchesFolder, search_path.replace("/", "-") + ".FFCache"),
                           "rb") as SearchFile:
                     cached_files = list(load(SearchFile))
                 for cached_file in cached_files:
                     if cached_file in removed_list:
                         cached_files.remove(cached_file)
-                with open(os.path.join(FF_Files.Cached_SearchesFolder, search_path.replace("/", "-") + ".FFSearch"),
+                with open(os.path.join(FF_Files.Cached_SearchesFolder, search_path.replace("/", "-") + ".FFCache"),
                           "wb") as SearchFile:
                     dump(cached_files, SearchFile)
                 logging.info(f"Reloaded found Files and removed {len(removed_list)} in"
@@ -235,6 +235,7 @@ class Search_Window:
         menu_bar.addMenu("&Edit")
         file_menu = menu_bar.addMenu("&File")
         tools_menu = menu_bar.addMenu("&Tools")
+        window_menu = menu_bar.addMenu("&Window")
         help_menu = menu_bar.addMenu("&Help")
 
         # Save Search
@@ -289,6 +290,12 @@ class Search_Window:
         about_action = QAction("&About File Find", self.Search_Results_Window)
         about_action.triggered.connect(lambda: FF_Help_UI.Help_Window(self.Search_Results_Window))
         help_menu.addAction(about_action)
+
+        # Close Window
+        close_action = QAction("&Close Window", self.Search_Results_Window)
+        close_action.triggered.connect(self.Search_Results_Window.destroy)
+        close_action.setShortcut("Ctrl+W")
+        window_menu.addAction(close_action)
 
         # Help
         help_action = QAction("&File Find Help and Settings", self.Search_Results_Window)
@@ -350,7 +357,7 @@ class Search_Window:
     # View the hashes
     def view_hashes(self):
         try:
-            # Collecting FInes
+            # Collecting Files
             hash_file = self.result_listbox.currentItem().text()
             logging.info(f"Collecting {hash_file}...")
             if os.path.isdir(hash_file):

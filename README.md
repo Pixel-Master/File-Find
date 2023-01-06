@@ -65,7 +65,7 @@ A: It is possible that for example reloading Files or Building the UI at the end
 
 Q: **How to clean the Cache?**
 
-A: File Find is saving the cache under `/Users/$USERNAME/Library/Application Support/File-Find/Cached Searches`. The Cache gets cleaned up on start up, that means to clean the cache just restart File Find
+A: File Find is saving the cache under `/Users/$USERNAME/Library/Application Support/File-Find/Cached Searches`. You can clean the cache `with ⌘ + N` or `Tools > Clear Cache`. In the About section you can set when the cache gets cleaned automatically.
 
 Q: **Why does File Find ask for permission for Contacts, Calenders, Photos, Downloads, etc...?**
 
@@ -96,23 +96,27 @@ File Find isn't ready for Release yet Run from source or download pre-build macO
 - [PyQt 6](https://pypi.org/project/PyQt6/) 6.4 or higher
 - [pyperclip](https://pypi.org/project/pyperclip/) 1.8.2 or higher
 
-
+### Building
 1. Install Python:
-
+    
     Download the installer: https://python.org/download or use
 
     Homebrew: `brew install python@3.11`
 
-2. Install PyQt6 and pyperclip with pip:
-`pip3 install PyQt6 pyperclip`
 
-### Running
-1. Clone the File Find Repository: `git clone https://gitlab.com/Pixel-Mqster/File-Find.git`
-2. cd into the repository: `cd File-Find`
-3. [Install dependencies](#dependencies-for-running)
-4. Run:
+2. Clone the File Find Repository: `git clone https://gitlab.com/Pixel-Mqster/File-Find.git`
+
+
+3. cd into the repository: `cd File-Find`
+
+
+4. [Install dependencies](#dependencies-for-running): `pip3 -r requierments.txt`
+
+
+5. Run:
 
 `python3 File-Find.py` 
+
 
 ## Building File Find.app
 
@@ -126,21 +130,26 @@ File Find isn't ready for Release yet Run from source or download pre-build macO
 - [PyQt 6](https://pypi.org/project/PyQt6/) 6.4 or higher
 - [pyperclip](https://pypi.org/project/pyperclip/) 1.8.2 or higher
 - [py2app](https://pypi.org/project/py2app/) 5.6.2 or higher
+- [create-dmg](https://github.com/create-dmg/create-dmg) (optional for dmg building) 1.1 or higher
 
+### Building
 1. Install Python:
-
+    
     Download the installer: https://python.org/download or use
 
     Homebrew: `brew install python@3.11`
 
-2. Install PyQt6, pyperclip and py2app with pip:
-`pip3 install PyQt6 pyperclip py2app`
 
-### Building
-1. Clone the File Find Repository: `git clone https://gitlab.com/Pixel-Mqster/File-Find.git`
-2. cd into the repository: `cd File-Find`
-3. [Install dependencies](#dependencies-for-building)
-4. Run:
+2. Clone the File Find Repository: `git clone https://gitlab.com/Pixel-Mqster/File-Find.git`
+
+
+3. cd into the repository: `cd File-Find`
+
+
+4. [Install python dependencies](#dependencies-for-building): `pip3 install -r requirements.txt && pip3 install py2app`
+
+
+5. Build using:
 
 `python3 build.py` 
 
@@ -175,7 +184,7 @@ File Find isn't ready for Release yet Run from source or download pre-build macO
     3. [x] File Ending
     4. [x] Search in System Files
     5. [x] Directory to search in
-    6. [x] Search for Folders
+    6. [x] Search only for Files or Folders
     7. [ ] Search for Alias
     8. [ ] Exclude Sub-folders
     9. [x] Contains

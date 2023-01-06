@@ -1,12 +1,14 @@
 # This File is a part of File Find made by Pixel-Master and licensed under the GNU GPL v3
 # This script contains the class for the search engine
 
-import logging
 # Imports
+import logging
 import os
-import sys
+import asyncio
+from sys import exit
 from fnmatch import fnmatch
 from pickle import dump, load
+from threading import Thread
 from time import perf_counter, mktime
 
 # PyQt6 Gui Imports
@@ -95,7 +97,7 @@ class load_search:
                         os.path.join(FF_Files.Cached_SearchesFolder,
                                      f"loaded from {load_file}.FFSearch".replace("/", "-"))):
                     with open(os.path.join(FF_Files.Cached_SearchesFolder,
-                                           f"loaded from {load_file}.FFSearch".replace("/", "-")),
+                                           f"loaded from {load_file}.FFCache".replace("/", "-")),
                               "wb") as CachedSearch:
                         dump(saved_file_content, file=CachedSearch)
                 FF_Search_UI.Search_Window(*[0, 0, 0, 0, saved_file_content, f"loaded from {load_file}", parent])
@@ -104,7 +106,7 @@ class load_search:
 # The Search Engine
 class search:
     def __init__(self, data_name, data_in_name, data_filetype, data_file_size_min, data_file_size_max, data_library,
-                 data_search_from, data_folders, data_content, data_edits_list, data_sort_by, data_reverse_sort,
+                 data_search_from, data_search_for, data_content, data_edits_list, data_sort_by, data_reverse_sort,
                  data_fn_match, parent: QWidget):
         # Debug
         logging.debug("Converting Date-times...")
@@ -155,7 +157,7 @@ class search:
         # First Date must be earlier than second Date
         elif unix_time_list[0] >= unix_time_list[1] or unix_time_list[2] >= unix_time_list[3]:
             # Debug
-            logging.error(f"Date Error! First Date is later than second Date!")
+            logging.error("Date Error! First Date is later than second Date!")
 
             # Show Popup
             FF_Additional_UI.msg.show_critical_messagebox("DATE ERROR!",
@@ -164,7 +166,7 @@ class search:
         # Search in System Files disabled, but Search path is in library Folder
         elif not data_library and "/Library" in data_search_from or data_search_from.startswith("/System"):
             # Debug
-            logging.error(f"System Files Error! Search in System Files disabled, but Search path is in library Folder")
+            logging.error("System Files Error! Search in System Files disabled, but Directory is in Library Folder")
 
             # Show Popup
             FF_Additional_UI.msg.show_critical_messagebox("System Files Error!",
@@ -182,15 +184,19 @@ class search:
         # Start Searching
         else:
             # Defining menubar log
-            self.ui_logger = FF_Main_UI.search_update(lambda: sys.exit(0), data_search_from)
+            self.ui_logger = FF_Main_UI.search_update(lambda: exit(0), data_search_from)
 
+            # Testing Cache
+            FF_Files.cache_test(is_launching=False)
+
+            # Starting
             logging.info("Starting Search...")
 
             # Setting up QThreadPool
             self.ui_logger.update("Setting up Thread...")
             logging.debug("Setting up QThreadPool...")
 
-            # Creating Qt Signa
+            # Creating Qt Signal
             class finished_class(QObject):
                 launchUI = pyqtSignal()
 
@@ -205,23 +211,15 @@ class search:
             # Starting the Thread
             self.thread.start(
                 lambda: self.searching(data_name, data_in_name, data_filetype, data_file_size_min, data_file_size_max,
-                                       data_library, data_search_from, data_folders, data_content, unix_time_list,
+                                       data_library, data_search_from, data_search_for, data_content, unix_time_list,
                                        data_sort_by, data_reverse_sort, data_fn_match, parent))
 
             # Debug
             logging.debug("Finished Setting up QThreadPool!")
 
-            # Uncomment to Search without threading
-            # FF_Search_UI.Search_Window(*
-            #                           self.searching(data_name, data_in_name, data_filetype, data_file_size_min,
-            #                                          data_file_size_max,
-            #                                          data_library, data_search_from, data_folders, data_content,
-            #                                          unix_time_list, data_sort_by,
-            #                                          data_reverse_sort, data_fn_match, parent))
-
     # The search engine
     def searching(self, data_name, data_in_name, data_filetype, data_file_size_min, data_file_size_max, data_library,
-                  data_search_from, data_folders, data_content, data_time, data_sort_by, data_reverse_sort,
+                  data_search_from, data_search_for, data_content, data_time, data_sort_by, data_reverse_sort,
                   data_fn_match, parent):
         # Debug
         logging.info("Starting Search...")
@@ -246,11 +244,19 @@ class search:
         else:
             data_time_needed = True
 
+        # Checking if data_search_for is needed
+        if data_search_for == "All Files and Folders":
+            data_search_for_needed = False
+        else:
+            data_search_for_needed = True
+
         # Loading excluded files
-        with open(os.path.join(FF_Files.LibFolder, "Excluded_Files.FFExc"), "rb") as ExcludedFile:
-            data_excluded_files = load(ExcludedFile)
+        with open(os.path.join(FF_Files.LibFolder, "Settings"), "rb") as ExcludedFile:
+            data_excluded_files = load(ExcludedFile)["excluded_files"]
+
         if not data_excluded_files:
             data_excluded_files_needed = False
+
         else:
             data_excluded_files_needed = True
 
@@ -259,12 +265,12 @@ class search:
         self.ui_logger.update("Scanning...")
 
         '''Checking, if Cache File exist, if not it goes through every file in the directory and saves it. If It
-        Exist it loads the Cache File in to found_path_list '''
+        exist it loads the Cache File in to found_path_list '''
         if os.path.exists(
-                os.path.join(FF_Files.Cached_SearchesFolder, data_search_from.replace("/", "-") + ".FFSearch")):
+                os.path.join(FF_Files.Cached_SearchesFolder, data_search_from.replace("/", "-") + ".FFCache")):
             logging.info("Scanning using cached Data..")
             with open(
-                    os.path.join(FF_Files.Cached_SearchesFolder, data_search_from.replace("/", "-") + ".FFSearch"),
+                    os.path.join(FF_Files.Cached_SearchesFolder, data_search_from.replace("/", "-") + ".FFCache"),
                     "rb") as SearchResults:
                 found_path_list = load(SearchResults)
 
@@ -275,14 +281,15 @@ class search:
                 for directory in dirs:
                     found_path_list.append(os.path.join(roots, directory))
 
+        # Saves time
         time_after_searching = perf_counter() - time_before_start
 
         # Debug
         logging.info("Starting Indexing...")
         self.ui_logger.update("Indexing...")
 
-        # Applies filters, when they don't match it continues.
-        def check_file(found_file):
+        # Applies filters, when they don't match the function returns False, else True
+        async def check_file(found_file):
 
             # Looks for basename to be faster
             basename = os.path.basename(found_file)
@@ -313,13 +320,19 @@ class search:
                 if "/Library" in found_file or found_file.startswith("/System"):
                     return False
 
-            # Search for Folders
-            if not data_folders:
-                if os.path.isdir(found_file):
-                    return False
+            # Search for Folders and Files
+            if data_search_for_needed:
+                # Checks for Directories
+                if data_search_for == "only Files":
+                    if os.path.isdir(found_file):
+                        return False
+                # Checks for Files
+                elif data_search_for == "only Folders":
+                    if os.path.isfile(found_file):
+                        return False
 
             # Search for Date Modified, Created
-            # Checking if
+            # Checking if File Date is between Filter Dates
             if data_time_needed:
                 # Using os.stat because os.path.getctime returns a wrong date
                 try:
@@ -366,24 +379,23 @@ class search:
 
             # Excluded Files
             if data_excluded_files_needed:
-                file_in_excluded = False
                 for excluded_file in data_excluded_files:
                     if found_file.startswith(excluded_file):
-                        file_in_excluded = True
-                        break
-                if file_in_excluded:
-                    return False
-            # Add the File to matched_path_list
+                        return False
+
+            # Return True to add the File to matched_path_list
             return True
 
+        # Looping through every file
         for scanned_file in found_path_list:
             add_file = check_file(scanned_file)
             if add_file:
                 matched_path_list.append(scanned_file)
-        # Prints out seconds needed and the matching files
 
+        # Prints out seconds needed
         logging.info(f"Found {len(matched_path_list)} Files and Folders")
 
+        # Saving time
         time_after_indexing = perf_counter() - (time_after_searching + time_before_start)
 
         # Sorting
@@ -399,7 +411,7 @@ class search:
             logging.info("Sorting List by creation date...")
             self.ui_logger.update("Sorting List by creation date...")
             matched_path_list.sort(key=sort.c_date, reverse=not data_reverse_sort)
-        elif data_sort_by == "Date Created":
+        elif data_sort_by == "Date Modified":
             logging.info("Sorting List by modification date...")
             self.ui_logger.update("Sorting List by modification date...")
             matched_path_list.sort(key=sort.m_date, reverse=not data_reverse_sort)
@@ -414,7 +426,7 @@ class search:
         logging.info("Saving Search Results...")
         self.ui_logger.update("Saving Search Results...")
 
-        with open(os.path.join(FF_Files.Cached_SearchesFolder, data_search_from.replace("/", "-") + ".FFSearch"),
+        with open(os.path.join(FF_Files.Cached_SearchesFolder, data_search_from.replace("/", "-") + ".FFCache"),
                   "wb") as resultFile:
             dump(list(found_path_list), resultFile)
 

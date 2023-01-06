@@ -5,6 +5,7 @@
 import os
 import logging
 from pickle import load, dump, UnpicklingError
+from time import time
 
 # Project Libraries
 import FF_Additional_UI
@@ -19,19 +20,61 @@ Saved_SearchFolder = os.path.join(LibFolder, "Saved Searches")
 AssetsFolder = os.path.join(LibFolder, ".assets")
 
 # Versions
-VERSION: str = "beta_26-dec-2022_threading1"
+VERSION: str = "beta_3-jan-2023_menubar"
 VERSION_SHORT: str = "0.0"
 
 
-# Remove File Find cache
+# Remove Search cache
 def remove_cache(show_popup: bool = False, parent=None):
     logging.debug("Starting cleaning Cache..")
-    for (main, folder, data) in os.walk(Cached_SearchesFolder):
-        for cacheobj in data:
-            os.remove(os.path.join(main, cacheobj))
+    for file in os.listdir(Cached_SearchesFolder):
+        os.remove(os.path.join(Cached_SearchesFolder, file))
     if show_popup:
         FF_Additional_UI.msg.show_info_messagebox("Cleared Cache", "Cleared Cache successfully!", parent)
     logging.info("Cleared Cache successfully!\n")
+
+
+# Test if Cache should be deleted
+def cache_test(is_launching):
+    logging.debug("Testing if cache should be deleted..")
+
+    # Loading Settings File
+    with open(os.path.join(LibFolder, "Settings"), "rb") as SettingsFile:
+        # Taking the item four because it is the Cache Setting
+        cache_settings = load(SettingsFile)["cache"]
+        logging.debug(f"{cache_settings = }")
+
+    # Deleting Cache on Launch
+    if cache_settings == "On Launch" and is_launching:
+        logging.debug("Deleting Cache!")
+        for file in os.listdir(Cached_SearchesFolder):
+            os.remove(os.path.join(Cached_SearchesFolder, file))
+
+    # Deleting Cache after a Day
+    elif cache_settings == "after a Day":
+        SECONDS_OF_A_DAY = 86400
+
+        # Looping through every File in Cached_SearchesFolder
+        for file in os.listdir(Cached_SearchesFolder):
+            if os.stat(os.path.join(Cached_SearchesFolder, file)).st_birthtime <= time() - SECONDS_OF_A_DAY:
+                logging.debug(f"Deleting Cache for File: {file}")
+                os.remove(os.path.join(Cached_SearchesFolder, file))
+
+    # Deleting Cache after a Week
+    elif cache_settings == "after a Week":
+        SECONDS_OF_A_WEEK = 604800
+
+        # Looping through every File in Cached_SearchesFolder
+        for file in os.listdir(Cached_SearchesFolder):
+            if os.stat(os.path.join(Cached_SearchesFolder, file)).st_birthtime <= time() - SECONDS_OF_A_WEEK:
+                logging.debug(f"Deleting Cache for File: {file}")
+                os.remove(os.path.join(Cached_SearchesFolder, file))
+
+    # Skipping
+    else:
+        logging.debug("Skipping deleting...")
+
+    logging.debug("Finished Cache Testing!\n")
 
 
 # Function to get the File Size of a directory
@@ -83,19 +126,21 @@ def setup():
     os.makedirs(Cached_SearchesFolder, exist_ok=True)
     os.makedirs(AssetsFolder, exist_ok=True)
 
-    # Version Files
-    with open(os.path.join(LibFolder, "Info.txt"), "w") as ver_file:
-        ver_file.write(f"Version: {VERSION}\n")
-
-    # Write File for Excluded Files
+    # Setting up Settings File
     try:
-        with open(os.path.join(LibFolder, "Excluded_Files.FFExc"), "rb") as ExcludedLoadFile:
-            excluded_file = load(ExcludedLoadFile)
+        with open(os.path.join(LibFolder, "Settings"), "rb") as SettingsLoadFile:
+            settings = load(SettingsLoadFile)
+            settings["version"] = f"{VERSION_SHORT}[{VERSION}]"
+    # If the settings file doesn't exist, defining it
     except (UnpicklingError, EOFError, FileNotFoundError):
-        excluded_file = []
+        # The Structure of the settings File
+        settings = {"first_version": f"{VERSION_SHORT}[{VERSION}]",
+                    "version": f"{VERSION_SHORT}[{VERSION}]",
+                    "excluded_files": [],
+                    "cache": "On Launch"}
 
-    with open(os.path.join(LibFolder, "Excluded_Files.FFExc"), "wb") as ExcludedDumpFile:
-        dump(excluded_file, ExcludedDumpFile)
+    with open(os.path.join(LibFolder, "Settings"), "wb") as ExcludedDumpFile:
+        dump(settings, ExcludedDumpFile)
 
     # Byte-Encoded Images
     # Write the File Find Logo in an Image
@@ -238,6 +283,46 @@ def setup():
         b'\x97F3\x14\xb1D\xe4\xb5\x08\x04\xd0\xfb\x85\xcf\x13\x11ZAdZ\xb6\xcf\xbf\xe5\xe4\x06\xf2M\x04g477\xaf\xa2N'
         b'\xc0v:^\xec\xf1x\xdc\xe8iS5\x13\x10\x19v\xffD\x9e\xe2\xd3\x8c\x1e/\x16\x03\x90sD5uNw\xd0\xc4\xbai\xd7\xe2X'
         b'`\xfe\x1fn\xab\xe6\x7fY.!\xbf\x00\x00\x00\x00IEND\xaeB`\x82')
+    # The menubar icon
+    open(os.path.join(AssetsFolder, "menubar_icon_small.png"), "wb").write(
+        b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x002\x00\x00\x00-\x08\x06\x00\x00\x00\xec\xbf8\xff\x00\x00\x00'
+        b'\tpHYs\x00\x00.#\x00\x00.#\x01x\xa5?v\x00\x00\x04MIDATh\xde\xdd\x9aMlUE\x14\xc7\x7f\xe7\xce}T_k\x0bH\x8b'
+        b'\xf4\x83"A\x16UhTHl\xd0hh$j\x8a\x86D\x12\xd3\xa8\x0bA \xbaPt\xc1G$1\x1a\xa3$\x84\xc4\x95\x80\xb2 '
+        b'JBB\xaa\x06\xddX>4\xa6\tF$\x16b\xba\x90\xa6-\xd8\x0fh\xa5}\x94\xf6\x91\xf6\xde\x99q\xe1\x03\xfb.\xaf\xd0'
+        b'\xd7\xd6{[Nr\x17s\xe6\xcd\xb9\xef73g\xe6?\x93+\x89D\xe2Q\xa6\xbfY\x01X\xf7\xce\x0e\xa7\xb5\xe9\xf7\xed\x1d'
+        b'\x17{\xe6\x8e?\x96\xf0p\xe5\x83\'\x0e\x1d\xd8\xffMd8\xab\xd7\xd6\xae\x05\xecD\x9fy%\xa5\x03Q1\xb8\x00C\xbe'
+        b'\x99u\xa3_U\xec\xb4\xd5^VA\x16\xdc\xbf\xf0\x9e\xb6\xd6\x96\xc5\x89+\x83\xb9\x91\x82\xa4M6\xed-\xcb6H[kK5p,'
+        b'\xca$q\xb8C\xcc\xcd\xe0\xdb;\x8e8%\x00\xde\xd0\xb5\xf1\xb6\xcf\xda\x9e\xabY}\xa5\x7fX\xb67\xd4\x1f\xf1o8W'
+        b'\xadyi\xc3d${\xd8\xcf+\xeb6\xbd<\xea\x88,'
+        b']^u\xc2\xda\xa9;\x85D\xe0\xec\xa9\x93+\x01.\xf5&\xe2\xa3\x82\x9c=u\xb2z:l\x80wl\xb2O\x1aH<\x1e/\x14\x91\xcd'
+        b'\xc01\xa5\xdcn\xc0*\xa5\x86\xee\x8e\xe76\x8a8\x07\x1dG\xbd\x00\xe4\x84\xb9jek\x05"\xb2%\x99Ln\xb9\xde1Z\xff'
+        b'\xbb\x90h\xadg\\K\x0eV\x02\x95\xd6R\x0b4\x8b\xc8\x9b\xd6\xda\xfa\xa96"\xe5\xf1x\xee/\xd6\xdamc\x8c\xb5\xc8Z'
+        b'\xfb\x83Rj7 SbDD\x9cr\xb0\xbf&\x93\x83E\xd9\xb6\xd5Zo\x06\xe2\xc0\xa6\xa8A\\k\xcdQ '
+        b'\x13\xc4U\xc7q~4\xc6\\\x04\x88\xc5fTy\xde\xf0\x92\x0c\xbf\xdb\xe88N\xa31fOd '
+        b'\xcau\xdf\xd5\xbe\xff@\xc0m\x80\x0f\x81]\xc6\x98\x1b*\xd8\xf3\x86Q\xae['
+        b'\xa1}\xff\x00\x90\xa6\xe3\x8c1\xbbD\xe4kkmw\xe89\x92\x9f\x9f\x1f\xd7\xbe\xbf\xed&8\xa5\x9e\x05\xde\x07n\x92'
+        b'\xf2\xda\xf7\x9b\xf2\xf2\xf2V\x88\xc8\x91@U\xaeRjs$\xc9\xee\xf9\xfe\xf3@A\xc0\xfd\x9e\xd6\xfa\x96+\xd1\xc0'
+        b'\xc0\xc0\xb0\xb5\xb6VD\x9aG\xfa}\xdf\x7fm\xfe\xfc\x85\x12:\xc8\xb5drMz\xd2KOqq\xf1\xc7cl>\x08|\x10\xf0\x15'
+        b'\xb5_hY\x16:\x08\xb0|d!//\xffpgg\xa7\x19\xb3\xb6\xb0\xb6.('
+        b'1\x0cT\x86\x0e\x12\x8b\xc5\xca\xd2\x96\xa8\xabW\xced\x19"\t\x9cI\xcf/\xb70\xfc\x1c\xf1\xbc\xc9P\x03:M\x1a'
+        b'\x14\xcc\xd4\xa1\x83(\xe5\xf6\x06\\eY\xbfT\xa9\x85#\xcb\x89Do2t\x10\xad\xfd\xd3\xc1\xc3Z\x96!\xaa\x8c\xd6'
+        b'\xb3\x02\xfb\xc9\x9fQ${C\xa0\xfc\x88R\xb1\xc7\xb2h\xbf=\xc34;\x1d:\xc8\x9c\xc2\xa2\xafn\x1e%\xef\x90\x88'
+        b'\xcc\xb9\xbd>\x937\x80\x9a\x80\xbb\x1e\xb8\x1c:\xc8\xdf=\xdd-\xc0wA\x15l\xe18\xb0\xe8\x16\x14oYkwg\xa8'
+        b'\xf9$J\xd1\xb8\x15\xa8N)\xd8\xeb\x1b\xc4R\xe0\x0fG\xa9/\x1dq\xbe\xf7}\xaf\x1d\x88\x89\xc8\nk\xed\xab\xa9'
+        b'\xfaLV\x01\xfc\x1c\x15H\x13\xb0\x01\x08N\xb3\x1c\xa3\xf5z\x83^?b\x03\xbc]\xac\xcfR\x82s_T\x07\xab\x83 '
+        b'oO\xd2qbo\xaac\xa2:!\xdaO\x81U\xc0\xf9,\x1a\r\xfc\x1f0\x93q\xf9p\xd4q\xdd\n\x11\xd9\xaa\x94j\x1cM,'
+        b'\x8a\xc8a\x11\xe7q\xe0\xa1[\x80\xef\x056Fu\xf9\x80\xf1\xfd$\xb0Sk\xbd\x13('
+        b'\x999s\xf6\x92D\xa2\xafl\xf6\xbds\xfa{'
+        b'/\xf7t\xcd+)m\xec\xeah\xef\xbf\xae\x15E\xe4Ikm\x03P\x9a!\xdc\x1e\xc0\x07\xf6\x87\x0e\x12\xb0\x8eD\xa2\xb7'
+        b'\x03\xa0\xf7r\x0f\x00]\x1d\xedA\x05|\x1ex\x02\xf8\t(\xcf\x10\xe3\x8b\xd4l\xf9<\xf4{'
+        b'\xadqX\x1b\xf04pa\x94\xfa}\xc0\x8b\xd3\x01\x04\xe0\x9c\xe38\xd5@\xcf('
+        b'\xf5\x1fM\x17\x10\x8c1\xcd\xa9K\x89\xbf2T/\x9e6 )\xbb\x10\x8b\xc5\xaaE\xa4#\xe0\xaf\x9bn '
+        b'x\x9ew\xceZ\xfbTJ]k\xe0[\xe0\xf5(W\xad\x89Xsj5\x9b\xf8>\xe2\xb89\xbf\x19\x7f\x88\xa9j\x8e\x9bC\xa6\xff\xe7'
+        b'\x02\xe4\xb8N\xdf\x7f\x9b\xdb\xd0\x94\xfe\x12b$\xc4]\xae\xeaK\x03\x99['
+        b'\xb6\xa8n\xe535;&\xf6\xe5C\xb8Vz_\xd1\xa5\xc2\xd2\x05u\xdci\xf6\x0f\xfe\x1e\xbb\xe8\xfb\xe6\xbf+\x00\x00'
+        b'\x00\x00IEND\xaeB`\x82'
+)
+
     # The Find Button Image
     open(os.path.join(AssetsFolder, "Find_button_img_small.png"), "wb").write(
         b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x002\x00\x00\x002\x08\x06\x00\x00\x00\x1e?\x88\xb1\x00\x00\x01'

@@ -8,8 +8,8 @@ import logging
 
 # PyQt6 Gui Imports
 from PyQt6.QtCore import QRect, Qt
-from PyQt6.QtGui import QFont, QPixmap
-from PyQt6.QtWidgets import QMainWindow, QLabel, QPushButton, QFrame, QListWidget, QFileDialog, QComboBox
+from PyQt6.QtGui import QFont, QPixmap, QAction
+from PyQt6.QtWidgets import QMainWindow, QLabel, QPushButton, QFrame, QListWidget, QFileDialog, QComboBox, QMenuBar
 
 # Projects Libraries
 import FF_Files
@@ -169,21 +169,32 @@ class Help_Window:
         excluded_listbox.show()
 
         # Load Files
-        with open(os.path.join(FF_Files.LibFolder, "Excluded_Files.FFExc"), "rb") as ExcludedFile:
-            files = load(ExcludedFile)
+        with open(os.path.join(FF_Files.LibFolder, "Settings"), "rb") as ExcludedFile:
+            files = load(ExcludedFile)["excluded_files"]
         for file in files:
             excluded_listbox.addItem(file)
 
         # Buttons to add or remove Files
         def edit_excluded(input_file, added=True):
-            with open(os.path.join(FF_Files.LibFolder, "Excluded_Files.FFExc"), "rb") as ExcludedUpdateFile:
-                old_files = load(ExcludedUpdateFile)
+
+            # Load Settings
+            with open(os.path.join(FF_Files.LibFolder, "Settings"), "rb") as SettingsFile:
+                settings = load(SettingsFile)
+                excluded_files = settings["excluded_files"]
+
+            # Remove or add input to list
             if added:
-                old_files.append(input_file)
-            if not added:
-                old_files.remove(input_file)
-            with open(os.path.join(FF_Files.LibFolder, "Excluded_Files.FFExc"), "wb") as ExcludedUpdateFile:
-                dump(old_files, ExcludedUpdateFile)
+                excluded_files.append(input_file)
+
+            elif not added:
+                excluded_files.remove(input_file)
+
+            # Add changed Settings to dict
+            settings["excluded_files"] = excluded_files
+
+            # Dump new settings
+            with open(os.path.join(FF_Files.LibFolder, "Settings"), "wb") as SettingsFile:
+                dump(settings, SettingsFile)
 
         def remove_file():
             try:
@@ -210,21 +221,88 @@ class Help_Window:
         # Define the Label
         language_label = QLabel("Language:", parent=self.Help_Window)
         # Change Font
-        language_label.setFont(QFont("Arial", 20))
+        language_label.setFont(QFont("Arial", 15))
         # Display the Label
-        language_label.move(10, 580)
+        language_label.move(10, 560)
         language_label.adjustSize()
         language_label.show()
 
         # Drop Down Menus
-        # Sorting Menu
+        # Language Menu
         # Defining
         combobox_language = QComboBox(self.Help_Window)
         # Adding Options
         combobox_language.addItems(["English"])
         # Display
         combobox_language.show()
-        combobox_language.move(120, 580)
+        combobox_language.adjustSize()
+        combobox_language.move(100, 550)
+
+        # Cache Settings
+        # Define the Label
+        cache_label = QLabel("Delete Cache automatically:", parent=self.Help_Window)
+        # Change Font
+        cache_label.setFont(QFont("Arial", 15))
+        # Display the Label
+        cache_label.move(10, 630)
+        cache_label.adjustSize()
+        cache_label.show()
+
+        # Drop Down Menus
+        # Cache Options Menu
+        # Defining
+        combobox_cache = QComboBox(self.Help_Window)
+        # Adding Options
+        combobox_cache_items = ["On Launch", "after a Day", "after a Week", "Never"]
+        combobox_cache.addItems(combobox_cache_items)
+        with open(os.path.join(FF_Files.LibFolder, "Settings"), "rb") as ReadDefineFile:
+            combobox_cache.setCurrentText(load(ReadDefineFile)["cache"])
+
+        # Updating on change
+        def update_cache_settings():
+            # Saving the Settings and replacing the old settings with the new one
+            with open(os.path.join(FF_Files.LibFolder, "Settings"), "rb") as ReadFile:
+                # Loading Settings
+                settings = load(ReadFile)
+            
+            # Changing Settings
+            settings["cache"] = combobox_cache.currentText()
+            
+            # Dumping new Settings
+            with open(os.path.join(FF_Files.LibFolder, "Settings"), "wb") as WriteFile:
+                dump(settings, WriteFile)
+
+            # Debug
+            logging.info(f"Changed Cache Settings to : {combobox_cache.currentText()}")
+
+        combobox_cache.currentIndexChanged.connect(update_cache_settings)
+        # Display
+        combobox_cache.show()
+        combobox_cache.adjustSize()
+        combobox_cache.move(200, 625)
+
+        # Menubar
+        menu_bar = QMenuBar(self.Help_Window)
+
+        # Menus
+        window_menu = menu_bar.addMenu("&Window")
+        help_menu = menu_bar.addMenu("&Help")
+
+        # Close Window
+        close_action = QAction("&Close Window", self.Help_Window)
+        close_action.triggered.connect(self.Help_Window.hide)
+        close_action.setShortcut("Ctrl+W")
+        window_menu.addAction(close_action)
+
+        # About File Find
+        about_action = QAction("&About File Find", self.Help_Window)
+        about_action.triggered.connect(self.Help_Window.show)
+        help_menu.addAction(about_action)
+
+        # Help
+        help_action = QAction("&File Find Help and Settings", self.Help_Window)
+        help_action.triggered.connect(self.Help_Window.show)
+        help_menu.addAction(help_action)
 
         # Debug
         logging.info("Finished Setting up Help UI\n")

@@ -185,13 +185,14 @@ class Main_Window:
                                                                                                    "Caches",
                                                                                                    "example.txt")))
         l10.move(400, 300)
-        l11 = self.generate_large_filter_label("Search for Folders:", self.generic_tooltip("Search for Folders",
-                                                                                           "Toggle to include folders "
-                                                                                           "in the search results",
-                                                                                           "Yes",
-                                                                                           os.path.join(
-                                                                                               FF_Files.userpath,
-                                                                                               "Downloads")))
+        l11 = self.generate_large_filter_label("Search for:", self.generic_tooltip("Search for",
+                                                                                   "Toggle to only include "
+                                                                                   "Folders or Files"
+                                                                                   " in the search results",
+                                                                                   "only Folders",
+                                                                                   os.path.join(
+                                                                                       FF_Files.userpath,
+                                                                                       "Downloads")))
         l11.move(400, 340)
 
         # -----Sorting-----
@@ -269,20 +270,6 @@ class Main_Window:
         # Select the Button 2
         rb_library2.setChecked(True)
 
-        # Search for Folders
-        # Group for Radio Buttons
-        folder_group = QButtonGroup(self.Root_Window)
-        # Radio Button 1
-        rb_folder1 = self.create_radio_button(folder_group, "Yes")
-        # Move the Button
-        rb_folder1.move(680, 342)
-        # Radio Button 2
-        rb_folder2 = self.create_radio_button(folder_group, "No")
-        # Move the Button
-        rb_folder2.move(740, 342)
-        # Select the Button 2
-        rb_folder2.setChecked(True)
-
         # Reverse Sort
         # Group for Radio Buttons
         reverse_sort_group = QButtonGroup(self.Root_Window)
@@ -298,7 +285,8 @@ class Main_Window:
         rb_reverse_sort2.setChecked(True)
 
         # Drop Down Menus
-        logging.debug("Setting up Combo Box...")
+        logging.debug("Setting up Combo Boxes...")
+
         # Sorting Menu
         # Defining
         combobox_sorting = QComboBox(self.Root_Window)
@@ -307,6 +295,17 @@ class Main_Window:
         # Display
         combobox_sorting.show()
         combobox_sorting.move(240, 300)
+
+        # Search for Files, Folders... Menu
+        # Defining
+        combobox_search_for = QComboBox(self.Root_Window)
+        # Adding Options
+        combobox_search_for.addItems(["Files and Folders",
+                                      "only Files",
+                                      "only Folders"])
+        # Display
+        combobox_search_for.show()
+        combobox_search_for.move(620, 340)
 
         # Date-Time Entries
         logging.debug("Setting up Day Entries...")
@@ -352,11 +351,11 @@ class Main_Window:
                          f"Date Created from: {c_date_from_drop_down.text()} to: {c_date_to_drop_down.text()}\n"
                          f"Content: {e6.text()}\n"
                          f"Search for System files: {rb_library1.isChecked()}\n"
-                         f"Search for Folders: {rb_folder1.isChecked()}\n\n"
+                         f"Search for: {combobox_search_for.currentText()}\n\n"
                          f"Sort results by: {combobox_sorting.currentText()}\n"
                          f"Reverse Results: {rb_reverse_sort1.isChecked()}\n")
 
-        # Start Search for files locally
+        # Start Search with args locally
         def search_entry():
             # Debug
             logging.debug("User clicked Find")
@@ -371,7 +370,7 @@ class Main_Window:
                              data_library=rb_library1.isChecked(),
                              data_search_from=os.getcwd(),
                              data_content=e6.text(),
-                             data_folders=rb_folder1.isChecked(),
+                             data_search_for=combobox_search_for.currentText(),
                              data_edits_list=[c_date_from_drop_down, c_date_to_drop_down, m_date_from_drop_down,
                                               m_date_to_drop_down],
                              data_fn_match=e7.text(),
@@ -592,7 +591,7 @@ class Main_Window:
         # About File Find
         about_action = QAction("&About File Find", self.Root_Window)
         about_action.triggered.connect(lambda: FF_Help_UI.Help_Window(self.Root_Window))
-        about_action.setShortcut("Ctrl+I")
+        about_action.setShortcut("Ctrl+,")
         help_menu.addAction(about_action)
 
         # Help
@@ -602,10 +601,16 @@ class Main_Window:
         help_menu.addAction(help_action)
 
         # Show File Find window
-        reopen = QAction("&Show File Find Window", self.Root_Window)
-        reopen.setShortcut("Ctrl+S")
-        reopen.triggered.connect(self.Root_Window.show)
-        window_menu.addAction(reopen)
+        reopen_action = QAction("&Show File Find Window", self.Root_Window)
+        reopen_action.setShortcut("Ctrl+S")
+        reopen_action.triggered.connect(self.Root_Window.show)
+        window_menu.addAction(reopen_action)
+
+        # Hide File Find window
+        hide_action = QAction("&Hide File Find Window", self.Root_Window)
+        hide_action.setShortcut("Ctrl+W")
+        hide_action.triggered.connect(self.Root_Window.hide)
+        window_menu.addAction(hide_action)
 
         # Search Action
         find_action = QAction("&Search", self.Root_Window)
@@ -623,7 +628,7 @@ class Main_Window:
         # Add this icon to the menu bar
         global menubar_icon
         menubar_icon = QSystemTrayIcon(self.Root_Window)
-        menubar_icon.setIcon(QIcon(os.path.join(FF_Files.AssetsFolder, "FFlogo_small.png")))
+        menubar_icon.setIcon(QIcon(os.path.join(FF_Files.AssetsFolder, "menubar_icon_small.png")))
 
         # File Find Title
         ff_title = QAction("File Find", self.Root_Window)
@@ -645,7 +650,7 @@ class Main_Window:
         menubar_icon_menu.addMenu(search_status_menu)
         menubar_icon_menu.addMenu(search_status_menu)
         menubar_icon_menu.addSeparator()
-        menubar_icon_menu.addAction(reopen)
+        menubar_icon_menu.addAction(reopen_action)
         menubar_icon_menu.addSeparator()
         menubar_icon_menu.addAction(about_action)
         menubar_icon_menu.addAction(quit_action)
