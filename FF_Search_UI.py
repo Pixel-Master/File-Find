@@ -194,11 +194,11 @@ class Search_Window:
 
         # Adding every object from matched_list to self.result_listbox
         logging.debug("Adding Files to Listbox")
-        for file in matched_list:
-            self.result_listbox.addItem(file)
+        for matched_file in matched_list:
+            self.result_listbox.addItem(matched_file)
 
         # On double-click
-        self.result_listbox.itemDoubleClicked.connect(self.file_info)
+        self.result_listbox.itemDoubleClicked.connect(self.open_in_finder)
 
         # Update search-results-ui
         logging.debug("Updating search_results_ui...")

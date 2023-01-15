@@ -6,6 +6,7 @@ import logging
 import os
 from sys import exit
 from pyperclip import copy
+from pickle import load, dump
 
 # PyQt6 Gui Imports
 from PyQt6.QtCore import QSize, QRect
@@ -462,6 +463,9 @@ class Main_Window:
         logging.info("Setting up Menu Bar...")
         self.setup_menu_bar(generate_shell_command)
 
+        # Showing PopUps
+        self.popups()
+
         # Debug
         logging.info("Finished Setting up Main UI\n")
 
@@ -631,16 +635,16 @@ class Main_Window:
         menubar_icon.setIcon(QIcon(os.path.join(FF_Files.AssetsFolder, "menubar_icon_small.png")))
 
         # File Find Title
-        ff_title = QAction("File Find", self.Root_Window)
+        ff_title = QAction("&File Find", self.Root_Window)
         ff_title.setDisabled(True)
 
         # Search Status Menu
         global search_status_menu
-        search_status_menu = QMenu("Searches:", self.Root_Window)
+        search_status_menu = QMenu("&Searches:", self.Root_Window)
         search_status_menu.setDisabled(True)
 
         # Quit File Find
-        quit_action = QAction("Quit File Find", self.Root_Window)
+        quit_action = QAction("&Quit File Find", self.Root_Window)
         quit_action.triggered.connect(lambda: exit(0))
         quit_action.setShortcut(QKeySequence.StandardKey.Quit)
 
@@ -660,6 +664,74 @@ class Main_Window:
         menubar_icon.show()
 
         return menubar_icon
+
+    # Displaying Welcome Popups
+    def popups(self):
+        # Debug
+        logging.debug("Testing for PopUps...")
+
+        # Loading already displayed Popups with pickle
+        with open(os.path.join(FF_Files.LibFolder, "Settings"), "rb") as SettingsFile:
+            settings = load(SettingsFile)
+            popup_dict = settings["popup"]
+
+        if popup_dict["FF_welcome"]:
+            # Debug
+            logging.info("Showing Welcomes PopUp...")
+
+            # Showing welcome messages
+            FF_Additional_UI.msg.show_info_messagebox("Welcome to File Find",
+                                                      "Welcome to File Find!\n\nThanks for Downloading File Find!\n"
+                                                      "File Find is an open-source macOS Utility,"
+                                                      " that makes it easy to find Files.\n\n"
+                                                      "To search fill in the filters you need and leave the filters"
+                                                      " you don't need empty.\n\n\n"
+                                                      "File Find version: "
+                                                      f"{FF_Files.VERSION_SHORT}[{FF_Files.VERSION}]",
+                                                      self.Root_Window)
+            FF_Additional_UI.msg.show_info_messagebox("Welcome to File Find",
+                                                      "Welcome to File Find!\n\nSearch with the Find Button.\n\n"
+                                                      "You can find all Settings in the About Section!\n\n"
+                                                      "Press on the File Find icon in "
+                                                      "the Menubar to check the Search Status!",
+                                                      self.Root_Window)
+            FF_Additional_UI.msg.show_info_messagebox("Welcome to File Find",
+                                                      "Welcome to File Find!\n\n"
+                                                      "If you want to contribute, look at the source code, "
+                                                      "found a bug or have a Feature-Request\n\n"
+                                                      "Go to: https://gitlab.com/Pixel-Mqster/File-Find\n\n\n"
+                                                      "I hope you find all of your Files!",
+                                                      self.Root_Window)
+            # Setting PopUp File
+            popup_dict["FF_welcome"] = False
+            settings["popup"] = popup_dict
+            with open(os.path.join(FF_Files.LibFolder, "Settings"), "wb") as SettingsFile:
+                dump(settings, SettingsFile)
+
+        # Version Welcome PopUps
+        elif popup_dict["FF_ver_welcome"]:
+            # Debug
+            logging.info("Showing Version Welcomes PopUp...")
+
+            # Showing welcome messages
+            FF_Additional_UI.msg.show_info_messagebox("Thanks for Upgrading File Find!",
+                                                      f"Thanks for Upgrading File Find!\n\n"
+                                                      f"File Find is an open-source macOS Utility. \n\n"
+                                                      f"Get Releases at: "
+                                                      f"https://gitlab.com/Pixel-Mqster/File-Find/releases"
+                                                      f"\n\n\n"
+                                                      "File Find version: "
+                                                      f"{FF_Files.VERSION_SHORT}[{FF_Files.VERSION}]"
+                                                      ,
+                                                      self.Root_Window)
+            # Setting PopUp File
+            popup_dict["FF_ver_welcome"] = False
+            settings["popup"] = popup_dict
+            with open(os.path.join(FF_Files.LibFolder, "Settings"), "wb") as SettingsFile:
+                dump(settings, SettingsFile)
+
+    # Debug
+    logging.info("Finished PopUps")
 
     # Generic Label input
     @staticmethod

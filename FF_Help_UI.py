@@ -7,27 +7,44 @@ from pickle import load, dump
 import logging
 
 # PyQt6 Gui Imports
-from PyQt6.QtCore import QRect, Qt
+from PyQt6.QtCore import QRect
 from PyQt6.QtGui import QFont, QPixmap, QAction
-from PyQt6.QtWidgets import QMainWindow, QLabel, QPushButton, QFrame, QListWidget, QFileDialog, QComboBox, QMenuBar
+from PyQt6.QtWidgets import QMainWindow, QLabel, QPushButton, QFrame, QListWidget, QFileDialog, QComboBox, QMenuBar, \
+    QMessageBox
 
+import FF_Additional_UI
 # Projects Libraries
 import FF_Files
 
 
-# The class for the self.Help_Window
+# The class for the Help_Window
 class Help_Window:
     def __init__(self, parent):
         # Debug
         logging.debug("Called Help UI")
+
+        # Test if window was already build
+        global about_window_global
+        if about_window_global is None:
+            logging.debug("Help UI wasn't build already")
+            about_window_global = self.setup(parent)
+            about_window_global.show()
+        else:
+            logging.debug("Help UI was build already")
+            logging.debug("Displaying About Window...")
+            about_window_global.show()
+
+    @staticmethod
+    def setup(parent):
+        # Debug
         logging.info("Building Help UI...")
 
         # A function to generate these Faq texts
         def faq(question, answer, y):
             # The Question
-            question_label = QLabel(self.Help_Window)
+            question_label = QLabel(About_Window)
             question_label.setText(question)
-            bold_font = QFont("Arial", 25)
+            bold_font = QFont("Arial", 20)
             bold_font.setBold(True)
             question_label.setFont(bold_font)
             question_label.adjustSize()
@@ -35,28 +52,21 @@ class Help_Window:
             question_label.move(15, y)
 
             # The Answer
-            answer_label = QLabel(self.Help_Window)
+            answer_label = QLabel(About_Window)
             answer_label.setText(answer)
-            answer_label.setFont(QFont("Arial", 15))
+            answer_label.setFont(QFont("Arial", 13))
             answer_label.adjustSize()
             answer_label.show()
             answer_label.move(25, y + 27)
 
         # The Base Window with Labels
-        self.Help_Window = QMainWindow(parent)
-        self.Help_Window.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint, True)
-        global Help_Window_alias
-        try:
-            Help_Window_alias.show()
-        except NameError:
-            Help_Window_alias = self.Help_Window
-            Help_Window_alias.show()
-        self.Help_Window.setWindowTitle("File Find Help")
-        self.Help_Window.setFixedHeight(700)
-        self.Help_Window.setFixedWidth(700)
+        About_Window = QMainWindow(parent)
+        About_Window.setWindowTitle("File Find Help")
+        About_Window.setFixedHeight(700)
+        About_Window.setFixedWidth(700)
 
         # File Find for macOS Label
-        ff_info = QLabel(self.Help_Window)
+        ff_info = QLabel(About_Window)
         # Change Font and Text
         ff_info.setText("File Find for macOS")
         ff_info.setFont(QFont("Futura", 30))
@@ -66,7 +76,7 @@ class Help_Window:
         ff_info.show()
 
         # File Find Logo
-        ff_logo = QLabel(self.Help_Window)
+        ff_logo = QLabel(About_Window)
         # Set the Icon
         ff_logo_img = QPixmap(os.path.join(FF_Files.AssetsFolder, "FFlogo_small.png"))
         ff_logo.setPixmap(ff_logo_img)
@@ -76,13 +86,13 @@ class Help_Window:
         ff_logo.show()
 
         # The Frame
-        fflogo_frame = QFrame(self.Help_Window)
+        fflogo_frame = QFrame(About_Window)
         fflogo_frame.setGeometry(QRect(100, 40, 500, 250))
         fflogo_frame.setFrameShape(QFrame.Shape.StyledPanel)
         fflogo_frame.show()
 
         # The Version Label
-        version_label = QLabel(self.Help_Window)
+        version_label = QLabel(About_Window)
         # Font and Text
         version_label.setText(f"v. {FF_Files.VERSION_SHORT} ({FF_Files.VERSION})")
         version_label.setFont(QFont("Arial", 15))
@@ -95,7 +105,7 @@ class Help_Window:
 
         # Links using QPushButton
         def generate_link_button(displayed_text, domain, color):
-            link = QPushButton(self.Help_Window)
+            link = QPushButton(About_Window)
             # Font and Text
             link.setText(displayed_text)
             link.setFont(QFont("Arial", 20))
@@ -129,30 +139,18 @@ class Help_Window:
 
         # Settings
 
-        # Settings Label
-        # Define the Label
-        settings_label = QLabel("Settings", parent=self.Help_Window)
-        # Change Font
-        settings_label_font = QFont("Futura", 50)
-        settings_label_font.setBold(True)
-        settings_label.setFont(settings_label_font)
-        # Display the Label
-        settings_label.move(0, 480)
-        settings_label.adjustSize()
-        settings_label.show()
-
         # Excluded Files
         # Define the Label
-        exclude_label = QLabel("Excluded Files", parent=self.Help_Window)
+        exclude_label = QLabel("Excluded Files:", parent=About_Window)
         # Change Font
-        exclude_label.setFont(QFont("Arial", 20))
+        exclude_label.setFont(QFont("Arial", 15))
         # Display the Label
         exclude_label.move(500, 520)
         exclude_label.adjustSize()
         exclude_label.show()
 
         def generate_button(text, command):
-            button = QPushButton(self.Help_Window)
+            button = QPushButton(About_Window)
             button.setText(text)
             button.clicked.connect(command)
             button.show()
@@ -160,7 +158,7 @@ class Help_Window:
             return button
 
         # Listbox
-        excluded_listbox = QListWidget(self.Help_Window)
+        excluded_listbox = QListWidget(About_Window)
         # Resize the List-widget
         excluded_listbox.resize(200, 130)
         # Place
@@ -205,21 +203,21 @@ class Help_Window:
             excluded_listbox.takeItem(excluded_listbox.currentRow())
 
         def add_file():
-            selected_folder = QFileDialog.getExistingDirectory(directory=FF_Files.userpath, parent=self.Help_Window)
+            selected_folder = QFileDialog.getExistingDirectory(directory=FF_Files.userpath, parent=About_Window)
             if selected_folder != "":
                 edit_excluded(selected_folder)
                 excluded_listbox.addItem(selected_folder)
                 logging.info(f"Added Excluded Folder: {selected_folder}")
 
         remove_button = generate_button("-", remove_file)
-        remove_button.move(440, 650)
+        remove_button.move(430, 650)
 
         add_button = generate_button("+", add_file)
-        add_button.move(395, 650)
+        add_button.move(430, 620)
 
         # Language
         # Define the Label
-        language_label = QLabel("Language:", parent=self.Help_Window)
+        language_label = QLabel("Language:", parent=About_Window)
         # Change Font
         language_label.setFont(QFont("Arial", 15))
         # Display the Label
@@ -227,31 +225,106 @@ class Help_Window:
         language_label.adjustSize()
         language_label.show()
 
-        # Drop Down Menus
+        # Drop Down Menu
         # Language Menu
         # Defining
-        combobox_language = QComboBox(self.Help_Window)
+        combobox_language = QComboBox(About_Window)
         # Adding Options
         combobox_language.addItems(["English"])
         # Display
         combobox_language.show()
         combobox_language.adjustSize()
-        combobox_language.move(100, 550)
+        combobox_language.move(200, 550)
+
+        # Open File Find Folder
+        # Define the Label
+        open_ff_folder_label = QLabel("Open File Find Folder:", parent=About_Window)
+        # Change Font
+        open_ff_folder_label.setFont(QFont("Arial", 15))
+        # Display the Label
+        open_ff_folder_label.move(10, 590)
+        open_ff_folder_label.adjustSize()
+        open_ff_folder_label.show()
+
+        # Push Button
+        # Open Button
+        # Defining
+        open_ff_folder_button = QPushButton(About_Window)
+        # Set Text
+        open_ff_folder_button.setText("Open")
+
+        # Open Event
+        def open_lib_folder():
+            folder = FF_Files.LibFolder.replace(" ", "\\ ")
+            os.system(f"open -R {folder}")
+
+        open_ff_folder_button.clicked.connect(open_lib_folder)
+        # Display
+        open_ff_folder_button.show()
+        open_ff_folder_button.adjustSize()
+        open_ff_folder_button.move(205, 585)
+
+        # Reset Settings
+        # Define the Label
+        reset_label = QLabel("Reset all Settings:", parent=About_Window)
+        # Change Font
+        reset_label.setFont(QFont("Arial", 15))
+        # Display the Label
+        reset_label.move(10, 620)
+        reset_label.adjustSize()
+        reset_label.show()
+
+        # Push Button
+        # Reset Button
+        # Defining
+        reset_button = QPushButton(About_Window)
+        # Set Text
+        reset_button.setText("Reset")
+
+        # Reset Event
+        def reset_settings():
+            # Ask to reset
+            if QMessageBox.information(parent, "Resetting?",
+                                       "Are you sure to reset?\nResetting requires a restart!",
+                                       QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel) \
+                    != QMessageBox.StandardButton.Cancel:
+                # Reset the settings File
+                with open(os.path.join(FF_Files.LibFolder, "Settings"), "wb") as SettingsFile:
+                    settings = {"first_version": f"{FF_Files.VERSION_SHORT}[{FF_Files.VERSION}]",
+                                "version": f"{FF_Files.VERSION_SHORT}[{FF_Files.VERSION}]",
+                                "excluded_files": [],
+                                "cache": "On Launch",
+                                "popup": {"FF_ver_welcome": True, "FF_welcome": True, "search_question": True}}
+                    dump(settings, SettingsFile)
+
+                    # Display a Messagebox
+                    FF_Additional_UI.msg.show_info_messagebox("Resetted!", "Resetted all Settings\n\nRestarting now...",
+                                                              About_Window)
+
+                    # Quitting
+                    exit(0)
+
+        reset_button.clicked.connect(reset_settings)
+
+        # Display
+        reset_button.show()
+        reset_button.adjustSize()
+        reset_button.move(205, 615)
 
         # Cache Settings
         # Define the Label
-        cache_label = QLabel("Delete Cache automatically:", parent=self.Help_Window)
+        cache_label = QLabel("Delete Cache automatically:", parent=About_Window)
         # Change Font
         cache_label.setFont(QFont("Arial", 15))
         # Display the Label
-        cache_label.move(10, 630)
+        cache_label.move(10, 650)
         cache_label.adjustSize()
         cache_label.show()
 
-        # Drop Down Menus
+        # Drop Down Menu
         # Cache Options Menu
         # Defining
-        combobox_cache = QComboBox(self.Help_Window)
+        combobox_cache = QComboBox(About_Window)
         # Adding Options
         combobox_cache_items = ["On Launch", "after a Day", "after a Week", "Never"]
         combobox_cache.addItems(combobox_cache_items)
@@ -264,10 +337,10 @@ class Help_Window:
             with open(os.path.join(FF_Files.LibFolder, "Settings"), "rb") as ReadFile:
                 # Loading Settings
                 settings = load(ReadFile)
-            
+
             # Changing Settings
             settings["cache"] = combobox_cache.currentText()
-            
+
             # Dumping new Settings
             with open(os.path.join(FF_Files.LibFolder, "Settings"), "wb") as WriteFile:
                 dump(settings, WriteFile)
@@ -276,36 +349,40 @@ class Help_Window:
             logging.info(f"Changed Cache Settings to : {combobox_cache.currentText()}")
 
         combobox_cache.currentIndexChanged.connect(update_cache_settings)
+
         # Display
         combobox_cache.show()
         combobox_cache.adjustSize()
-        combobox_cache.move(200, 625)
+        combobox_cache.move(200, 645)
 
         # Menubar
-        menu_bar = QMenuBar(self.Help_Window)
+        menu_bar = QMenuBar(About_Window)
 
         # Menus
         window_menu = menu_bar.addMenu("&Window")
         help_menu = menu_bar.addMenu("&Help")
 
         # Close Window
-        close_action = QAction("&Close Window", self.Help_Window)
-        close_action.triggered.connect(self.Help_Window.hide)
+        close_action = QAction("&Close Window", About_Window)
+        close_action.triggered.connect(About_Window.hide)
         close_action.setShortcut("Ctrl+W")
         window_menu.addAction(close_action)
 
         # About File Find
-        about_action = QAction("&About File Find", self.Help_Window)
-        about_action.triggered.connect(self.Help_Window.show)
+        about_action = QAction("&About File Find", About_Window)
+        about_action.triggered.connect(About_Window.show)
         help_menu.addAction(about_action)
 
         # Help
-        help_action = QAction("&File Find Help and Settings", self.Help_Window)
-        help_action.triggered.connect(self.Help_Window.show)
+        help_action = QAction("&File Find Help and Settings", About_Window)
+        help_action.triggered.connect(About_Window.show)
         help_menu.addAction(help_action)
 
         # Debug
         logging.info("Finished Setting up Help UI\n")
 
+        # Sets the Window
+        return About_Window
 
-global Help_Window_alias
+
+about_window_global = None

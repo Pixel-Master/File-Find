@@ -4,11 +4,9 @@
 # Imports
 import logging
 import os
-import asyncio
-from sys import exit
 from fnmatch import fnmatch
 from pickle import dump, load
-from threading import Thread
+from sys import exit
 from time import perf_counter, mktime
 
 # PyQt6 Gui Imports
@@ -289,7 +287,7 @@ class search:
         self.ui_logger.update("Indexing...")
 
         # Applies filters, when they don't match the function returns False, else True
-        async def check_file(found_file):
+        def check_file(found_file):
 
             # Looks for basename to be faster
             basename = os.path.basename(found_file)
@@ -366,6 +364,8 @@ class search:
                             if data_content in line:
                                 does_contain = True
                                 break
+                    if not does_contain:
+                        return False
                 except (UnicodeDecodeError, FileNotFoundError, OSError):
                     return False
                 else:

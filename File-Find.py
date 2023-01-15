@@ -16,7 +16,7 @@ import FF_Main_UI
 if __name__ == "__main__":
     # Setup Logging
     logging.basicConfig(level=logging.DEBUG,
-                        format='File Find[%(asctime)s] with %(levelname)s in %(pathname)s: %(message)s',)
+                        format='File Find[%(asctime)s] with %(levelname)s in %(pathname)s: %(message)s')
     logging.info(f"Launching File Find with Version {FF_Files.VERSION_SHORT}[{FF_Files.VERSION}]...\n")
 
     # Creating QApplication
