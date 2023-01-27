@@ -1,5 +1,5 @@
 # This File is a part of File Find made by Pixel-Master and licensed under the GNU GPL v3
-# This script contains File operations and global variables
+# This file contains File operations and global variables
 
 # Imports
 import os
@@ -11,24 +11,32 @@ from time import time
 import FF_Additional_UI
 
 # Creating File-Find dir and deleting Cache
-userpath = os.path.expanduser("~")
-os.chdir(userpath)
+USER_FOLDER = os.path.expanduser("~")
+os.chdir(USER_FOLDER)
 
-LibFolder = os.path.join(os.getcwd(), "Library", "Application Support", "File-Find")
-Cached_SearchesFolder = os.path.join(LibFolder, "Cached Searches")
-Saved_SearchFolder = os.path.join(LibFolder, "Saved Searches")
-AssetsFolder = os.path.join(LibFolder, "assets")
+FF_LIB_FOLDER = os.path.join(os.getcwd(), "Library", "Application Support", "File-Find")
+CACHED_SEARCHES_FOLDER = os.path.join(FF_LIB_FOLDER, "Cached Searches")
+SAVED_SEARCHES_FOLDER = os.path.join(FF_LIB_FOLDER, "Saved Searches")
+ASSETS_FOLDER = os.path.join(FF_LIB_FOLDER, "assets")
 
 # Versions
-VERSION: str = "beta_15-jan-2023"
+VERSION: str = "beta_27-jan-2023"
 VERSION_SHORT: str = "0.0"
+
+# Standard content of Settings File
+# The Structure of the settings File
+STANDARD_SETTINGS = {"first_version": f"{VERSION_SHORT}[{VERSION}]",
+                     "version": f"{VERSION_SHORT}[{VERSION}]",
+                     "excluded_files": [],
+                     "cache": "On Launch",
+                     "popup": {"FF_ver_welcome": False, "FF_welcome": True, "search_question": True}}
 
 
 # Remove Search cache
 def remove_cache(show_popup: bool = False, parent=None):
     logging.debug("Starting cleaning Cache..")
-    for file in os.listdir(Cached_SearchesFolder):
-        os.remove(os.path.join(Cached_SearchesFolder, file))
+    for file in os.listdir(CACHED_SEARCHES_FOLDER):
+        os.remove(os.path.join(CACHED_SEARCHES_FOLDER, file))
     if show_popup:
         FF_Additional_UI.msg.show_info_messagebox("Cleared Cache", "Cleared Cache successfully!", parent)
     logging.info("Cleared Cache successfully!\n")
@@ -39,7 +47,7 @@ def cache_test(is_launching):
     logging.debug("Testing if cache should be deleted..")
 
     # Loading Settings File
-    with open(os.path.join(LibFolder, "Settings"), "rb") as SettingsFile:
+    with open(os.path.join(FF_LIB_FOLDER, "Settings"), "rb") as SettingsFile:
         # Taking the item four because it is the Cache Setting
         cache_settings = load(SettingsFile)["cache"]
         logging.debug(f"{cache_settings = }")
@@ -47,28 +55,28 @@ def cache_test(is_launching):
     # Deleting Cache on Launch
     if cache_settings == "On Launch" and is_launching:
         logging.debug("Deleting Cache!")
-        for file in os.listdir(Cached_SearchesFolder):
-            os.remove(os.path.join(Cached_SearchesFolder, file))
+        for file in os.listdir(CACHED_SEARCHES_FOLDER):
+            os.remove(os.path.join(CACHED_SEARCHES_FOLDER, file))
 
     # Deleting Cache after a Day
     elif cache_settings == "after a Day":
         SECONDS_OF_A_DAY = 86400
 
-        # Looping through every File in Cached_SearchesFolder
-        for file in os.listdir(Cached_SearchesFolder):
-            if os.stat(os.path.join(Cached_SearchesFolder, file)).st_birthtime <= time() - SECONDS_OF_A_DAY:
+        # Looping through every File in CACHED_SEARCHES_FOLDER
+        for file in os.listdir(CACHED_SEARCHES_FOLDER):
+            if os.stat(os.path.join(CACHED_SEARCHES_FOLDER, file)).st_birthtime <= time() - SECONDS_OF_A_DAY:
                 logging.debug(f"Deleting Cache for File: {file}")
-                os.remove(os.path.join(Cached_SearchesFolder, file))
+                os.remove(os.path.join(CACHED_SEARCHES_FOLDER, file))
 
     # Deleting Cache after a Week
     elif cache_settings == "after a Week":
         SECONDS_OF_A_WEEK = 604800
 
-        # Looping through every File in Cached_SearchesFolder
-        for file in os.listdir(Cached_SearchesFolder):
-            if os.stat(os.path.join(Cached_SearchesFolder, file)).st_birthtime <= time() - SECONDS_OF_A_WEEK:
+        # Looping through every File in CACHED_SEARCHES_FOLDER
+        for file in os.listdir(CACHED_SEARCHES_FOLDER):
+            if os.stat(os.path.join(CACHED_SEARCHES_FOLDER, file)).st_birthtime <= time() - SECONDS_OF_A_WEEK:
                 logging.debug(f"Deleting Cache for File: {file}")
-                os.remove(os.path.join(Cached_SearchesFolder, file))
+                os.remove(os.path.join(CACHED_SEARCHES_FOLDER, file))
 
     # Skipping
     else:
@@ -121,15 +129,17 @@ def conv_file_size(byte_size: int) -> str:
 
 # Setup File-Find dir
 def setup():
-    logging.info("Setting up Library Folder...")
-    os.makedirs(Saved_SearchFolder, exist_ok=True)
-    os.makedirs(Cached_SearchesFolder, exist_ok=True)
-    os.makedirs(AssetsFolder, exist_ok=True)
+    logging.info("Setting up Library Folder...\n")
+    os.makedirs(SAVED_SEARCHES_FOLDER, exist_ok=True)
+    os.makedirs(CACHED_SEARCHES_FOLDER, exist_ok=True)
+    os.makedirs(ASSETS_FOLDER, exist_ok=True)
 
     # Setting up Settings File
     try:
+        # Debug
+        logging.info("Loading Settings...")
 
-        with open(os.path.join(LibFolder, "Settings"), "rb") as SettingsLoadFile:
+        with open(os.path.join(FF_LIB_FOLDER, "Settings"), "rb") as SettingsLoadFile:
             settings: dict = load(SettingsLoadFile)
 
             # Testing if an update was performed
@@ -144,25 +154,26 @@ def setup():
             settings["cache"] = settings["cache"]
             settings["popup"] = {"FF_ver_welcome": settings["popup"]["FF_ver_welcome"],
                                  "FF_welcome": settings["popup"]["FF_welcome"],
-                                 "search_question": settings["popup"]["FF_welcome"]}
+                                 "search_question": settings["popup"]["search_question"]}
             if updated:
-                settings["popup"]["FF_ver_welcome"] = False
+                settings["popup"]["FF_ver_welcome"] = True
+
+            logging.info(f"Settings: {settings}")
 
     # If the settings file doesn't exist or is too old, replacing it
-    except (UnpicklingError, EOFError, FileNotFoundError, KeyError):
-        # The Structure of the settings File
-        settings = {"first_version": f"{VERSION_SHORT}[{VERSION}]",
-                    "version": f"{VERSION_SHORT}[{VERSION}]",
-                    "excluded_files": [],
-                    "cache": "On Launch",
-                    "popup": {"FF_ver_welcome": True, "FF_welcome": True, "search_question": True}}
+    except (UnpicklingError, EOFError, FileNotFoundError, KeyError) as FileError:
+        # Replacing the settings var
+        settings = STANDARD_SETTINGS
 
-    with open(os.path.join(LibFolder, "Settings"), "wb") as ExcludedDumpFile:
+        # Debug
+        logging.info(f"Resetted Settings to: {STANDARD_SETTINGS}\n because of:\n{FileError}")
+
+    with open(os.path.join(FF_LIB_FOLDER, "Settings"), "wb") as ExcludedDumpFile:
         dump(settings, ExcludedDumpFile)
 
     # Byte-Encoded Images
     # Write the File Find Logo in an Image
-    open(os.path.join(AssetsFolder, "FFlogo_small.png"), "wb").write(
+    open(os.path.join(ASSETS_FOLDER, "FFlogo_small.png"), "wb").write(
         b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00w\x00\x00\x00x\x08\x06\x00\x00\x00\xc8om_\x00\x00\x01'
         b'\xaeiCCPICC Profile\x00\x00(\x91}\x91=H[Q\x14\xc7\x7fF\xc5 '
         b'\x11\x07;\x08\n}\x83:\xa9Htp\xd3\xc4A\x05\x85\x10-\xa8u\xf0\xe5\xe5\xab\x90<//\x11\x11\xdcZhG\x8b\x82\xe8'
@@ -302,7 +313,7 @@ def setup():
         b'\xc0v:^\xec\xf1x\xdc\xe8iS5\x13\x10\x19v\xffD\x9e\xe2\xd3\x8c\x1e/\x16\x03\x90sD5uNw\xd0\xc4\xbai\xd7\xe2X'
         b'`\xfe\x1fn\xab\xe6\x7fY.!\xbf\x00\x00\x00\x00IEND\xaeB`\x82')
     # The menubar icon
-    open(os.path.join(AssetsFolder, "menubar_icon_small.png"), "wb").write(
+    open(os.path.join(ASSETS_FOLDER, "Menubar_icon_small.png"), "wb").write(
         b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x002\x00\x00\x00-\x08\x06\x00\x00\x00\xec\xbf8\xff\x00\x00\x00'
         b'\tpHYs\x00\x00.#\x00\x00.#\x01x\xa5?v\x00\x00\x01\x03IDATh\xde\xedW\xcb\x0e\xc3 '
         b'\x0c#)\xda\x9f\xef\xd6\xaf\xe3\x87\xbc\xeb\xa4i\xa5@B\x1ej\xa4J= '
@@ -315,7 +326,7 @@ def setup():
         b'=\xae\xe4\x19Z\xeb\x894\xf1\x01\xd7-8u\xc2\xfc\\\x84\x00\x00\x00\x00IEND\xaeB`\x82')
 
     # The Find Button Image
-    open(os.path.join(AssetsFolder, "Find_button_img_small.png"), "wb").write(
+    open(os.path.join(ASSETS_FOLDER, "Find_button_img_small.png"), "wb").write(
         b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x002\x00\x00\x002\x08\x06\x00\x00\x00\x1e?\x88\xb1\x00\x00\x01'
         b'\xb2iCCPICC Profile\x00\x00(\x91}\x91=H['
         b'Q\x14\xc7\x7f&\x15\x83\xa4\x14\xb1\x83\x83\xc3\x1bbAP\t\xb1C)\x0e5\x19\x82`!D\x0bZ\x1d|y\xf9*$\xcf\xcbKD'
@@ -383,7 +394,7 @@ def setup():
         b'\x0e\xc9\x1fF\x1fONN\xcej{\xa3l\xac@c\x05j\xaf\xc0\xff#\x81\x10\xd1\x0e\x9b\xbb|\x00\x00\x00\x00IEND\xaeB'
         b'`\x82')
     # The Image of the Button, next to the Find Button
-    open(os.path.join(AssetsFolder, "More_button_img_small.png"), "wb").write(
+    open(os.path.join(ASSETS_FOLDER, "More_button_img_small.png"), "wb").write(
         b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00d\x00\x00\x00d\x08\x06\x00\x00\x00p\xe2\x95T\x00\x00\x01'
         b'\x84iCCPICC profile\x00\x00(\x91}\x91=H\xc3@\x1c\xc5_[E)\x15\x073\x888\x04Z\x9d,'
         b'\x88\x8a8j\x15\x8aP!\xd4\n\xad:\x98\\\xfa\x05M\x1a\x92\x14\x17G\xc1\xb5\xe0\xe0\xc7b\xd5\xc1\xc5YW\x07WA'
@@ -412,7 +423,7 @@ def setup():
         b'\x92$I\x92$I\x92$I\x92$I\x92$I\x92$I\x92$I\x92$I\x92\x1a|\x025>\x86\xd0\xdb\x17S\x8d\x00\x00\x00\x00IEND'
         b'\xaeB`\x82')
     # The Image for the Help Buttton
-    open(os.path.join(AssetsFolder, "Info_button_img_small.png"), "wb").write(
+    open(os.path.join(ASSETS_FOLDER, "Info_button_img_small.png"), "wb").write(
         b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00d\x00\x00\x00d\x08\x06\x00\x00\x00p\xe2\x95T\x00\x00\x01'
         b'\xaeiCCPICC Profile\x00\x00(\x91}\x91=H[Q\x14\xc7\x7fF\xeb\x17Q\x0738\x08>\x8a\xed\xa4Eb\x07GM\x06\x11,'
         b'\x84hA\xabC_^\xbe\x84\xe4yy\x89\x88 -H\xa1\xab\xa0Xt\xf0s\xe8\xeaT]\x04\x11WA\x10j\x05qtr\xea\x87\x8b\xc8'
@@ -505,7 +516,7 @@ def setup():
         b'\'\x9a\x00\x0eO\xf0M\xdc\xe3\x81\x06\x80\xc3\xf1\xee\xe9\xdd#\xd8\xb6\x03\xe8\x03x-\xe8\x02('
         b'\x02\x87v\xb8<\x00\x88\xb5\xff\x01]\xbaO\x9b\xc9\xbb\x12c\x00\x00\x00\x00IEND\xaeB`\x82')
     # The Image for the Time
-    open(os.path.join(AssetsFolder, "Time_button_img_small.png"), "wb").write(
+    open(os.path.join(ASSETS_FOLDER, "Time_button_img_small.png"), "wb").write(
         b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00d\x00\x00\x00d\x08\x06\x00\x00\x00p\xe2\x95T\x00\x00\x01'
         b'\x84iCCPICC profile\x00\x00(\x91}\x91=H\xc3@\x1c\xc5_[E)\x15\x073\x888\x04Z\x9d,'
         b'\x88\x8a8j\x15\x8aP!\xd4\n\xad:\x98\\\xfa\x05M\x1a\x92\x14\x17G\xc1\xb5\xe0\xe0\xc7b\xd5\xc1\xc5YW\x07WA'

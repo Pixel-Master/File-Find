@@ -1,5 +1,5 @@
 # This File is a part of File Find made by Pixel-Master and licensed under the GNU GPL v3
-# This script contains the class for the Search Results window
+# This file contains the code for the search-results window
 
 # Imports
 import hashlib
@@ -106,13 +106,13 @@ class Search_Window:
                         matched_list.remove(matched_file)
                         logging.debug(f"File Does Not exist: {matched_file}")
                         removed_list.append(matched_file)
-                with open(os.path.join(FF_Files.Cached_SearchesFolder, search_path.replace("/", "-") + ".FFCache"),
+                with open(os.path.join(FF_Files.CACHED_SEARCHES_FOLDER, search_path.replace("/", "-") + ".FFCache"),
                           "rb") as SearchFile:
                     cached_files = list(load(SearchFile))
                 for cached_file in cached_files:
                     if cached_file in removed_list:
                         cached_files.remove(cached_file)
-                with open(os.path.join(FF_Files.Cached_SearchesFolder, search_path.replace("/", "-") + ".FFCache"),
+                with open(os.path.join(FF_Files.CACHED_SEARCHES_FOLDER, search_path.replace("/", "-") + ".FFCache"),
                           "wb") as SearchFile:
                     dump(cached_files, SearchFile)
                 logging.info(f"Reloaded found Files and removed {len(removed_list)} in"
@@ -132,13 +132,13 @@ class Search_Window:
         # Save Search
         def save_search():
             save_dialog = QFileDialog.getSaveFileName(self.Search_Results_Window, "Export File Find Search",
-                                                      FF_Files.Saved_SearchFolder,
+                                                      FF_Files.SAVED_SEARCHES_FOLDER,
                                                       "File Find Search (*.FFSave);;Plain Text File (*.txt)")
             save_file = save_dialog[0]
             if save_file.endswith(".txt") and not os.path.exists(save_file):
                 with open(save_file, "w") as ExportFile:
-                    for matched_file in matched_list:
-                        ExportFile.write(matched_file + "\n")
+                    for save_file in matched_list:
+                        ExportFile.write(save_file + "\n")
             elif save_file.endswith(".FFSave") and not os.path.exists(save_file):
                 with open(save_file, "wb") as ExportFile:
                     dump(matched_list, ExportFile)
@@ -159,7 +159,7 @@ class Search_Window:
             return button
 
         # Button to open the File in Finder
-        show_in_finder = generate_button("Reveal in Finder", self.open_in_finder)
+        show_in_finder = generate_button("Show in Finder", self.open_in_finder)
         show_in_finder.move(10, 650)
 
         # Button to open the File
@@ -177,7 +177,7 @@ class Search_Window:
         # Time stat Button
         show_time = generate_button(None, show_time_stats, )
         # Icon
-        show_time.setIcon(QIcon(os.path.join(FF_Files.AssetsFolder, "Time_button_img_small.png")))
+        show_time.setIcon(QIcon(os.path.join(FF_Files.ASSETS_FOLDER, "Time_button_img_small.png")))
         show_time.setIconSize(QSize(23, 23))
         # Place
         show_time.resize(50, 40)
@@ -194,8 +194,10 @@ class Search_Window:
 
         # Adding every object from matched_list to self.result_listbox
         logging.debug("Adding Files to Listbox")
-        for matched_file in matched_list:
-            self.result_listbox.addItem(matched_file)
+        for list_file in matched_list:
+            self.result_listbox.addItem(list_file)
+        # Setting the row
+        self.result_listbox.setCurrentRow(0)
 
         # On double-click
         self.result_listbox.itemDoubleClicked.connect(self.open_in_finder)
@@ -222,7 +224,7 @@ class Search_Window:
 
         # Push Notification
         FF_Main_UI.menubar_icon.showMessage("File Find - Search finished!", f"Your Search finished!\nin {search_path}",
-                                            QIcon(os.path.join(FF_Files.AssetsFolder, "Find_button_img_small.png")),
+                                            QIcon(os.path.join(FF_Files.ASSETS_FOLDER, "Find_button_img_small.png")),
                                             100000)
 
     def menubar(self, save_search, reload_files):
@@ -268,11 +270,11 @@ class Search_Window:
         open_action.setShortcut("Ctrl+O")
         tools_menu.addAction(open_action)
 
-        # Reveal File in Finder Action
-        reveal_action = QAction("&Reveal Selected File in Finder", self.Search_Results_Window)
-        reveal_action.triggered.connect(self.open_in_finder)
-        reveal_action.setShortcut("Ctrl+Shift+O")
-        tools_menu.addAction(reveal_action)
+        # Show File in Finder Action
+        show_action = QAction("&Show Selected File in Finder", self.Search_Results_Window)
+        show_action.triggered.connect(self.open_in_finder)
+        show_action.setShortcut("Ctrl+Shift+O")
+        tools_menu.addAction(show_action)
 
         # File Info
         info_action = QAction("&Info for Selected File", self.Search_Results_Window)
@@ -315,7 +317,7 @@ class Search_Window:
         except AttributeError:
             FF_Additional_UI.msg.show_critical_messagebox("Error!", "Select a File!", self.Search_Results_Window)
 
-    # Reveals a file
+    # Shows a file in finder
     def open_in_finder(self):
         try:
             selected_file = self.result_listbox.currentItem().text()
@@ -336,18 +338,30 @@ class Search_Window:
             # Debug
             logging.debug("Called File Info")
             try:
+
+                # Getting File Type
+                if os.path.islink(file):
+                    filetype = "Alias / File Link"
+                elif os.path.isfile(file):
+                    filetype = "File"
+                elif os.path.isdir(file):
+                    filetype = "Folder"
+                else:
+                    filetype = "Unknown"
+
                 FF_Additional_UI.msg.show_info_messagebox(f"Information about: {file}",
                                                           f"File Info:\n"
                                                           f"\n\n"
                                                           f"Path: {file}\n"
                                                           f"\n"
+                                                          f"Type: {filetype}\n"
                                                           f"File Name: {os.path.basename(file)}\n"
                                                           f"Size: "
                                                           f"{FF_Files.conv_file_size(FF_Files.get_file_size(file))}\n"
                                                           f"Date Created: {ctime(os.stat(file).st_birthtime)}\n"
                                                           f"Date Modified: {ctime(os.path.getmtime(file))}\n",
                                                           self.Search_Results_Window)
-            except FileNotFoundError:
+            except (FileNotFoundError, PermissionError):
                 logging.error(f"{file} does not Exist!")
                 FF_Additional_UI.msg.show_critical_messagebox("File Not Found!", "File does not exist!\nReload!",
                                                               self.Search_Results_Window)

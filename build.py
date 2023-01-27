@@ -10,7 +10,6 @@ import sys
 # Cleaning
 os.system("rm -rf dist build")
 
-
 # Finding and Setting architecture
 arch = subprocess.run(["arch"], capture_output=True, text=True, check=True).stdout.replace("\n", "")
 
@@ -21,20 +20,25 @@ sys.argv.append("py2app")
 
 APP = ["File-Find.py"]
 DATA_FILES = []
+
+# py2app Options
 OPTIONS = {"arch": arch,
            "iconfile": os.path.join(os.getcwd(), "assets", "icon.icns"),
+           # Plist Options
            "plist": {"LSUIElement": False,
-                     "NSHumanReadableCopyright": "Copyright (c) 2022 Pixel-Master. Licensed under GNU GPL v3",
-                     "CFBundleIdentifier": "io.github.pixel-master",
-                     "CFBundleShortVersionString": "0.0"}}
+                     "NSHumanReadableCopyright": "Copyright © 2022–2023 Pixel Master. All rights reserved.",
+                     "CFBundleIdentifier": "io.github.pixel-master.file-find",
+                     "CFBundleShortVersionString": "0.0",
+                     "LSApplicationCategoryType": "public.app-category.utilities",
+                     "NSSupportsSuddenTermination": True}}
 # Building App
 setup(
-   app=APP,
-   data_files=DATA_FILES,
-   options={"py2app": OPTIONS},
-   setup_requires=["py2app"],
-   version="1.0",
-   name="File Find",
+    app=APP,
+    data_files=DATA_FILES,
+    options={"py2app": OPTIONS},
+    setup_requires=["py2app"],
+    version="1.0",
+    name="File Find",
 )
 
 # Building DMG

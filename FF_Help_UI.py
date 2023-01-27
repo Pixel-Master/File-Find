@@ -1,5 +1,5 @@
 # This File is a part of File Find made by Pixel-Master and licensed under the GNU GPL v3
-# This script contains the classes for additional GUI components like the Help Window
+# This file contains the code for the About window
 
 # Imports
 import os
@@ -10,11 +10,11 @@ import logging
 from PyQt6.QtCore import QRect
 from PyQt6.QtGui import QFont, QPixmap, QAction
 from PyQt6.QtWidgets import QMainWindow, QLabel, QPushButton, QFrame, QListWidget, QFileDialog, QComboBox, QMenuBar, \
-    QMessageBox
+    QMessageBox, QCheckBox
 
-import FF_Additional_UI
 # Projects Libraries
 import FF_Files
+import FF_Additional_UI
 
 
 # The class for the Help_Window
@@ -78,7 +78,7 @@ class Help_Window:
         # File Find Logo
         ff_logo = QLabel(About_Window)
         # Set the Icon
-        ff_logo_img = QPixmap(os.path.join(FF_Files.AssetsFolder, "FFlogo_small.png"))
+        ff_logo_img = QPixmap(os.path.join(FF_Files.ASSETS_FOLDER, "FFlogo_small.png"))
         ff_logo.setPixmap(ff_logo_img)
         # Display the Icon
         ff_logo.move(280, 50)
@@ -123,7 +123,7 @@ class Help_Window:
         sourcecode = generate_link_button("Source Code", "https://gitlab.com/Pixel-Mqster/File-Find", "blue")
         sourcecode.move(120, 250)
 
-        update = generate_link_button("Update", "https://gitlab.com/Pixel-Mqster/File-Find/-/releases", "green")
+        update = generate_link_button("Update", "https://gitlab.com/Pixel-Mqster/File-Find/releases", "green")
         update.move(310, 250)
 
         faq_link = generate_link_button("FaQ", "https://gitlab.com/Pixel-Mqster/File-Find#faq", "red")
@@ -167,7 +167,7 @@ class Help_Window:
         excluded_listbox.show()
 
         # Load Files
-        with open(os.path.join(FF_Files.LibFolder, "Settings"), "rb") as ExcludedFile:
+        with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "rb") as ExcludedFile:
             files = load(ExcludedFile)["excluded_files"]
         for file in files:
             excluded_listbox.addItem(file)
@@ -176,7 +176,7 @@ class Help_Window:
         def edit_excluded(input_file, added=True):
 
             # Load Settings
-            with open(os.path.join(FF_Files.LibFolder, "Settings"), "rb") as SettingsFile:
+            with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "rb") as SettingsFile:
                 settings = load(SettingsFile)
                 excluded_files = settings["excluded_files"]
 
@@ -191,7 +191,7 @@ class Help_Window:
             settings["excluded_files"] = excluded_files
 
             # Dump new settings
-            with open(os.path.join(FF_Files.LibFolder, "Settings"), "wb") as SettingsFile:
+            with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "wb") as SettingsFile:
                 dump(settings, SettingsFile)
 
         def remove_file():
@@ -203,7 +203,7 @@ class Help_Window:
             excluded_listbox.takeItem(excluded_listbox.currentRow())
 
         def add_file():
-            selected_folder = QFileDialog.getExistingDirectory(directory=FF_Files.userpath, parent=About_Window)
+            selected_folder = QFileDialog.getExistingDirectory(directory=FF_Files.USER_FOLDER, parent=About_Window)
             if selected_folder != "":
                 edit_excluded(selected_folder)
                 excluded_listbox.addItem(selected_folder)
@@ -214,6 +214,53 @@ class Help_Window:
 
         add_button = generate_button("+", add_file)
         add_button.move(430, 620)
+
+        # Ask when searching
+        # Define the Label
+        ask_search_label = QLabel("Ask when searching:", parent=About_Window)
+        # Change Font
+        ask_search_label.setFont(QFont("Arial", 15))
+        # Display the Label
+        ask_search_label.move(10, 530)
+        ask_search_label.adjustSize()
+        ask_search_label.show()
+
+        # Push Button
+        # Ask Checkbox
+        # Defining
+        ask_search_checkbox = QCheckBox(About_Window)
+
+        # Open Event
+        def ask_search_change():
+            # Saving the Settings and replacing the old settings with the new one
+            with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "rb") as ReadFile:
+                # Loading Settings
+                settings = load(ReadFile)
+
+            # Changing Settings
+            settings["popup"]["search_question"] = ask_search_checkbox.isChecked()
+
+            logging.info(f"Changed PopUp Settings Search Question:"
+                         f" Ask when Searching {ask_search_checkbox.isChecked()}")
+            # Dumping new Settings
+            with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "wb") as WriteFile:
+                dump(settings, WriteFile)
+
+        ask_search_checkbox.toggled.connect(ask_search_change)
+
+        # Loading Settings
+        with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "rb") as ReadLoadFile:
+            # Loading Settings
+            ask_searching_settings = load(ReadLoadFile)["popup"]["search_question"]
+
+            # Changing Settings
+            if ask_searching_settings:
+                ask_search_checkbox.setChecked(True)
+
+        # Display
+        ask_search_checkbox.show()
+        ask_search_checkbox.adjustSize()
+        ask_search_checkbox.move(205, 525)
 
         # Language
         # Define the Label
@@ -255,7 +302,11 @@ class Help_Window:
 
         # Open Event
         def open_lib_folder():
-            folder = FF_Files.LibFolder.replace(" ", "\\ ")
+            # Debug
+            logging.debug(f"Open File Find Folder: {FF_Files.FF_LIB_FOLDER}")
+
+            # Opening folder with the macOS open command
+            folder = FF_Files.FF_LIB_FOLDER.replace(" ", "\\ ")
             os.system(f"open -R {folder}")
 
         open_ff_folder_button.clicked.connect(open_lib_folder)
@@ -266,7 +317,7 @@ class Help_Window:
 
         # Reset Settings
         # Define the Label
-        reset_label = QLabel("Reset all Settings:", parent=About_Window)
+        reset_label = QLabel("Reset File Find:", parent=About_Window)
         # Change Font
         reset_label.setFont(QFont("Arial", 15))
         # Display the Label
@@ -284,25 +335,26 @@ class Help_Window:
         # Reset Event
         def reset_settings():
             # Ask to reset
+            logging.info("Pressed Reset, asking...")
+
             if QMessageBox.information(parent, "Resetting?",
                                        "Are you sure to reset?\nResetting requires a restart!",
                                        QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel) \
                     != QMessageBox.StandardButton.Cancel:
-                # Reset the settings File
-                with open(os.path.join(FF_Files.LibFolder, "Settings"), "wb") as SettingsFile:
-                    settings = {"first_version": f"{FF_Files.VERSION_SHORT}[{FF_Files.VERSION}]",
-                                "version": f"{FF_Files.VERSION_SHORT}[{FF_Files.VERSION}]",
-                                "excluded_files": [],
-                                "cache": "On Launch",
-                                "popup": {"FF_ver_welcome": True, "FF_welcome": True, "search_question": True}}
-                    dump(settings, SettingsFile)
+                # Debug
+                logging.warning(f"Resetting File Find...")
 
-                    # Display a Messagebox
-                    FF_Additional_UI.msg.show_info_messagebox("Resetted!", "Resetted all Settings\n\nRestarting now...",
-                                                              About_Window)
+                # Display a Messagebox
+                FF_Additional_UI.msg.show_info_messagebox("Resetted!", "Resetted File Find\n\nRestarting now...",
+                                                          About_Window)
 
-                    # Quitting
-                    exit(0)
+                # Deleting the File Find Folder with the rm command
+                folder = FF_Files.FF_LIB_FOLDER.replace(" ", "\\ ")
+                os.system(f"rm -rf {folder}")
+
+                # Exiting
+                logging.fatal("Resetted, Exiting...")
+                exit(0)
 
         reset_button.clicked.connect(reset_settings)
 
@@ -328,13 +380,13 @@ class Help_Window:
         # Adding Options
         combobox_cache_items = ["On Launch", "after a Day", "after a Week", "Never"]
         combobox_cache.addItems(combobox_cache_items)
-        with open(os.path.join(FF_Files.LibFolder, "Settings"), "rb") as ReadDefineFile:
+        with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "rb") as ReadDefineFile:
             combobox_cache.setCurrentText(load(ReadDefineFile)["cache"])
 
         # Updating on change
         def update_cache_settings():
             # Saving the Settings and replacing the old settings with the new one
-            with open(os.path.join(FF_Files.LibFolder, "Settings"), "rb") as ReadFile:
+            with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "rb") as ReadFile:
                 # Loading Settings
                 settings = load(ReadFile)
 
@@ -342,7 +394,7 @@ class Help_Window:
             settings["cache"] = combobox_cache.currentText()
 
             # Dumping new Settings
-            with open(os.path.join(FF_Files.LibFolder, "Settings"), "wb") as WriteFile:
+            with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "wb") as WriteFile:
                 dump(settings, WriteFile)
 
             # Debug

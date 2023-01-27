@@ -3,7 +3,7 @@
   <h1 align="center">File Find for macOS</h1>
 
 
-<h3 align="center">A macOS UI Utility that helps you find Files easier.</h3>
+<h3 align="center">A macOS file search utility that helps you find files more easier.</h3>
 
 [![File Find](https://github.com/Pixel-Master/File-Find/actions/workflows/File-Find.yml/badge.svg?branch=main)](https://github.com/Pixel-Master/File-Find/actions/workflows/File-Find.yml)
 
@@ -12,60 +12,65 @@
 - [Features](#features)
 - [FAQ](#faq)
 - [Download](#download)
+- [File Structure](#file-structure)
 - [Running from Source](#running-from-source)
 - [Building File Find.app](#building-file-findapp)
 - [Roadmap](#roadmap)
 
 
 ## Features
-- Choose Filter which Files to include:
+- Select filter which files to include:
 	* Name
 	* Name contains
-	* File Ending
-	* Search in System Files
+	* File extension
+	* Search in system files
 	* Directory to search in
-	* File Size
-	* Search for Folders
-    * Fn-match (Unix shell-style wildcards)
+	* File size
+	* Only find folders or files
+    * Wildcard (Unix shell-style wildcards)
     * File contains
-    * Date Created and Modified
+    * Date created and modified
 
-- Search for Files and export Search Results
-- 
+- Export search results as **plain text file(txt)** or reloadable **File Find Search(FFSearch)**
+
+
 - Dark-mode
-- 
-- Options for found Files:
+
+
+- Options for found files:
 	* Show in Finder
 	* Open
-	* Basic File Info
-    * File Hashes
+	* Basic file info
+    * File hashes
+
 
 - Sort Results:
-	* File Size
-	* File Name
-	* Date Modified
-	* Date Created
+	* File size
+	* File name
+	* Date modified
+	* Date created
 
-- Generate Terminal command from Filters, supports:
+
+- Generate Terminal command from filters, supports:
 	* Name
 	* In Name
 	* File Ending
-    * Fn-match
+    * Wildcard
 
-- View File Hashes (md5, sha1, sha265)
+- View file hashes (md5, sha1, sha265)
 
 ## FAQ
 Q: **What is File Find and how does it work?**
 
-A: File Find is an open-source macOS Utility, that makes it easy to find Files. To search fill in the filters you need and leave the filters you don't need empty.
+A: File Find is an open-source macOS Utility, that makes it easy to find files. To search fill in the filters you need and leave the filters you don't need empty.
 
 Q: **Why does File Find sometimes freeze?**
 
-A: It is possible that for example reloading Files or Building the UI at the end of a search can cause File Find to freeze. Just wait a minute!
+A: It is possible that for example reloading files or building the UI at the end of a search can cause File Find to freeze. Just wait a minute!
 
-Q: **How to clean the Cache?**
+Q: **How do you clean the cache?**
 
-A: File Find is saving the cache under `/Users/$USERNAME/Library/Application Support/File-Find/Cached Searches`. You can clean the cache `with ⌘ + N` or `Tools > Clear Cache`. In the About section you can set when the cache gets cleaned automatically.
+A: File Find stores the cache under `/Users/$USERNAME/Library/Application Support/File-Find/Cached Searches`. You can clean the cache `with ⌘ + N` or `Tools > Clear Cache`. In the About section you can set when the cache gets cleaned automatically.
 
 Q: **Why does File Find ask for permission for Contacts, Calenders, Photos, Downloads, etc...?**
 
@@ -75,7 +80,7 @@ Your photos, calendar data, contacts etc. are stored in a library folder, which 
 
 Q: **Does File Find connect to the Internet?**
 
-A: File Find does not connect to the internet, everything stays on your machine.
+A: File Find does not connect to the Internet, everything stays on your machine.
 
 ## Download
 File Find isn't ready for Release yet Run from source or download pre-build macOS Apps from the GitHub action Page.
@@ -83,8 +88,27 @@ File Find isn't ready for Release yet Run from source or download pre-build macO
 - [Building File Find.app](#building-file-findapp)
 - [GitHub Action Page](https://github.com/Pixel-Master/File-Find/actions/workflows/File-Find.yml)
 
+## File Structure
 
-## Running from Source
+- `File-Find.py` - Main file, execute this for running File Find
+
+- `FF_Main_UI.py` - This file contains the code for the main window
+
+- `FF_Search_UI.py` - This file contains the code for the search-results window
+
+- `FF_Additional_UI.py` - This file contains the code for additional UI components like the PopUp windows
+
+- `FF_Help_UI.py` - This file contains the code for the About window
+
+- `FF_Search.py` - This file contains the code for the search engine
+
+- `FF_Files.py` - This file contains File operations and global variables
+
+- `build.py` - Build script, requires py2app installed. See [here](#building-file-findapp)
+
+- `assets/` - Directory contains image assets for File Find
+
+## Running from source
 
 ### Note:
 
@@ -140,7 +164,7 @@ File Find isn't ready for Release yet Run from source or download pre-build macO
     Homebrew: `brew install python@3.11`
 
 
-2. Clone the File Find Repository: `git clone https://gitlab.com/Pixel-Mqster/File-Find.git`
+2. Clone the File Find repository: `git clone https://gitlab.com/Pixel-Mqster/File-Find.git`
 
 
 3. cd into the repository: `cd File-Find`
@@ -156,28 +180,14 @@ File Find isn't ready for Release yet Run from source or download pre-build macO
 
 ## Roadmap
 1. [x] UI:
-   1. [x] Filter UI
-   2. [x] Help UI
-   3. [x] Search Result UI
 2. [x] Exporting and Importing Searches:
-   1. [x] Importing
-   2. [x] Exporting 
 3. [x] Caching:
-    1. [x] Creating Caches
-    2. [x] Using Caches
-    3. [x] Deleting Caches
-    4. [x] Clear Cache option
 4. [ ] Multithreading:
     1. [x] UI using different thread as Search engine
     2. [x] Hashing with different Threads
-    3. [ ] Searching trough different threads
+    3. [ ] Scanning trough different threads
     4. [ ] Indexing trough different threads
 5. [x] Sorting:
-   1. [x] Size
-   2. [x] File Name
-   3. [x] Modified
-   4. [x] Created
-   5. [x] Reverse
 6. [ ] Searching:
     1. [x] Name
     2. [x] In Name
@@ -185,14 +195,13 @@ File Find isn't ready for Release yet Run from source or download pre-build macO
     4. [x] Search in System Files
     5. [x] Directory to search in
     6. [x] Search only for Files or Folders
-    7. [ ] Search for Alias
-    8. [ ] Exclude Sub-folders
-    9. [x] Contains
-    10. [ ] Search with root privileges
-    11. [x] Regex (used fn match instead (Unix shell-style wildcards))
-    12. [x] Date Modified
-    13. [x] Date Created
-    14. [x] Excluded Files
+    7. [ ] Exclude Sub-folders
+    8. [x] Contains
+    9. [ ] Search with root privileges
+    10. [x] Regex (used fn match instead (Unix shell-style wildcards))
+    11. [x] Date Modified
+    12. [x] Date Created
+    13. [x] Excluded Files
 7. [ ] Language
    1. [x] Language UI
    2. [ ] Languages apply

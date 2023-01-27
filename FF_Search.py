@@ -1,5 +1,5 @@
 # This File is a part of File Find made by Pixel-Master and licensed under the GNU GPL v3
-# This script contains the class for the search engine
+# This file contains the code for the search engine
 
 # Imports
 import logging
@@ -11,7 +11,7 @@ from time import perf_counter, mktime
 
 # PyQt6 Gui Imports
 from PyQt6.QtCore import QThreadPool, pyqtSignal, QObject
-from PyQt6.QtWidgets import QFileDialog, QDateEdit, QMessageBox, QWidget
+from PyQt6.QtWidgets import QFileDialog, QDateEdit, QWidget
 
 # Projects Libraries
 import FF_Additional_UI
@@ -56,7 +56,7 @@ class sort:
 
 # Class for Generating the terminal command
 class generate_terminal_command:
-    def __init__(self, name, inname, file_ending, fn_match):
+    def __init__(self, name: str, name_contains: str, file_ending: str, fn_match: str):
         self.shell_command = f"find {os.getcwd()}"
         self.name_string = ""
         if name != "":
@@ -65,8 +65,8 @@ class generate_terminal_command:
             self.name_string = fn_match
 
         else:
-            if inname != "":
-                self.name_string += f"*{inname}*"
+            if name_contains != "":
+                self.name_string += f"*{name_contains}*"
             if file_ending != "":
                 self.name_string += f"*.{file_ending}"
 
@@ -83,7 +83,7 @@ class generate_terminal_command:
 # Loading a saved search
 class load_search:
     def __init__(self, parent):
-        load_dialog = QFileDialog.getOpenFileName(parent, "Export File Find Search", FF_Files.Saved_SearchFolder,
+        load_dialog = QFileDialog.getOpenFileName(parent, "Export File Find Search", FF_Files.SAVED_SEARCHES_FOLDER,
                                                   "*.FFSave;")
         load_file = load_dialog[0]
 
@@ -92,9 +92,9 @@ class load_search:
             with open(load_file, "rb") as OpenedFile:
                 saved_file_content = load(OpenedFile)
                 if not os.path.exists(
-                        os.path.join(FF_Files.Cached_SearchesFolder,
+                        os.path.join(FF_Files.CACHED_SEARCHES_FOLDER,
                                      f"loaded from {load_file}.FFSearch".replace("/", "-"))):
-                    with open(os.path.join(FF_Files.Cached_SearchesFolder,
+                    with open(os.path.join(FF_Files.CACHED_SEARCHES_FOLDER,
                                            f"loaded from {load_file}.FFCache".replace("/", "-")),
                               "wb") as CachedSearch:
                         dump(saved_file_content, file=CachedSearch)
@@ -104,8 +104,8 @@ class load_search:
 # The Search Engine
 class search:
     def __init__(self, data_name, data_in_name, data_filetype, data_file_size_min, data_file_size_max, data_library,
-                 data_search_from, data_search_for, data_content, data_edits_list, data_sort_by, data_reverse_sort,
-                 data_fn_match, parent: QWidget):
+                 data_search_for, data_search_from_valid, data_search_from_unproofed, data_content, data_edits_list,
+                 data_sort_by, data_reverse_sort, data_fn_match, parent: QWidget):
         # Debug
         logging.debug("Converting Date-times...")
 
@@ -143,6 +143,17 @@ class search:
                                                           "Name Error!\n\nFile Name and in Name or File Type can't "
                                                           "be used together",
                                                           parent=None)
+
+        # Directory not valid
+        elif data_search_from_valid != data_search_from_unproofed and not os.path.isdir(data_search_from_unproofed):
+            # Debug
+            logging.error("Directory Error! Given directory is not a valid folder!")
+
+            # Show Popup
+            FF_Additional_UI.msg.show_critical_messagebox("Directory Error!",
+                                                          "Directory Error!\n\nGiven directory is not a valid folder!",
+                                                          parent=None)
+
         # File Size max must be larger than File Size min
         elif data_file_size_min >= data_file_size_max and not data_file_size_min == data_file_size_max:
             # Debug
@@ -152,6 +163,7 @@ class search:
             FF_Additional_UI.msg.show_critical_messagebox("SIZE ERROR!",
                                                           "Size Error!\n\nFile Size min is larger than File Size max!",
                                                           parent=None)
+
         # First Date must be earlier than second Date
         elif unix_time_list[0] >= unix_time_list[1] or unix_time_list[2] >= unix_time_list[3]:
             # Debug
@@ -161,8 +173,9 @@ class search:
             FF_Additional_UI.msg.show_critical_messagebox("DATE ERROR!",
                                                           "Date Error!\n\nFirst Date is later than second Date!",
                                                           parent=None)
+
         # Search in System Files disabled, but Search path is in library Folder
-        elif not data_library and "/Library" in data_search_from or data_search_from.startswith("/System"):
+        elif not data_library and "/Library" in data_search_from_valid or data_search_from_valid.startswith("/System"):
             # Debug
             logging.error("System Files Error! Search in System Files disabled, but Directory is in Library Folder")
 
@@ -171,46 +184,53 @@ class search:
                                                           "System Files Error!\n\nSearch in System Files disabled,"
                                                           " but Search path is in library Folder!",
                                                           parent=None)
+
         # QMessageBox to confirm searching
-        elif QMessageBox.information(parent,
-                                     "This may take some Time!",
-                                     "This may take some Time!\nPress OK to Start Searching",
-                                     QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel) \
-                == QMessageBox.StandardButton.Cancel:
+        elif not FF_Additional_UI.msg.show_search_question(parent):
             logging.info("Cancelled Searching!")
 
         # Start Searching
         else:
+
+            # Updating ACTIVE_SEARCH_THREADS
+            global ACTIVE_SEARCH_THREADS
+            ACTIVE_SEARCH_THREADS += 1
+
             # Defining menubar log
-            self.ui_logger = FF_Main_UI.search_update(lambda: exit(0), data_search_from)
+            self.ui_logger = FF_Main_UI.search_update(lambda: exit(0), data_search_from_valid)
 
             # Testing Cache
             FF_Files.cache_test(is_launching=False)
 
             # Starting
             logging.info("Starting Search...")
+            logging.debug(f"Running Threads: {ACTIVE_SEARCH_THREADS}")
 
             # Setting up QThreadPool
             self.ui_logger.update("Setting up Thread...")
             logging.debug("Setting up QThreadPool...")
 
             # Creating Qt Signal
-            class finished_class(QObject):
-                launchUI = pyqtSignal()
+            class signals_class(QObject):
+                finished = pyqtSignal()
 
             # Defining thread
             self.thread = QThreadPool(parent)
 
             # Setup pyqt Signal
-            self.finished = finished_class()
-            self.finished.launchUI.connect(lambda: logging.info("Finished Search Thread!\n"))
-            self.finished.launchUI.connect(lambda: FF_Search_UI.Search_Window(*SEARCH_OUTPUT))
+            self.signals = signals_class()
+            # Debug
+            self.signals.finished.connect(lambda: logging.info("Finished Search Thread!\n"))
+            # Launching UI
+            self.signals.finished.connect(lambda: FF_Search_UI.Search_Window(*SEARCH_OUTPUT))
+            # Updating Status Indicator
+            self.signals.finished.connect(FF_Main_UI.Main_Window.update_search_status_label)
 
             # Starting the Thread
             self.thread.start(
                 lambda: self.searching(data_name, data_in_name, data_filetype, data_file_size_min, data_file_size_max,
-                                       data_library, data_search_from, data_search_for, data_content, unix_time_list,
-                                       data_sort_by, data_reverse_sort, data_fn_match, parent))
+                                       data_library, data_search_from_valid, data_search_for, data_content,
+                                       unix_time_list, data_sort_by, data_reverse_sort, data_fn_match, parent))
 
             # Debug
             logging.debug("Finished Setting up QThreadPool!")
@@ -249,7 +269,7 @@ class search:
             data_search_for_needed = True
 
         # Loading excluded files
-        with open(os.path.join(FF_Files.LibFolder, "Settings"), "rb") as ExcludedFile:
+        with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "rb") as ExcludedFile:
             data_excluded_files = load(ExcludedFile)["excluded_files"]
 
         if not data_excluded_files:
@@ -265,10 +285,10 @@ class search:
         '''Checking, if Cache File exist, if not it goes through every file in the directory and saves it. If It
         exist it loads the Cache File in to found_path_list '''
         if os.path.exists(
-                os.path.join(FF_Files.Cached_SearchesFolder, data_search_from.replace("/", "-") + ".FFCache")):
+                os.path.join(FF_Files.CACHED_SEARCHES_FOLDER, data_search_from.replace("/", "-") + ".FFCache")):
             logging.info("Scanning using cached Data..")
             with open(
-                    os.path.join(FF_Files.Cached_SearchesFolder, data_search_from.replace("/", "-") + ".FFCache"),
+                    os.path.join(FF_Files.CACHED_SEARCHES_FOLDER, data_search_from.replace("/", "-") + ".FFCache"),
                     "rb") as SearchResults:
                 found_path_list = load(SearchResults)
 
@@ -426,7 +446,7 @@ class search:
         logging.info("Saving Search Results...")
         self.ui_logger.update("Saving Search Results...")
 
-        with open(os.path.join(FF_Files.Cached_SearchesFolder, data_search_from.replace("/", "-") + ".FFCache"),
+        with open(os.path.join(FF_Files.CACHED_SEARCHES_FOLDER, data_search_from.replace("/", "-") + ".FFCache"),
                   "wb") as resultFile:
             dump(list(found_path_list), resultFile)
 
@@ -443,7 +463,14 @@ class search:
                          data_search_from, parent]
 
         # Starting the UI
-        self.finished.launchUI.emit()
+        self.signals.finished.emit()
+
+        # Updating Thread count
+        global ACTIVE_SEARCH_THREADS
+        ACTIVE_SEARCH_THREADS -= 1
 
 
+# Global Variables for Search Threads
 SEARCH_OUTPUT: [float, float, float, float, list, str, QWidget] = []
+
+ACTIVE_SEARCH_THREADS: int = 0

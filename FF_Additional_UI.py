@@ -1,67 +1,16 @@
 # This File is a part of File Find made by Pixel-Master and licensed under the GNU GPL v3
-# This script contains the classes for additional GUI components like the options window
-
-# Imports
+# This file contains the classes for additional UI components like messageboxes
+import os
+from pickle import load
 
 # PyQt6 Gui Imports
-from PyQt6.QtGui import QFont
-from PyQt6.QtWidgets import QWidget, QMainWindow, QLabel, QPushButton, QMessageBox
+from PyQt6.QtWidgets import QMessageBox
 
 # Projects Libraries
 import FF_Files
-import FF_Search
 
 
-# Other Options, displayed on Main Window
-class other_options:
-    def __init__(self, generate_command, parent: QWidget):
-        # Using QMainWindow as a Child Window
-        other_options_window = QMainWindow(parent)
-        # Set the Title of the Window
-        other_options_window.setWindowTitle("File Find | Other Options")
-        # Set the Size of the Window and make it not resizable
-        other_options_window.setFixedHeight(220)
-        other_options_window.setFixedWidth(300)
-        # Display the Window
-        other_options_window.show()
-
-        # Choose Label
-        # Define the Label
-        main_label = QLabel("Choose:", parent=other_options_window)
-        # Change Font
-        font = QFont("Futura", 40)
-        font.setBold(True)
-        main_label.setFont(font)
-        # Display the Label correctly
-        main_label.adjustSize()
-        main_label.move(10, 0)
-        main_label.show()
-
-        def generate_button(command, text):
-            # Define the Button
-            button = QPushButton(other_options_window)
-            # Change the Text
-            button.setText(text)
-            # Set the command
-            button.clicked.connect(command)
-            # Destroy the other_options_window when the Button is pressed
-            button.clicked.connect(other_options_window.destroy)
-            # Display the Button correctly
-            button.show()
-            button.setFixedWidth(200)
-            button.adjustSize()
-            # Return the value of the Button, to move the Button
-            return button
-
-        # The Buttons
-        button_option_command = generate_button(generate_command, "Generate Terminal Command")
-        button_option_command.move(50, 50)
-
-        button_option_load = generate_button(lambda: FF_Search.load_search(parent), "Load Saved Search")
-        button_option_load.move(50, 100)
-
-        button_option_cache = generate_button(lambda: FF_Files.remove_cache(True, parent), "Clear Cache")
-        button_option_cache.move(50, 150)
+# Imports
 
 
 class msg:
@@ -96,3 +45,20 @@ class msg:
 
         # Return the Value of the Message Box
         return msg_info
+
+    # Ask to search MessageBoy
+    @staticmethod
+    def show_search_question(parent):
+
+        # Opens the Settings File for the Ask when Searching Setting
+        with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "rb") as SettingsFile:
+            if load(SettingsFile)["popup"]["search_question"]:
+                if QMessageBox.information(parent, "This may take some Time!",
+                                           "This may take some Time!\nPress OK to Start Searching",
+                                           QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel)\
+                        == QMessageBox.StandardButton.Ok:
+                    return True
+                else:
+                    return False
+            else:
+                return True
