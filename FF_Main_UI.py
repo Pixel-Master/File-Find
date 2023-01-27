@@ -422,8 +422,6 @@ class Main_Window:
             try:
                 os.chdir(search_from)
                 directory_line_edit.setText(search_from)
-                directory_line_edit.adjustSize()
-                directory_line_edit.setToolTip(search_from)
             except (FileNotFoundError, OSError):
                 pass
 
