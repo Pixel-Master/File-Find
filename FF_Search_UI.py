@@ -1,4 +1,11 @@
-# This File is a part of File Find made by Pixel-Master and licensed under the GNU GPL v3
+# This source file is a part of File Find made by Pixel-Master
+#
+# Copyright 2022-2023 Pixel-Master
+#
+# This software is licensed under the "GPLv3" License as described in the "LICENSE" file,
+# which should be included with this package. The terms are also available at
+# http://www.gnu.org/licenses/gpl-3.0.html
+
 # This file contains the code for the search-results window
 
 # Imports
@@ -13,7 +20,7 @@ from time import perf_counter, ctime, time
 from PyQt6.QtCore import QSize
 from PyQt6.QtGui import QFont, QIcon, QAction
 from PyQt6.QtWidgets import QMainWindow, QLabel, QPushButton, QFileDialog, \
-    QListWidget, QMenuBar
+    QListWidget, QMenuBar, QVBoxLayout, QHBoxLayout, QWidget
 
 # Projects Libraries
 import FF_Additional_UI
@@ -41,10 +48,10 @@ class Search_Window:
         # Display the Window
         self.Search_Results_Window.show()
 
-        # Defining a Grid (work in progress)
-        # grid = QGridLayout(self.Search_Results_Window)
-        # grid.setVerticalSpacing(100)
-        # self.Search_Results_Window.setLayout(grid)
+        # DON'T TRY TO USE LAYOUTS! YOU ARE JUST GOING TO END UP WASTING YOUR TIME!
+        # If used File Find crashes with a 'Memory Error' and no further information.
+        # I wasted several hours, trying to fix this.
+        # These undefined errors with QT are the worst
 
         # Seconds needed Label
         seconds_text = QLabel(self.Search_Results_Window)
@@ -55,7 +62,6 @@ class Search_Window:
         # Displaying
         seconds_text.show()
         seconds_text.move(10, 20)
-        # grid.addWidget(seconds_text, 9, 10)
 
         # Files found label
         objects_text = QLabel(self.Search_Results_Window)
@@ -182,7 +188,6 @@ class Search_Window:
         # Place
         show_time.resize(50, 40)
         show_time.move(260, 15)
-        # grid.addWidget(show_time, 1, 3)
 
         # Reload Button
         reload_button = generate_button("Reload", reload_files)
@@ -226,6 +231,8 @@ class Search_Window:
         FF_Main_UI.menubar_icon.showMessage("File Find - Search finished!", f"Your Search finished!\nin {search_path}",
                                             QIcon(os.path.join(FF_Files.ASSETS_FOLDER, "Find_button_img_small.png")),
                                             100000)
+
+        logging.debug("Finished Building")
 
     def menubar(self, save_search, reload_files):
         logging.debug("Setting up menubar...", )

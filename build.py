@@ -1,4 +1,11 @@
-# This File is a part of File Find made by Pixel-Master and licensed under the GNU GPL v3
+# This build script is a part of File Find made by Pixel-Master
+#
+# Copyright 2022-2023 Pixel-Master
+#
+# This software is licensed under the "GPLv3" License as described in the "LICENSE" file,
+# which should be included with this package. The terms are also available at
+# http://www.gnu.org/licenses/gpl-3.0.html
+
 # This is a script used to build File Find with py2app and is not meant to be imported
 
 # Imports
@@ -11,7 +18,7 @@ import sys
 os.system("rm -rf dist build")
 
 # Finding and Setting architecture
-arch = subprocess.run(["arch"], capture_output=True, text=True, check=True).stdout.replace("\n", "")
+arch = subprocess.run(["uname", "-m"], capture_output=True, text=True, check=True).stdout.replace("\n", "")
 
 print("On:", arch)
 if arch != "arm64":
@@ -51,6 +58,7 @@ os.system("create-dmg "
           "--window-size 800 400 "
           "--icon-size 100 "
           "--icon \"dist/File Find.app\" 200 190 "
+          "--hide-extension \"dist/File Find.app\" "
           "--app-drop-link 600 190 "
           "\"dist/File Find.dmg\" "
           "\"dist/\"\n")

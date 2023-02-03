@@ -3,10 +3,18 @@
   <h1 align="center">File Find for macOS</h1>
 
 
-<h3 align="center">A macOS file search utility that helps you find files more easier.</h3>
+<h3 align="center">A macOS file search utility that helps you find files easier.
+
+Completely open-source and free. </h3>
+
 
 [![File Find](https://github.com/Pixel-Master/File-Find/actions/workflows/File-Find.yml/badge.svg?branch=main)](https://github.com/Pixel-Master/File-Find/actions/workflows/File-Find.yml)
+[![GPLv3 License](https://img.shields.io/badge/License-GPL%20v3-yellow.svg)](http://www.gnu.org/licenses/gpl-3.0.html) 
+[![GitLab last commit](https://img.shields.io/gitlab/last-commit/Pixel-Mqster/File-Find.svg?style=flat)](https://gitlab.com/Pixel-Mqster/File-Find/commits/main)
+[![GitHub stars](https://img.shields.io/github/stars/Pixel-Master/File-Find.svg?style=social&label=Stars&style=plastic)](https://gitlab.com/Pixel-Mqster/File-Find/)
+[![GitLab forks](https://img.shields.io/gitlab/forks/Pixel-Mqster/File-Find.svg?style=social&label=Fork&style=plastic)](https://gitlab.com/Pixel-Mqster/File-Find/-/forks/new)
 
+#### Automatic Builds on: [GitHub](https://github.com/Pixel-Master/File-Find), Issues and Pull Requests on: [GitLab](https://gitlab.com/Pixel-Mqster/File-Find)
 
 ## Content
 - [Features](#features)
@@ -31,7 +39,7 @@
     * File contains
     * Date created and modified
 
-- Export search results as **plain text file(txt)** or reloadable **File Find Search(FFSearch)**
+- Export search results as a **plain text file (.txt)** or as a reloadable **File Find Search (.FFSearch)**
 
 
 - Dark-mode

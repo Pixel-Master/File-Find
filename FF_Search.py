@@ -1,4 +1,11 @@
-# This File is a part of File Find made by Pixel-Master and licensed under the GNU GPL v3
+# This source file is a part of File Find made by Pixel-Master
+#
+# Copyright 2022-2023 Pixel-Master
+#
+# This software is licensed under the "GPLv3" License as described in the "LICENSE" file,
+# which should be included with this package. The terms are also available at
+# http://www.gnu.org/licenses/gpl-3.0.html
+
 # This file contains the code for the search engine
 
 # Imports
@@ -423,18 +430,22 @@ class search:
             logging.info("Sorting List by Name...")
             self.ui_logger.update("Sorting List by Name...")
             matched_path_list.sort(key=sort.name, reverse=data_reverse_sort)
+
         elif data_sort_by == "File Size":
             logging.info("Sorting List by Size...")
             self.ui_logger.update("Sorting List by Size...")
             matched_path_list.sort(key=sort.size, reverse=not data_reverse_sort)
+
         elif data_sort_by == "Date Created":
             logging.info("Sorting List by creation date...")
             self.ui_logger.update("Sorting List by creation date...")
             matched_path_list.sort(key=sort.c_date, reverse=not data_reverse_sort)
+
         elif data_sort_by == "Date Modified":
             logging.info("Sorting List by modification date...")
             self.ui_logger.update("Sorting List by modification date...")
             matched_path_list.sort(key=sort.m_date, reverse=not data_reverse_sort)
+
         else:
             logging.info("Skipping Sorting")
             self.ui_logger.update("Skipping Sorting...")
@@ -442,13 +453,22 @@ class search:
                 logging.debug("Reversing Results...")
                 matched_path_list = list(reversed(matched_path_list))
 
-        # Saving Results with pickle
-        logging.info("Saving Search Results...")
-        self.ui_logger.update("Saving Search Results...")
+        # Caching Results with pickle
+        # Testing if cache file exist, if it doesn't exist it caches scanned files
+        if not os.path.exists(os.path.join(FF_Files.CACHED_SEARCHES_FOLDER,
+                                           data_search_from.replace("/", "-") + ".FFCache")):
+            # Debug and menubar logg
+            logging.info("Saving Search Results...")
+            self.ui_logger.update("Saving Search Results...")
 
-        with open(os.path.join(FF_Files.CACHED_SEARCHES_FOLDER, data_search_from.replace("/", "-") + ".FFCache"),
-                  "wb") as resultFile:
-            dump(list(found_path_list), resultFile)
+            # Creating file
+            with open(os.path.join(FF_Files.CACHED_SEARCHES_FOLDER, data_search_from.replace("/", "-") + ".FFCache"),
+                      "wb") as resultFile:
+                # Dumping with pickle
+                dump(list(found_path_list), resultFile)
+
+        else:
+            logging.info("Cache file already exist, skipping caching...")
 
         # Calculating time
         time_after_sorting = perf_counter() - (time_after_indexing + time_after_searching + time_before_start)
@@ -462,7 +482,7 @@ class search:
         SEARCH_OUTPUT = [time_total, time_after_searching, time_after_indexing, time_after_sorting, matched_path_list,
                          data_search_from, parent]
 
-        # Starting the UI
+        # Starting the UI with the emitted signal
         self.signals.finished.emit()
 
         # Updating Thread count

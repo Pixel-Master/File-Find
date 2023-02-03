@@ -1,4 +1,11 @@
-# This File is a part of File Find made by Pixel-Master and licensed under the GNU GPL v3
+# This source file is a part of File Find made by Pixel-Master
+#
+# Copyright 2022-2023 Pixel-Master
+#
+# This software is licensed under the "GPLv3" License as described in the "LICENSE" file,
+# which should be included with this package. The terms are also available at
+# http://www.gnu.org/licenses/gpl-3.0.html
+
 # This file contains the code for the About window
 
 # Imports

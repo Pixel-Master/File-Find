@@ -1,5 +1,12 @@
-# This File is a part of File Find made by Pixel-Master and licensed under the GNU GPL v3
-# This File contains the code for the main window
+# This source file is a part of File Find made by Pixel-Master
+#
+# Copyright 2022-2023 Pixel-Master
+#
+# This software is licensed under the "GPLv3" License as described in the "LICENSE" file,
+# which should be included with this package. The terms are also available at
+# http://www.gnu.org/licenses/gpl-3.0.html
+
+# This file contains the code for the main window
 
 # Imports
 import logging
@@ -10,7 +17,7 @@ from pickle import load, dump
 
 # PyQt6 Gui Imports
 from PyQt6.QtCore import QSize, QRect, Qt
-from PyQt6.QtGui import QFont, QDoubleValidator, QIcon, QAction, QKeySequence, QFileSystemModel
+from PyQt6.QtGui import QFont, QDoubleValidator, QIcon, QAction, QKeySequence
 from PyQt6.QtWidgets import QWidget, QLabel, QPushButton, QRadioButton, QFileDialog, \
     QLineEdit, QButtonGroup, QDateEdit, QFrame, QComboBox, QMenuBar, QSystemTrayIcon, QMenu, QCompleter
 
@@ -62,40 +69,47 @@ class Main_Window:
         basic_search_frame.show()
 
         # Creating the Labels with tooltips
-        l1 = self.generate_large_filter_label("Name:",
-                                              self.generic_tooltip("Name",
-                                                                   "Input needs to match the Name of a File exactly,"
-                                                                   "\nignoring case",
-                                                                   "Example.txt",
-                                                                   os.path.join(FF_Files.USER_FOLDER, "example.txt")))
-        l1.move(10, 100)
+        label_name = self.generate_large_filter_label("Name:",
+                                                      self.generic_tooltip("Name",
+                                                                           "Input needs to match"
+                                                                           " the Name of a File exactly,"
+                                                                           "\nignoring case",
+                                                                           "Example.txt",
+                                                                           os.path.join(FF_Files.USER_FOLDER,
+                                                                                        "example.txt")))
+        label_name.move(10, 100)
 
-        l2 = self.generate_large_filter_label("Name contains:", self.generic_tooltip("Name contains",
-                                                                                     "Input needs to be in the Name "
-                                                                                     "of a File,"
-                                                                                     "\nignoring case",
-                                                                                     "file",
-                                                                                     os.path.join(FF_Files.USER_FOLDER,
-                                                                                                  "my-file.pdf")))
-        l2.move(10, 140)
+        label_name_contains = self.generate_large_filter_label("Name contains:",
+                                                               self.generic_tooltip("Name contains",
+                                                                                    "Input needs to be in the Name"
+                                                                                    "of a File,\nignoring case",
+                                                                                    "file",
+                                                                                    os.path.join(
+                                                                                        FF_Files.USER_FOLDER,
+                                                                                        "my-file.pdf")))
+        label_name_contains.move(10, 140)
 
-        l3 = self.generate_large_filter_label("File extension:", self.generic_tooltip("File extension",
-                                                                                      "Input needs to match the file "
-                                                                                      "extension (file type),"
-                                                                                      "\nignoring case",
-                                                                                      "txt",
-                                                                                      os.path.join(FF_Files.USER_FOLDER,
-                                                                                                   "example.txt")))
-        l3.move(10, 180)
+        label_extension = self.generate_large_filter_label("File extension:",
+                                                           self.generic_tooltip("File extension",
+                                                                                "Input needs to match the file "
+                                                                                "extension (file type),\nignoring case",
+                                                                                "txt",
+                                                                                os.path.join(
+                                                                                    FF_Files.USER_FOLDER,
+                                                                                    "example.txt")))
+        label_extension.move(10, 180)
 
-        l4 = self.generate_large_filter_label("Directory:", self.generic_tooltip("Directory",
-                                                                                 "The Directory to search in",
-                                                                                 os.path.join(FF_Files.USER_FOLDER,
-                                                                                              "Downloads"),
-                                                                                 os.path.join(FF_Files.USER_FOLDER,
-                                                                                              "Downloads",
-                                                                                              "example.pdf")))
-        l4.move(10, 220)
+        label_directory = self.generate_large_filter_label("Directory:",
+                                                           self.generic_tooltip("Directory",
+                                                                                "The Directory to search in",
+                                                                                os.path.join(
+                                                                                    FF_Files.USER_FOLDER,
+                                                                                    "Downloads"),
+                                                                                os.path.join(
+                                                                                    FF_Files.USER_FOLDER,
+                                                                                    "Downloads",
+                                                                                    "example.pdf")))
+        label_directory.move(10, 220)
 
         # -----Advanced Search-----
         # Frame and Label
@@ -106,91 +120,96 @@ class Main_Window:
         advanced_search_frame.setFrameShape(QFrame.Shape.StyledPanel)
         advanced_search_frame.show()
 
-        l5 = self.generate_large_filter_label("File contains:", self.generic_tooltip("File contains:",
-                                                                                     "Allows you to search in files."
-                                                                                     " Looks if input is in a file.\n"
-                                                                                     "This can take really long and"
-                                                                                     " take up much memory",
-                                                                                     "This is an example file!",
-                                                                                     os.path.join(FF_Files.USER_FOLDER,
-                                                                                                  "example.txt")))
-        l5.move(400, 100)
-        l6 = self.generate_large_filter_label("Wildcards:", self.generic_tooltip("Wildcards",
-                                                                                 "Unix shell-style wildcards,"
-                                                                                 "\nwhich are not the same as regular "
-                                                                                 "expressions.\nFor documentation see: "
-                                                                                 "https://docs.python.org/library"
-                                                                                 "/fnmatch",
-                                                                                 "exa*",
-                                                                                 os.path.join(FF_Files.USER_FOLDER,
-                                                                                              "example.txt")))
-        l6.move(400, 140)
+        label_file_contains = self.generate_large_filter_label("File contains:",
+                                                               self.generic_tooltip("File contains:",
+                                                                                    "Allows you to search in files."
+                                                                                    "Looks if input is in a file.\n"
+                                                                                    "This can take really long and"
+                                                                                    " take up much memory",
+                                                                                    "This is an example file!",
+                                                                                    os.path.join(
+                                                                                        FF_Files.
+                                                                                        USER_FOLDER,
+                                                                                        "example.txt "
+                                                                                        "(which contains: "
+                                                                                        "This is an example file!)")))
+        label_file_contains.move(400, 100)
+        label_wildcard = self.generate_large_filter_label("Wildcards:",
+                                                          self.generic_tooltip("Wildcards",
+                                                                               "Unix shell-style wildcards,"
+                                                                               "\nwhich are not the same as regular "
+                                                                               "expressions.\nFor documentation see: "
+                                                                               "http://docs.python.org/library/fnmatch",
+                                                                               "exa*",
+                                                                               os.path.join(
+                                                                                   FF_Files.USER_FOLDER,
+                                                                                   "example.txt")))
+        label_wildcard.move(400, 140)
 
-        l7 = self.generate_large_filter_label("File size(MB):     min:", self.generic_tooltip("File size",
-                                                                                              "Input specifies "
-                                                                                              "file size in "
-                                                                                              "Mega Bytes (MB)\nin a "
-                                                                                              "range (from min to "
-                                                                                              "max)",
-                                                                                              "min: 10 max: 10.3",
-                                                                                              os.path.join(
-                                                                                                  FF_Files.USER_FOLDER,
-                                                                                                  "example.txt "
-                                                                                                  "(with a size of "
-                                                                                                  "10.2 MB)")))
-        l7.move(400, 180)
-        l7_2 = self.generate_large_filter_label("max:")
-        l7_2.move(680, 180)
+        label_file_size_min = self.generate_large_filter_label("File size(MB):     min:",
+                                                               self.generic_tooltip("File size",
+                                                                                    "Input specifies file size in "
+                                                                                    "Mega Bytes (MB)\nin a range "
+                                                                                    "(from min to max)",
+                                                                                    "min: 10 max: 10.3",
+                                                                                    os.path.join(
+                                                                                        FF_Files.USER_FOLDER,
+                                                                                        "example.txt "
+                                                                                        "(with a size of 10.2 MB)")))
+        label_file_size_min.move(400, 180)
+        label_file_size_max = self.generate_large_filter_label("max:")
+        label_file_size_max.move(680, 180)
 
-        l8 = self.generate_large_filter_label("Date created:", self.generic_tooltip("Date created",
-                                                                                    "Specify a date range for the date "
-                                                                                    "the file has been created,\n"
-                                                                                    "leave at default to ignore",
-                                                                                    "5.Jul.2020 -  10.Aug.2020",
-                                                                                    os.path.join(FF_Files.USER_FOLDER,
-                                                                                                 "example.txt "
-                                                                                                 "(created at "
-                                                                                                 "1.Aug.2020)")))
-        l8.move(400, 220)
-        l8_2 = self.generate_large_filter_label("-")
-        l8_2.move(670, 220)
+        label_c_date = self.generate_large_filter_label("Date created:",
+                                                        self.generic_tooltip("Date created",
+                                                                             "Specify a date range for the date "
+                                                                             "the file has been created,\n"
+                                                                             "leave at default to ignore",
+                                                                             "5.Jul.2020 - 10.Aug.2020",
+                                                                             os.path.join(FF_Files.USER_FOLDER,
+                                                                                          "example.txt "
+                                                                                          "(created at "
+                                                                                          "1.Aug.2020)")))
+        label_c_date.move(400, 220)
+        label_c_date_2 = self.generate_large_filter_label("-")
+        label_c_date_2.move(670, 220)
 
-        l9 = self.generate_large_filter_label("Date modified:", self.generic_tooltip("Date modified",
-                                                                                     "Specify a date range"
-                                                                                     " for the date "
-                                                                                     "the file has been modified,\n"
-                                                                                     "leave at default to ignore",
-                                                                                     "5.Jul.2020 -  10.Aug.2020",
-                                                                                     os.path.join(FF_Files.USER_FOLDER,
-                                                                                                  "example.txt "
-                                                                                                  "(modified at "
-                                                                                                  "1.Aug.2020)")))
-        l9.move(400, 260)
-        l9_2 = self.generate_large_filter_label("-")
-        l9_2.move(670, 260)
+        label_m_date = self.generate_large_filter_label("Date modified:",
+                                                        self.generic_tooltip("Date modified",
+                                                                             "Specify a date range for the date "
+                                                                             "the file has been modified,\n"
+                                                                             "leave at default to ignore",
+                                                                             "5.Jul.2020 -  10.Aug.2020",
+                                                                             os.path.join(FF_Files.USER_FOLDER,
+                                                                                          "example.txt "
+                                                                                          "(modified at "
+                                                                                          "1.Aug.2020)")))
+        label_m_date.move(400, 260)
+        label_m_date_2 = self.generate_large_filter_label("-")
+        label_m_date_2.move(670, 260)
 
-        l10 = self.generate_large_filter_label("Search in system files:", self.generic_tooltip("Search in system files",
-                                                                                               "Toggle to include "
-                                                                                               "system files in the "
-                                                                                               "search results\n"
-                                                                                               "(files in the "
-                                                                                               "Library folder)",
-                                                                                               "Yes",
-                                                                                               os.path.join(
-                                                                                                   FF_Files.USER_FOLDER,
-                                                                                                   "Library",
-                                                                                                   "Caches",
-                                                                                                   "example.txt")))
-        l10.move(400, 300)
-        l11 = self.generate_large_filter_label("Search for:", self.generic_tooltip("Search for",
-                                                                                   "Toggle to only include "
-                                                                                   "Folders or Files"
-                                                                                   " in the search results",
-                                                                                   "only Folders",
+        label_system_files = self.generate_large_filter_label("Search in system files:",
+                                                              self.generic_tooltip("Search in system files",
+                                                                                   "Toggle to include "
+                                                                                   "system files in the "
+                                                                                   "search results\n"
+                                                                                   "(files in the Library folder)",
+                                                                                   "Yes",
                                                                                    os.path.join(
                                                                                        FF_Files.USER_FOLDER,
-                                                                                       "Downloads")))
-        l11.move(400, 340)
+                                                                                       "Library", "Caches",
+                                                                                       "example.txt")))
+        label_system_files.move(400, 300)
+        label_files_folders = self.generate_large_filter_label("Search for:",
+                                                               self.generic_tooltip("Search for",
+                                                                                    "Toggle to only include "
+                                                                                    "Folders or Files"
+                                                                                    " in the search results",
+                                                                                    "only Folders",
+                                                                                    os.path.join(
+                                                                                        FF_Files.USER_FOLDER,
+                                                                                        "Downloads")))
+        label_files_folders.move(400, 340)
 
         # -----Sorting-----
         # Frame and Label
@@ -201,24 +220,45 @@ class Main_Window:
         sorting_search_frame.setFrameShape(QFrame.Shape.StyledPanel)
         sorting_search_frame.show()
 
-        l12 = self.generate_large_filter_label("Sort by:", self.generic_tooltip("Sort by",
-                                                                                "The sorting method to sort the "
-                                                                                "search results",
-                                                                                "File Size",
-                                                                                "Results sorted by file size"))
-        l12.move(10, 300)
-        l13 = self.generate_large_filter_label("Reverse results:", self.generic_tooltip("Reverse Results",
-                                                                                        "Reverse the sorted "
-                                                                                        "search results",
-                                                                                        "Yes",
-                                                                                        "Reversed search results"))
-        l13.move(10, 340)
+        label_sort_by = self.generate_large_filter_label("Sort by:",
+                                                         self.generic_tooltip("Sort by",
+                                                                              "The sorting method to sort the "
+                                                                              "search results",
+                                                                              "File Size",
+                                                                              "Results sorted by file size"))
+        label_sort_by.move(10, 300)
+        label_reverse_sort = self.generate_large_filter_label("Reverse results:",
+                                                              self.generic_tooltip("Reverse Results",
+                                                                                   "Reverse the sorted search results",
+                                                                                   "Yes",
+                                                                                   "Reversed search results"))
+        label_reverse_sort.move(10, 340)
 
-        # Label for the Terminal Command
-        command_label2 = QLabel(self.Root_Window)
-        command_label2.setFont(QFont("Arial", 20))
-        command_label2.setMaximumWidth(300)
+        # -----Terminal Command-----
+        # Label, saying command
+        label_command_title = QLabel(self.Root_Window)
+        label_command_title.setText("Command:")
+        label_command_title.setToolTip("Terminal command:\nYou can paste this command into the Terminal app"
+                                       " to search with the \"find\" tool")
+        label_command_title.setFont(QFont("Arial", 20))
+        label_command_title.move(10, 390)
 
+        # Label, displaying the command
+        label_command = QLabel(self.Root_Window)
+        label_command.setFont(QFont("Arial", 20))
+        # label_command.setMaximumWidth(300)
+        label_command.setStyleSheet("background-color: blue;color: white;")
+        label_command.setFixedWidth(300)
+        label_command.move(120, 390)
+
+        # Copy Command Button
+        button_command_copy = QPushButton(self.Root_Window)
+        # Change the Text
+        button_command_copy.setText("Copy")
+        # Display the Button at the correct position
+        button_command_copy.move(425, 385)
+
+        # ----- Search Indicator-----
         # Title of searching indicator
         search_status_title_label = QLabel("Status:", self.Root_Window)
         search_status_title_label.setFont(QFont("Arial", 15))
@@ -230,7 +270,7 @@ class Main_Window:
 
         # Label to indicate if searching
         global search_status_label
-        search_status_label = QLabel("Idle", self.Root_Window)
+        search_status_label = QLabel("Inactive", self.Root_Window)
         search_status_label.setFont(QFont("Arial", 15))
         search_status_label.setStyleSheet("color: green;")
         search_status_label.show()
@@ -240,11 +280,25 @@ class Main_Window:
         logging.debug("Setting up Entries...")
         # Create an Entry for every Filter with the function self.generate_filter_entry()
 
+        # Name
+        edit_name = self.generate_filter_entry()
+        edit_name.resize(230, 25)
+        edit_name.move(150, 100)
+
+        # Name contains
+        edit_name_contains = self.generate_filter_entry()
+        edit_name_contains.resize(230, 25)
+        edit_name_contains.move(150, 140)
+
+        # File extension
+        edit_file_extension = self.generate_filter_entry()
+        edit_file_extension.resize(230, 25)
+        edit_file_extension.move(150, 180)
+
         # Edit to display the Path
-        directory_line_edit = self.generate_filter_entry()
+        edit_directory = self.generate_filter_entry()
         # Set text and tooltip to display the directory
-        directory_line_edit.setText(os.getcwd())
-        directory_line_edit.setToolTip(os.getcwd())
+        edit_directory.setText(os.getcwd())
 
         # Auto complete paths
         def complete_path(path, check=True):
@@ -258,7 +312,7 @@ class Main_Window:
 
                 # Set the saved list as Completer
                 self.directory_line_edit_completer = QCompleter(paths, parent=self.Root_Window)
-                directory_line_edit.setCompleter(self.directory_line_edit_completer)
+                edit_directory.setCompleter(self.directory_line_edit_completer)
 
                 # Returns the list
                 return paths
@@ -276,74 +330,61 @@ class Main_Window:
                 logging.debug("Changed QCompleter")
                 return
 
-        # Completing Paths
-        self.directory_line_edit_completer = QCompleter(parent=self.Root_Window)
-        self.directory_line_edit_completer.splitPath("/")
-        directory_line_edit.setCompleter(self.directory_line_edit_completer)
-        complete_path(os.getcwd(), check=False)
-
         # Validate Paths
         def validate_dir():
             # Debug
-            logging.debug(f"Directory Path changed to: {directory_line_edit.text()}")
+            logging.debug(f"Directory Path changed to: {edit_directory.text()}")
 
-            if os.path.isdir(check_path := directory_line_edit.text()):
+            # Changing Tool-Tip
+            edit_directory.setToolTip(edit_directory.text())
 
+            # Testing if path is folder
+            if os.path.isdir(check_path := edit_directory.text()):
                 # Changing Path
                 logging.debug(f"Path: {check_path} valid")
                 os.chdir(check_path)
 
-                # Changing Status-Tip
-                directory_line_edit.setStatusTip(check_path)
-
                 # Change color
-                l4.setStyleSheet("")
+                edit_directory.setStyleSheet("")
 
                 # Updating Completions
                 complete_path(check_path)
 
             else:
-
                 # Debug
                 logging.debug(f"Path: {check_path} invalid")
 
                 # Change color
-                l4.setStyleSheet("color: red;")
+                edit_directory.setStyleSheet("color: red;")
 
-        directory_line_edit.textChanged.connect(validate_dir)
+        # Execute the validate_dir function if
+        edit_directory.textChanged.connect(validate_dir)
+        # Loading Completions
+        complete_path(os.getcwd(), check=False)
 
         # Resize and place on screen
-        directory_line_edit.resize(200, 25)
-        directory_line_edit.move(105, 220)
+        edit_directory.resize(200, 25)
+        edit_directory.move(105, 220)
 
-        # Name
-        e1 = self.generate_filter_entry()
-        e1.resize(230, 25)
-        e1.move(150, 100)
-        # In Name
-        e2 = self.generate_filter_entry()
-        e2.resize(230, 25)
-        e2.move(150, 140)
-        # File ending
-        e3 = self.generate_filter_entry()
-        e3.resize(230, 25)
-        e3.move(150, 180)
+        # File contains
+        edit_file_contains = self.generate_filter_entry()
+        edit_file_contains.resize(270, 25)
+        edit_file_contains.move(520, 100)
+
+        # Wildcard , Unix shell-style wildcards
+        edit_wildcard = self.generate_filter_entry()
+        edit_wildcard.resize(270, 25)
+        edit_wildcard.move(520, 140)
+
         # File size min
-        e4 = self.generate_filter_entry(True)
-        e4.resize(60, 25)
-        e4.move(600, 180)
+        edit_size_min = self.generate_filter_entry(True)
+        edit_size_min.resize(60, 25)
+        edit_size_min.move(600, 180)
+
         # File size max
-        e5 = self.generate_filter_entry(True)
-        e5.resize(60, 25)
-        e5.move(730, 180)
-        # Contains
-        e6 = self.generate_filter_entry()
-        e6.resize(270, 25)
-        e6.move(520, 100)
-        # fn match, Unix shell-style wildcards
-        e7 = self.generate_filter_entry()
-        e7.resize(270, 25)
-        e7.move(520, 140)
+        edit_size_max = self.generate_filter_entry(True)
+        edit_size_max.resize(60, 25)
+        edit_size_max.move(730, 180)
 
         # Radio Button
         logging.debug("Setting up Radio Buttons...")
@@ -421,7 +462,7 @@ class Main_Window:
             search_from = QFileDialog.getExistingDirectory(directory=os.getcwd())
             try:
                 os.chdir(search_from)
-                directory_line_edit.setText(search_from)
+                edit_directory.setText(search_from)
             except (FileNotFoundError, OSError):
                 pass
 
@@ -431,14 +472,14 @@ class Main_Window:
         # Print the given data
         def print_data():
             logging.info(f"\nFilters:\n"
-                         f"Name: {e1.text()}\n"
-                         f"In name: {e2.text()}\n"
-                         f"File Ending: {e3.text()}\n"
+                         f"Name: {edit_name.text()}\n"
+                         f"In name: {edit_name_contains.text()}\n"
+                         f"File Ending: {edit_file_extension.text()}\n"
                          f"Search from: {os.getcwd()}\n\n"
-                         f"File size(MB): min:{e4.text()} max: {e5.text()}\n"
+                         f"File size(MB): min:{edit_size_min.text()} max: {edit_size_max.text()}\n"
                          f"Date modified from: {m_date_from_drop_down.text()} to: {m_date_to_drop_down.text()}\n"
                          f"Date created from: {c_date_from_drop_down.text()} to: {c_date_to_drop_down.text()}\n"
-                         f"Content: {e6.text()}\n"
+                         f"Content: {edit_file_contains.text()}\n"
                          f"Search for system files: {rb_library1.isChecked()}\n"
                          f"Search for: {combobox_search_for.currentText()}\n\n"
                          f"Sort results by: {combobox_sorting.currentText()}\n"
@@ -452,18 +493,18 @@ class Main_Window:
             # Print Input
             print_data()
             # Start Searching
-            FF_Search.search(data_name=e1.text(),
-                             data_in_name=e2.text(),
-                             data_filetype=e3.text(),
-                             data_file_size_min=e4.text(), data_file_size_max=e5.text(),
+            FF_Search.search(data_name=edit_name.text(),
+                             data_in_name=edit_name_contains.text(),
+                             data_filetype=edit_file_extension.text(),
+                             data_file_size_min=edit_size_min.text(), data_file_size_max=edit_size_max.text(),
                              data_library=rb_library1.isChecked(),
                              data_search_from_valid=os.getcwd(),
-                             data_search_from_unproofed=directory_line_edit.text(),
-                             data_content=e6.text(),
+                             data_search_from_unproofed=edit_directory.text(),
+                             data_content=edit_file_contains.text(),
                              data_search_for=combobox_search_for.currentText(),
                              data_edits_list=[c_date_from_drop_down, c_date_to_drop_down, m_date_from_drop_down,
                                               m_date_to_drop_down],
-                             data_fn_match=e7.text(),
+                             data_fn_match=edit_wildcard.text(),
                              data_sort_by=combobox_sorting.currentText(),
                              data_reverse_sort=rb_reverse_sort1.isChecked(),
                              parent=self.Root_Window)
@@ -489,35 +530,28 @@ class Main_Window:
                                                           f"Successful copied Command:\n{shell_command} !",
                                                           self.Root_Window)
 
-            # Generate a shell command
-            shell_command = str(FF_Search.generate_terminal_command(e1.text(), e2.text(), e3.text(), e5.text()))
+            # Calling the function, which generate a shell command
+            shell_command = str(
+                FF_Search.generate_terminal_command(edit_name.text(), edit_name_contains.text(),
+                                                    edit_file_extension.text(), edit_size_max.text()))
 
-            # Label, saying command
-            command_label = QLabel(self.Root_Window)
-            command_label.setText("Command:")
-            command_label.setToolTip("Terminal command:\nYou can paste this command into the Terminal app"
-                                     " to search with the \"find\" tool")
-            command_label.setFont(QFont("Arial", 20))
-            command_label.show()
-            command_label.move(10, 390)
+            # Showing the label that says "Command:"
+            label_command_title.show()
 
-            # Label, displaying the command
-            command_label2.setText(f"{shell_command} {'':100}")
-            command_label2.setToolTip(shell_command)
-            command_label2.setStyleSheet("background-color: blue;color: white;")
-            command_label2.adjustSize()
-            command_label2.move(120, 390)
-            command_label2.show()
+            # Displaying the command label
+            label_command.setText(f"{shell_command} {'':100}")  # used "{'':100}" to extend the labelbb
+            label_command.setToolTip(shell_command)
+            label_command.show()
 
             # Copy Command Button
-            command_copy_button = QPushButton(self.Root_Window)
-            # Change the Text
-            command_copy_button.setText("Copy")
-            # Change the click event
-            command_copy_button.clicked.connect(copy_command)
+            # Disconnect the button set a new click event
+            try:
+                button_command_copy.clicked.disconnect()
+            except TypeError:
+                pass
+            button_command_copy.clicked.connect(copy_command)
             # Display the Button at the correct position
-            command_copy_button.show()
-            command_copy_button.move(425, 385)
+            button_command_copy.show()
 
         # Large Buttons
         # Search button with image, to start searching
@@ -525,13 +559,28 @@ class Main_Window:
         # Menu when Right-clicking
         context_menu = QMenu(self.Root_Window)
 
+        # Search without using the cache
+        def delete_cache_and_search():
+            # Delete cache File
+            cache_file_name = edit_directory.text().replace("/", "-")
+            os.remove(os.path.join(FF_Files.CACHED_SEARCHES_FOLDER, f"{cache_file_name}.FFCache"))
+            # Search
+            search_entry()
+
+        action_search_without_cache = QAction("Search and Delete cache for selected folder", self.Root_Window)
+        action_search_without_cache.triggered.connect(delete_cache_and_search)
+        context_menu.addAction(action_search_without_cache)
+
+        # Seperator
+        context_menu.addSeparator()
+
         # Open Search Action
-        action_open_search = QAction('Open Search', self.Root_Window)
+        action_open_search = QAction("Open Search", self.Root_Window)
         action_open_search.triggered.connect(lambda: FF_Search.load_search(self.Root_Window))
         context_menu.addAction(action_open_search)
 
         # Shell Command Action
-        action_terminal = QAction('Generate Terminal Command', self.Root_Window)
+        action_terminal = QAction("Generate Terminal Command", self.Root_Window)
         action_terminal.triggered.connect(generate_terminal_command)
         context_menu.addAction(action_terminal)
 
@@ -841,7 +890,7 @@ class Main_Window:
     def update_search_status_label():
         # If there are now active searches
         if FF_Search.ACTIVE_SEARCH_THREADS == 0:
-            search_status_label.setText("Idle")
+            search_status_label.setText("Inactive")
             search_status_label.setStyleSheet("color: green;")
             search_status_label.adjustSize()
 
