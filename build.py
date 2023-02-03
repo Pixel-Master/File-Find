@@ -58,7 +58,6 @@ os.system("create-dmg "
           "--window-size 800 400 "
           "--icon-size 100 "
           "--icon \"dist/File Find.app\" 200 190 "
-          "--hide-extension \"dist/File Find.app\" "
           "--app-drop-link 600 190 "
           "\"dist/File Find.dmg\" "
           "\"dist/\"\n")
