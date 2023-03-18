@@ -27,7 +27,7 @@ SAVED_SEARCHES_FOLDER = os.path.join(FF_LIB_FOLDER, "Saved Searches")
 ASSETS_FOLDER = os.path.join(FF_LIB_FOLDER, "assets")
 
 # Versions
-VERSION: str = "beta_3-feb-2023"
+VERSION: str = "beta_18-mar-2023"
 VERSION_SHORT: str = "0.0"
 
 # Standard content of Settings File
@@ -132,6 +132,14 @@ def conv_file_size(byte_size: int) -> str:
         return f"{round(byte_size / 1000, 2)} KB"
     else:
         return f"{byte_size} Bytes"
+
+
+# Function for nicely displaying Paths
+def display_path(path: str, length_of_first_part_of_string: int = 40):
+    if len(path) >= length_of_first_part_of_string + 13:
+        return f"{path[0:length_of_first_part_of_string]}...{path[len(path) - 20:len(path)]}"
+    else:
+        return path
 
 
 # Setup File-Find dir

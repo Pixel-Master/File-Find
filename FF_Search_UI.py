@@ -8,6 +8,7 @@
 
 # This file contains the code for the search-results window
 
+import gc
 # Imports
 import hashlib
 import logging
@@ -20,10 +21,11 @@ from time import perf_counter, ctime, time
 from PyQt6.QtCore import QSize
 from PyQt6.QtGui import QFont, QIcon, QAction
 from PyQt6.QtWidgets import QMainWindow, QLabel, QPushButton, QFileDialog, \
-    QListWidget, QMenuBar, QVBoxLayout, QHBoxLayout, QWidget
+    QListWidget, QMenuBar, QMenu
 
 # Projects Libraries
 import FF_Additional_UI
+import FF_Compare
 import FF_Files
 import FF_Help_UI
 import FF_Main_UI
@@ -41,7 +43,7 @@ class Search_Window:
         # Define the window
         self.Search_Results_Window = QMainWindow(parent)
         # Set the Title of the Window
-        self.Search_Results_Window.setWindowTitle(f"File Find Search Results | {search_path}")
+        self.Search_Results_Window.setWindowTitle(f"File Find Search Results | {FF_Files.display_path(search_path)}")
         # Set the Size of the Window and make it not resizable
         self.Search_Results_Window.setFixedHeight(700)
         self.Search_Results_Window.setFixedWidth(800)
@@ -82,7 +84,7 @@ class Search_Window:
         # Listbox
         self.result_listbox = QListWidget(self.Search_Results_Window)
         # Resize the List-widget
-        self.result_listbox.resize(781, 570)
+        self.result_listbox.resize(780, 570)
         # Place
         self.result_listbox.move(10, 70)
         # Connect the Listbox
@@ -165,7 +167,7 @@ class Search_Window:
             return button
 
         # Button to open the File in Finder
-        show_in_finder = generate_button("Show in Finder", self.open_in_finder)
+        show_in_finder = generate_button("Open in Finder", self.open_in_finder)
         show_in_finder.move(10, 650)
 
         # Button to open the File
@@ -181,7 +183,7 @@ class Search_Window:
         file_hash.move(680, 650)
 
         # Time stat Button
-        show_time = generate_button(None, show_time_stats, )
+        show_time = generate_button(None, show_time_stats)
         # Icon
         show_time.setIcon(QIcon(os.path.join(FF_Files.ASSETS_FOLDER, "Time_button_img_small.png")))
         show_time.setIconSize(QSize(23, 23))
@@ -189,16 +191,37 @@ class Search_Window:
         show_time.resize(50, 40)
         show_time.move(260, 15)
 
-        # Reload Button
-        reload_button = generate_button("Reload", reload_files)
-        reload_button.move(640, 20)
+        # More Options
 
-        # Save Button
-        save_button = generate_button("Save", save_search)
-        save_button.move(720, 20)
+        # Options Menu
+        options_menu = QMenu(self.Search_Results_Window)
+
+        # Reload Action
+        options_menu_reload_action = options_menu.addAction("&Reload")
+        options_menu_reload_action.triggered.connect(reload_files)
+        # Save Action
+        options_menu_save_action = options_menu.addAction("&Save Search")
+        options_menu_save_action.triggered.connect(save_search)
+        # Compare Action
+        options_menu_compare_action = options_menu.addAction(
+            "&Select a .FFSearch file and compare it to the opened Search...")
+        options_menu_compare_action.triggered.connect(
+            lambda: FF_Compare.Compare_Searches(matched_list, search_path, self.Search_Results_Window))
+
+        # More Options Button
+        options_button = generate_button(
+            # Displaying the menu at the right position,
+            # using the .mapToParent function with the position of the window.
+            None, lambda: options_menu.exec(options_button.mapToParent(self.Search_Results_Window.pos())))
+        # Icon
+        options_button.setIcon(QIcon(os.path.join(FF_Files.ASSETS_FOLDER, "More_button_img_small.png")))
+        options_button.setIconSize(QSize(50, 50))
+        # Place
+        options_button.move(720, 20)
+        options_button.resize(30, 30)
 
         # Adding every object from matched_list to self.result_listbox
-        logging.debug("Adding Files to Listbox")
+        logging.debug("Adding Files to Listbox...")
         for list_file in matched_list:
             self.result_listbox.addItem(list_file)
         # Setting the row
@@ -208,7 +231,7 @@ class Search_Window:
         self.result_listbox.itemDoubleClicked.connect(self.open_in_finder)
 
         # Update search-results-ui
-        logging.debug("Updating search_results_ui...")
+        logging.debug("Done!, Updating search_results_ui...")
         self.Search_Results_Window.hide()
         self.Search_Results_Window.show()
 
@@ -217,7 +240,7 @@ class Search_Window:
         seconds_text.adjustSize()
 
         # Building Menubar
-        self.menubar(save_search, reload_files)
+        self.menubar(save_search, reload_files, matched_list, search_path, parent)
 
         # Debug
         logging.info("Finished Setting up Search UI")
@@ -232,9 +255,12 @@ class Search_Window:
                                             QIcon(os.path.join(FF_Files.ASSETS_FOLDER, "Find_button_img_small.png")),
                                             100000)
 
-        logging.debug("Finished Building")
+        # Call the garbage collection
+        logging.debug("Cleaning Memory...")
+        gc.collect(generation=2)
+        logging.info("Finished Building Search-Results-UI!\n")
 
-    def menubar(self, save_search, reload_files):
+    def menubar(self, save_search, reload_files, matched_list, search_path, parent):
         logging.debug("Setting up menubar...", )
 
         # Menubar
@@ -262,7 +288,7 @@ class Search_Window:
         # Clear Cache
         cache_action = QAction("&Clear Cache", self.Search_Results_Window)
         cache_action.triggered.connect(lambda: FF_Files.remove_cache(True, self.Search_Results_Window))
-        cache_action.setShortcut("Ctrl+N")
+        cache_action.setShortcut("Ctrl+T")
         tools_menu.addAction(cache_action)
 
         # Reload and Remove Deleted Files
@@ -303,6 +329,7 @@ class Search_Window:
         # Close Window
         close_action = QAction("&Close Window", self.Search_Results_Window)
         close_action.triggered.connect(self.Search_Results_Window.destroy)
+        close_action.triggered.connect(gc.collect)
         close_action.setShortcut("Ctrl+W")
         window_menu.addAction(close_action)
 
@@ -310,6 +337,18 @@ class Search_Window:
         help_action = QAction("&File Find Help and Settings", self.Search_Results_Window)
         help_action.triggered.connect(lambda: FF_Help_UI.Help_Window(self.Search_Results_Window))
         help_menu.addAction(help_action)
+
+        # Compare Search
+        compare_action = QAction(
+            "&Select a .FFSearch file and compare it to the opened Search...", self.Search_Results_Window)
+        compare_action.triggered.connect(lambda: FF_Compare.Compare_Searches(matched_list, search_path, parent))
+        compare_action.setShortcut("Ctrl+N")
+        # Separator for visual indent
+        tools_menu.addSeparator()
+        file_menu.addSeparator()
+
+        tools_menu.addAction(compare_action)
+        file_menu.addAction(compare_action)
 
     # Options for paths
     # Opens a file

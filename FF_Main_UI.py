@@ -296,9 +296,9 @@ class Main_Window:
         edit_file_extension.move(150, 180)
 
         # Edit to display the Path
-        edit_directory = self.generate_filter_entry()
+        self.edit_directory = self.generate_filter_entry()
         # Set text and tooltip to display the directory
-        edit_directory.setText(os.getcwd())
+        self.edit_directory.setText(os.getcwd())
 
         # Auto complete paths
         def complete_path(path, check=True):
@@ -312,7 +312,7 @@ class Main_Window:
 
                 # Set the saved list as Completer
                 self.directory_line_edit_completer = QCompleter(paths, parent=self.Root_Window)
-                edit_directory.setCompleter(self.directory_line_edit_completer)
+                self.edit_directory.setCompleter(self.directory_line_edit_completer)
 
                 # Returns the list
                 return paths
@@ -333,19 +333,19 @@ class Main_Window:
         # Validate Paths
         def validate_dir():
             # Debug
-            logging.debug(f"Directory Path changed to: {edit_directory.text()}")
+            logging.debug(f"Directory Path changed to: {self.edit_directory.text()}")
 
             # Changing Tool-Tip
-            edit_directory.setToolTip(edit_directory.text())
+            self.edit_directory.setToolTip(self.edit_directory.text())
 
             # Testing if path is folder
-            if os.path.isdir(check_path := edit_directory.text()):
+            if os.path.isdir(check_path := self.edit_directory.text()):
                 # Changing Path
                 logging.debug(f"Path: {check_path} valid")
                 os.chdir(check_path)
 
                 # Change color
-                edit_directory.setStyleSheet("")
+                self.edit_directory.setStyleSheet("")
 
                 # Updating Completions
                 complete_path(check_path)
@@ -355,16 +355,16 @@ class Main_Window:
                 logging.debug(f"Path: {check_path} invalid")
 
                 # Change color
-                edit_directory.setStyleSheet("color: red;")
+                self.edit_directory.setStyleSheet("color: red;")
 
         # Execute the validate_dir function if
-        edit_directory.textChanged.connect(validate_dir)
+        self.edit_directory.textChanged.connect(validate_dir)
         # Loading Completions
         complete_path(os.getcwd(), check=False)
 
         # Resize and place on screen
-        edit_directory.resize(200, 25)
-        edit_directory.move(105, 220)
+        self.edit_directory.resize(200, 25)
+        self.edit_directory.move(105, 220)
 
         # File contains
         edit_file_contains = self.generate_filter_entry()
@@ -462,7 +462,7 @@ class Main_Window:
             search_from = QFileDialog.getExistingDirectory(directory=os.getcwd())
             try:
                 os.chdir(search_from)
-                edit_directory.setText(search_from)
+                self.edit_directory.setText(search_from)
             except (FileNotFoundError, OSError):
                 pass
 
@@ -499,7 +499,7 @@ class Main_Window:
                              data_file_size_min=edit_size_min.text(), data_file_size_max=edit_size_max.text(),
                              data_library=rb_library1.isChecked(),
                              data_search_from_valid=os.getcwd(),
-                             data_search_from_unproofed=edit_directory.text(),
+                             data_search_from_unchecked=self.edit_directory.text(),
                              data_content=edit_file_contains.text(),
                              data_search_for=combobox_search_for.currentText(),
                              data_edits_list=[c_date_from_drop_down, c_date_to_drop_down, m_date_from_drop_down,
@@ -559,16 +559,9 @@ class Main_Window:
         # Menu when Right-clicking
         context_menu = QMenu(self.Root_Window)
 
-        # Search without using the cache
-        def delete_cache_and_search():
-            # Delete cache File
-            cache_file_name = edit_directory.text().replace("/", "-")
-            os.remove(os.path.join(FF_Files.CACHED_SEARCHES_FOLDER, f"{cache_file_name}.FFCache"))
-            # Search
-            search_entry()
-
-        action_search_without_cache = QAction("Search and Delete cache for selected folder", self.Root_Window)
-        action_search_without_cache.triggered.connect(delete_cache_and_search)
+        # Search and delete cache for selected folder action
+        action_search_without_cache = QAction("Search and delete cache for selected folder", self.Root_Window)
+        action_search_without_cache.triggered.connect(self.delete_cache_and_search)
         context_menu.addAction(action_search_without_cache)
 
         # Seperator
@@ -730,7 +723,7 @@ class Main_Window:
         # Clear Cache
         cache_action = QAction("&Clear Cache", self.Root_Window)
         cache_action.triggered.connect(lambda: FF_Files.remove_cache(True, self.Root_Window))
-        cache_action.setShortcut("Ctrl+N")
+        cache_action.setShortcut("Ctrl+T")
         tools_menu.addAction(cache_action)
 
         # Generate Terminal Command
@@ -764,10 +757,16 @@ class Main_Window:
         window_menu.addAction(hide_action)
 
         # Search Action
-        find_action = QAction("&Search", self.Root_Window)
-        find_action.setShortcut("Ctrl+F")
-        find_action.triggered.connect(self.search_entry)
-        edit_menu.addAction(find_action)
+        search_action = QAction("&Search", self.Root_Window)
+        search_action.setShortcut("Ctrl+F")
+        search_action.triggered.connect(self.search_entry)
+        edit_menu.addAction(search_action)
+
+        # Search and delete cache for selected folder action
+        search_without_cache_action = QAction("Search and delete cache for selected folder", self.Root_Window)
+        search_without_cache_action.setShortcut("Ctrl+Shift+F")
+        search_without_cache_action.triggered.connect(self.delete_cache_and_search)
+        edit_menu.addAction(search_without_cache_action)
 
         # Menubar icon
         logging.debug("Constructing Menubar icon...")
@@ -899,6 +898,19 @@ class Main_Window:
             search_status_label.setText(f"Searching...({FF_Search.ACTIVE_SEARCH_THREADS})")
             search_status_label.setStyleSheet("color: red;")
             search_status_label.adjustSize()
+
+    # Search without using the cache
+    def delete_cache_and_search(self):
+        logging.info("Deleting cache and search..")
+        # Delete cache File
+        cache_file_name = self.edit_directory.text().replace("/", "-")
+        try:
+            os.remove(os.path.join(FF_Files.CACHED_SEARCHES_FOLDER, f"{cache_file_name}.FFCache"))
+            logging.info("Deleted cache successfully")
+        except FileNotFoundError:
+            logging.debug("Cache file doesn't exist")
+        # Search
+        self.search_entry()
 
 
 class search_update:

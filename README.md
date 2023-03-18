@@ -3,16 +3,16 @@
   <h1 align="center">File Find for macOS</h1>
 
 
-<h3 align="center">A macOS file search utility that helps you find files easier.
+<h3 align="center">A macOS file search utility that helps you find files easier.</h3>
 
-Completely open-source and free. </h3>
+<h4 align="center">Completely open-source and free.</h4>
 
 
-[![File Find](https://github.com/Pixel-Master/File-Find/actions/workflows/File-Find.yml/badge.svg?branch=main)](https://github.com/Pixel-Master/File-Find/actions/workflows/File-Find.yml)
-[![GPLv3 License](https://img.shields.io/badge/License-GPL%20v3-yellow.svg)](http://www.gnu.org/licenses/gpl-3.0.html) 
-[![GitLab last commit](https://img.shields.io/gitlab/last-commit/Pixel-Mqster/File-Find.svg?style=flat)](https://gitlab.com/Pixel-Mqster/File-Find/commits/main)
-[![GitHub stars](https://img.shields.io/github/stars/Pixel-Master/File-Find.svg?style=social&label=Stars&style=plastic)](https://gitlab.com/Pixel-Mqster/File-Find/)
-[![GitLab forks](https://img.shields.io/gitlab/forks/Pixel-Mqster/File-Find.svg?style=social&label=Fork&style=plastic)](https://gitlab.com/Pixel-Mqster/File-Find/-/forks/new)
+[![File Find build](https://img.shields.io/github/actions/workflow/status/Pixel-Master/File-Find/File-Find.yml?branch=main&label=File%20Find%20build%20status&logo=File%20Find&style=flat-square)](https://github.com/Pixel-Master/File-Find/actions/workflows/File-Find.yml)
+[![GPLv3 License](https://img.shields.io/badge/License-GPL%20v3-blue.svg?style=flat-square)](http://www.gnu.org/licenses/gpl-3.0.html) 
+[![GitLab last commit](https://img.shields.io/gitlab/last-commit/Pixel-Mqster/File-Find.svg?style=flat-square)](https://gitlab.com/Pixel-Mqster/File-Find/commits/main)
+[![GitHub stars](https://img.shields.io/github/stars/Pixel-Master/File-Find.svg?style=flat-square&label=Stars&color=yellow)](https://gitlab.com/Pixel-Mqster/File-Find/)
+[![GitLab forks](https://img.shields.io/gitlab/forks/Pixel-Mqster/File-Find.svg?style=flat-square&label=Fork&color=red)](https://gitlab.com/Pixel-Mqster/File-Find/-/forks/new)
 
 #### Automatic Builds on: [GitHub](https://github.com/Pixel-Master/File-Find), Issues and Pull Requests on: [GitLab](https://gitlab.com/Pixel-Mqster/File-Find)
 
@@ -65,6 +65,8 @@ Completely open-source and free. </h3>
 	* File Ending
     * Wildcard
 
+- Compare two searches and search for differences
+
 - View file hashes (md5, sha1, sha265)
 
 ## FAQ
@@ -78,17 +80,23 @@ A: It is possible that for example reloading files or building the UI at the end
 
 Q: **How do you clean the cache?**
 
-A: File Find stores the cache under `/Users/$USERNAME/Library/Application Support/File-Find/Cached Searches`. You can clean the cache `with ⌘ + N` or `Tools > Clear Cache`. In the About section you can set when the cache gets cleaned automatically.
+A: File Find stores the cache under `/Users/$USERNAME/Library/Application Support/File-Find/Cached Searches`. You can clean the cache with `⌘ + T` or `Tools > Clear Cache`. In the About section you can set when the cache gets cleaned automatically.
 
-Q: **Why does File Find ask for permission for Contacts, Calenders, Photos, Downloads, etc...?**
+Q: **Why does File Find ask for permission for Contacts, Calenders, Photos, etc...?**
 
 A: File Find scans the entire specified directory, even if files are excluded they are scanned first and then sorted out. 
 Your photos, calendar data, contacts etc. are stored in a library folder, which means that File Find scans them. 
-**File Find does not connect to the internet**, everything stays on your machine. If you are still uncomfortable, you can also press "Do not allow", the associated files will not appear in your searches. **If File Find asks for your Downloads or Desktop folder, you can decline, File Find will still be able to scan those files.**
+File Find does not connect to the internet, everything stays on your machine. You can also press "Do not allow", the associated files will not appear in your searches.
+
+Q: **Why does File Find ask for permission for Downloads, Desktop, Documents, etc...?**
+
+A: On macOS if an app scans a directory this popup will automatically appear.
+If you press "Don't allow", File Find will still be able to scan those files,
+but you are not going to be able to save searches in those directories
 
 Q: **Does File Find connect to the Internet?**
 
-A: File Find does not connect to the Internet, everything stays on your machine.
+A: **File Find does not connect to the Internet**, everything stays on your machine.
 
 ## Download
 File Find isn't ready for Release yet Run from source or download pre-build macOS Apps from the GitHub action Page.
@@ -111,6 +119,8 @@ File Find isn't ready for Release yet Run from source or download pre-build macO
 - `FF_Search.py` - This file contains the code for the search engine
 
 - `FF_Files.py` - This file contains File operations and global variables
+
+- `FF_Compare.py` - This file contains the code for the 'Compare Search' feature
 
 - `build.py` - Build script, requires py2app installed. See [here](#building-file-findapp)
 

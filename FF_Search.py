@@ -90,7 +90,9 @@ class generate_terminal_command:
 # Loading a saved search
 class load_search:
     def __init__(self, parent):
-        load_dialog = QFileDialog.getOpenFileName(parent, "Export File Find Search", FF_Files.SAVED_SEARCHES_FOLDER,
+        load_dialog = QFileDialog.getOpenFileName(parent,
+                                                  "Export File Find Search",
+                                                  FF_Files.SAVED_SEARCHES_FOLDER,
                                                   "*.FFSave;")
         load_file = load_dialog[0]
 
@@ -100,18 +102,18 @@ class load_search:
                 saved_file_content = load(OpenedFile)
                 if not os.path.exists(
                         os.path.join(FF_Files.CACHED_SEARCHES_FOLDER,
-                                     f"loaded from {load_file}.FFSearch".replace("/", "-"))):
+                                     f"{load_file}.FFCache".replace("/", "-"))):
                     with open(os.path.join(FF_Files.CACHED_SEARCHES_FOLDER,
-                                           f"loaded from {load_file}.FFCache".replace("/", "-")),
+                                           f"{load_file}.FFCache".replace("/", "-")),
                               "wb") as CachedSearch:
                         dump(saved_file_content, file=CachedSearch)
-                FF_Search_UI.Search_Window(*[0, 0, 0, 0, saved_file_content, f"loaded from {load_file}", parent])
+                FF_Search_UI.Search_Window(*[0, 0, 0, 0, saved_file_content, load_file, parent])
 
 
 # The Search Engine
 class search:
     def __init__(self, data_name, data_in_name, data_filetype, data_file_size_min, data_file_size_max, data_library,
-                 data_search_for, data_search_from_valid, data_search_from_unproofed, data_content, data_edits_list,
+                 data_search_for, data_search_from_valid, data_search_from_unchecked, data_content, data_edits_list,
                  data_sort_by, data_reverse_sort, data_fn_match, parent: QWidget):
         # Debug
         logging.debug("Converting Date-times...")
@@ -152,7 +154,7 @@ class search:
                                                           parent=None)
 
         # Directory not valid
-        elif data_search_from_valid != data_search_from_unproofed and not os.path.isdir(data_search_from_unproofed):
+        elif data_search_from_valid != data_search_from_unchecked and not os.path.isdir(data_search_from_unchecked):
             # Debug
             logging.error("Directory Error! Given directory is not a valid folder!")
 
@@ -182,7 +184,8 @@ class search:
                                                           parent=None)
 
         # Search in System Files disabled, but Search path is in library Folder
-        elif not data_library and "/Library" in data_search_from_valid or data_search_from_valid.startswith("/System"):
+        elif ((not data_library) and ("/Library" in data_search_from_valid)) or \
+                (not data_library) and (data_search_from_valid.startswith("/System")):
             # Debug
             logging.error("System Files Error! Search in System Files disabled, but Directory is in Library Folder")
 

@@ -78,7 +78,7 @@ class Help_Window:
         ff_info.setText("File Find for macOS")
         ff_info.setFont(QFont("Futura", 30))
         # Display the Label
-        ff_info.move(200, 180)
+        ff_info.move(200, 170)
         ff_info.adjustSize()
         ff_info.show()
 
@@ -94,7 +94,7 @@ class Help_Window:
 
         # The Frame
         fflogo_frame = QFrame(About_Window)
-        fflogo_frame.setGeometry(QRect(100, 40, 500, 250))
+        fflogo_frame.setGeometry(QRect(100, 40, 500, 270))
         fflogo_frame.setFrameShape(QFrame.Shape.StyledPanel)
         fflogo_frame.show()
 
@@ -108,7 +108,19 @@ class Help_Window:
         # Display the Label
         version_label.adjustSize()
         version_label.show()
-        version_label.move(240, 220)
+        version_label.move(260, 210)
+
+        # The Author Label
+        author_label = QLabel(About_Window)
+        # Font and Text
+        author_label.setText("Created by Pixel Master, Copyright © 2022–2023 Pixel Master.")
+        author_label.setFont(QFont("Arial", 15))
+        # The command and tooltip
+        author_label.setToolTip(f"Version: {FF_Files.VERSION_SHORT} Extended Version: {FF_Files.VERSION}")
+        # Display the Label
+        author_label.adjustSize()
+        author_label.show()
+        author_label.move(120, 240)
 
         # Links using QPushButton
         def generate_link_button(displayed_text, domain, color):
@@ -128,13 +140,13 @@ class Help_Window:
             return link
 
         sourcecode = generate_link_button("Source Code", "https://gitlab.com/Pixel-Mqster/File-Find", "blue")
-        sourcecode.move(120, 250)
+        sourcecode.move(120, 270)
 
         update = generate_link_button("Update", "https://gitlab.com/Pixel-Mqster/File-Find/releases", "green")
-        update.move(310, 250)
+        update.move(310, 270)
 
         faq_link = generate_link_button("FaQ", "https://gitlab.com/Pixel-Mqster/File-Find#faq", "red")
-        faq_link.move(470, 250)
+        faq_link.move(470, 270)
 
         # Calling the faq functions for the Labels
         faq(question="What is File Find and how does it work?", y=320,
