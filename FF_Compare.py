@@ -17,7 +17,6 @@ import logging
 import os
 import gc
 
-
 # PyQt6 Gui Imports
 from PyQt6.QtGui import QAction, QFont
 from PyQt6.QtCore import QObject, pyqtSignal, QThreadPool
@@ -62,8 +61,7 @@ class Compare_UI:
         # Show the Listbox
         self.added_files_listbox.show()
         # Add items
-        for item in compared_searches.files_only_in_first_search:
-            self.added_files_listbox.addItem(item)
+        self.added_files_listbox.addItems(compared_searches.files_only_in_first_search)
         # Double-Clicking Event
         self.added_files_listbox.doubleClicked.connect(self.open_in_finder)
 
@@ -80,8 +78,7 @@ class Compare_UI:
         # Show the Listbox
         self.removed_files_listbox.show()
         # Add items
-        for item in compared_searches.files_only_in_second_search:
-            self.removed_files_listbox.addItem(item)
+        self.removed_files_listbox.addItems(compared_searches.files_only_in_second_search)
         # Double-Clicking Event
         self.removed_files_listbox.doubleClicked.connect(self.open_in_finder)
 
@@ -111,7 +108,7 @@ class Compare_UI:
         show_in_finder.move(10, 650)
 
         # Button to open the File
-        open_file = self.generate_button("Open", self.open_with_program)
+        open_file = self.generate_button("Open", self.open_file)
         open_file.move(170, 650)
 
         # Button to open File Info
@@ -197,7 +194,7 @@ class Compare_UI:
 
         # Open File Action
         open_action = QAction("&Open Selected File", self.Compare_Window)
-        open_action.triggered.connect(self.open_with_program)
+        open_action.triggered.connect(self.open_file)
         open_action.setShortcut("Ctrl+O")
         tools_menu.addAction(open_action)
 
@@ -236,15 +233,57 @@ class Compare_UI:
         help_action.triggered.connect(lambda: FF_Help_UI.Help_Window(self.Compare_Window))
         help_menu.addAction(help_action)
 
-    # Options for paths
+    # Options for files and folders
     # Opens a file
-    def open_with_program(self):
+    def open_file(self):
         try:
             # Selecting the highlighted item of the focused listbox
             selected_file = self.Compare_Window.focusWidget().currentItem().text()
 
-            if os.system("open " + str(selected_file.replace(" ", "\\ "))) != 0:
+            if os.system(f"open {FF_Files.convert_file_name_for_terminal(selected_file)}") != 0:
                 FF_Additional_UI.msg.show_critical_messagebox("Error!", f"No Program found to open {selected_file}",
+                                                              self.Compare_Window)
+            else:
+                logging.debug(f"Opened: {selected_file}")
+        except AttributeError:
+            FF_Additional_UI.msg.show_critical_messagebox("Error!", "Select a File!", self.Compare_Window)
+
+    # Opens a file with a user-defined app
+    def open_in_app(self):
+        try:
+            # Ask for an app
+            selected_program = FF_Files.convert_file_name_for_terminal(
+                QFileDialog.getOpenFileName(
+                    parent=self.Compare_Window,
+                    directory="/Applications",
+                    filter="*.app;")[0])
+
+            # Tests if the user selected an app
+            if selected_program != "":
+                # Get the selected file
+                selected_file = FF_Files.convert_file_name_for_terminal(
+                    self.Compare_Window.focusWidget().currentItem().text())
+                # Open the selected file with the selected program and checking the return value
+                if os.system(f"open {selected_file} -a {selected_program}") != 0:
+                    # Error message
+                    FF_Additional_UI.msg.show_critical_messagebox("Error!", f"{selected_file} does not exist!",
+                                                                  self.Compare_Window)
+                    logging.error(f"Error with opening {selected_file} with {selected_program}")
+                else:
+                    logging.debug(f"Opened: {selected_file}")
+
+        # If no file is selected
+        except AttributeError:
+            FF_Additional_UI.msg.show_critical_messagebox("Error!", "Select a File!", self.Compare_Window)
+
+    # Open a file in the Terminal
+    def open_in_terminal(self):
+        try:
+            # Get the currently selected file
+            selected_file = self.Compare_Window.focusWidget().currentItem().text()
+
+            if os.system(f"open {FF_Files.convert_file_name_for_terminal(selected_file)}") != 0:
+                FF_Additional_UI.msg.show_critical_messagebox("Error!", f"Terminal could not open: {selected_file}",
                                                               self.Compare_Window)
             else:
                 logging.debug(f"Opened: {selected_file}")
@@ -257,7 +296,7 @@ class Compare_UI:
             # Selecting the highlighted item of the focused listbox
             selected_file = self.Compare_Window.focusWidget().currentItem().text()
 
-            if os.system("open -R " + str(selected_file.replace(" ", "\\ "))) != 0:
+            if os.system(f"open -R {FF_Files.convert_file_name_for_terminal(selected_file)}") != 0:
                 FF_Additional_UI.msg.show_critical_messagebox("Error!", f"File does not exists: {selected_file}!",
                                                               self.Compare_Window)
             else:
@@ -299,7 +338,7 @@ class Compare_UI:
                                                           self.Compare_Window)
             except (FileNotFoundError, PermissionError):
                 logging.error(f"{file} does not Exist!")
-                FF_Additional_UI.msg.show_critical_messagebox("File Not Found!", f"File does not exist: {file}!",
+                FF_Additional_UI.msg.show_critical_messagebox("File Not Found!", f"File does not exist: {file}",
                                                               self.Compare_Window)
         except AttributeError:
             FF_Additional_UI.msg.show_critical_messagebox("Error!", "Select a File!", self.Compare_Window)

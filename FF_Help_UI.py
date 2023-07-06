@@ -325,8 +325,7 @@ class Help_Window:
             logging.debug(f"Open File Find Folder: {FF_Files.FF_LIB_FOLDER}")
 
             # Opening folder with the macOS open command
-            folder = FF_Files.FF_LIB_FOLDER.replace(" ", "\\ ")
-            os.system(f"open -R {folder}")
+            os.system(f"open -R {FF_Files.convert_file_name_for_terminal(FF_Files.FF_LIB_FOLDER)}")
 
         open_ff_folder_button.clicked.connect(open_lib_folder)
         # Display
@@ -368,8 +367,7 @@ class Help_Window:
                                                           About_Window)
 
                 # Deleting the File Find Folder with the rm command
-                folder = FF_Files.FF_LIB_FOLDER.replace(" ", "\\ ")
-                os.system(f"rm -rf {folder}")
+                os.system(f"rm -rf {FF_Files.convert_file_name_for_terminal(FF_Files.FF_LIB_FOLDER)}")
 
                 # Exiting
                 logging.fatal("Resetted, Exiting...")

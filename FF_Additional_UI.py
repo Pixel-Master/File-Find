@@ -7,6 +7,8 @@
 # http://www.gnu.org/licenses/gpl-3.0.html
 
 # This file contains the classes for additional UI components like messageboxes
+
+# Imports
 import os
 from pickle import load
 
@@ -15,9 +17,6 @@ from PyQt6.QtWidgets import QMessageBox
 
 # Projects Libraries
 import FF_Files
-
-
-# Imports
 
 
 class msg:
@@ -62,7 +61,7 @@ class msg:
             if load(SettingsFile)["popup"]["search_question"]:
                 if QMessageBox.information(parent, "This may take some Time!",
                                            "This may take some Time!\nPress OK to Start Searching",
-                                           QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel)\
+                                           QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel) \
                         == QMessageBox.StandardButton.Ok:
                     return True
                 else:

@@ -8,7 +8,6 @@
 
 # This file contains the code for the search-results window
 
-import gc
 # Imports
 import hashlib
 import logging
@@ -16,6 +15,7 @@ import os
 from pickle import dump, load
 from threading import Thread
 from time import perf_counter, ctime, time
+import gc
 
 # PyQt6 Gui Imports
 from PyQt6.QtCore import QSize
@@ -29,7 +29,6 @@ import FF_Compare
 import FF_Files
 import FF_Help_UI
 import FF_Main_UI
-import FF_Search
 
 
 class Search_Window:
@@ -73,9 +72,23 @@ class Search_Window:
         objects_text.move(420, 20)
         objects_text.adjustSize()
 
-        # Timestamp
+        # Timestamps
+        # When cache was created
+        cache_created_time = ctime(
+            os.stat(
+                os.path.join(FF_Files.CACHED_SEARCHES_FOLDER, search_path.replace("/", "-") + ".FFCache")).st_birthtime)
+        cache_modified_time = ctime(
+            os.path.getmtime(
+                os.path.join(FF_Files.CACHED_SEARCHES_FOLDER, search_path.replace("/", "-") + ".FFCache")))
+        search_opened_time = ctime(time())
+        # Label
         timestamp_text = QLabel(self.Search_Results_Window)
-        timestamp_text.setText(f"Timestamp: {ctime(time())}")
+        timestamp_text.setText(f"Cache created: {cache_created_time}")
+        # More info's whe hovering above
+        timestamp_text.setToolTip(f"Timestamps:\n\n"
+                                  f"Cache created: {cache_created_time}\n"
+                                  f"Cache modified: {cache_modified_time}\n"
+                                  f"Search opened: {search_opened_time}")
         timestamp_text.setFont(QFont("Arial", 10))
         timestamp_text.show()
         timestamp_text.move(10, 680)
@@ -171,7 +184,7 @@ class Search_Window:
         show_in_finder.move(10, 650)
 
         # Button to open the File
-        open_file = generate_button("Open", self.open_with_program)
+        open_file = generate_button("Open", self.open_file)
         open_file.move(170, 650)
 
         # Button to open File Info
@@ -222,18 +235,12 @@ class Search_Window:
 
         # Adding every object from matched_list to self.result_listbox
         logging.debug("Adding Files to Listbox...")
-        for list_file in matched_list:
-            self.result_listbox.addItem(list_file)
+        self.result_listbox.addItems(matched_list)
         # Setting the row
         self.result_listbox.setCurrentRow(0)
 
         # On double-click
         self.result_listbox.itemDoubleClicked.connect(self.open_in_finder)
-
-        # Update search-results-ui
-        logging.debug("Done!, Updating search_results_ui...")
-        self.Search_Results_Window.hide()
-        self.Search_Results_Window.show()
 
         # Update Seconds needed Label
         seconds_text.setText(f"Time needed: {round(time_total + (perf_counter() - time_before_building), 3)}")
@@ -243,7 +250,7 @@ class Search_Window:
         self.menubar(save_search, reload_files, matched_list, search_path, parent)
 
         # Debug
-        logging.info("Finished Setting up Search UI")
+        logging.info("Finished Setting up menubar")
 
         # Time building UI
         time_building = perf_counter() - time_before_building
@@ -257,7 +264,7 @@ class Search_Window:
 
         # Call the garbage collection
         logging.debug("Cleaning Memory...")
-        gc.collect(generation=2)
+        # gc.collect(generation=2)
         logging.info("Finished Building Search-Results-UI!\n")
 
     def menubar(self, save_search, reload_files, matched_list, search_path, parent):
@@ -279,12 +286,6 @@ class Search_Window:
         save_search_action.setShortcut("Ctrl+S")
         file_menu.addAction(save_search_action)
 
-        # Load Search
-        load_search_action = QAction("&Open Search", self.Search_Results_Window)
-        load_search_action.triggered.connect(lambda: FF_Search.load_search(self.Search_Results_Window))
-        load_search_action.setShortcut("Alt+O")
-        file_menu.addAction(load_search_action)
-
         # Clear Cache
         cache_action = QAction("&Clear Cache", self.Search_Results_Window)
         cache_action.triggered.connect(lambda: FF_Files.remove_cache(True, self.Search_Results_Window))
@@ -297,26 +298,44 @@ class Search_Window:
         reload_action.setShortcut("Ctrl+R")
         tools_menu.addAction(reload_action)
 
+        # Separator
+        tools_menu.addSeparator()
+
         # Open File Action
-        open_action = QAction("&Open Selected File", self.Search_Results_Window)
-        open_action.triggered.connect(self.open_with_program)
+        open_action = QAction("&Open selected file", self.Search_Results_Window)
+        open_action.triggered.connect(self.open_file)
         open_action.setShortcut("Ctrl+O")
         tools_menu.addAction(open_action)
 
+        # Open File in Terminal Action
+        open_terminal_action = QAction("&Open selected file in Terminal", self.Search_Results_Window)
+        open_terminal_action.triggered.connect(self.open_in_terminal)
+        open_terminal_action.setShortcut("Ctrl+Alt+O")
+        tools_menu.addAction(open_terminal_action)
+
         # Show File in Finder Action
-        show_action = QAction("&Show Selected File in Finder", self.Search_Results_Window)
+        show_action = QAction("&Show selected file in Finder", self.Search_Results_Window)
         show_action.triggered.connect(self.open_in_finder)
         show_action.setShortcut("Ctrl+Shift+O")
         tools_menu.addAction(show_action)
 
+        # Select an app to open the selected file
+        open_in_app_action = QAction("&Select an app to open the selected file...", self.Search_Results_Window)
+        open_in_app_action.triggered.connect(self.open_in_app)
+        open_in_app_action.setShortcut("Alt+O")
+        tools_menu.addAction(open_in_app_action)
+
+        # Separator
+        tools_menu.addSeparator()
+
         # File Info
-        info_action = QAction("&Info for Selected File", self.Search_Results_Window)
+        info_action = QAction("&Info for selected file", self.Search_Results_Window)
         info_action.triggered.connect(self.file_info)
         info_action.setShortcut("Ctrl+I")
         tools_menu.addAction(info_action)
 
         # View File Hashes
-        hash_action = QAction("&Hashes for Selected File", self.Search_Results_Window)
+        hash_action = QAction("&Hashes for selected file", self.Search_Results_Window)
         hash_action.triggered.connect(self.view_hashes)
         hash_action.setShortcut("Ctrl+Shift+I")
         tools_menu.addAction(hash_action)
@@ -334,7 +353,7 @@ class Search_Window:
         window_menu.addAction(close_action)
 
         # Help
-        help_action = QAction("&File Find Help and Settings", self.Search_Results_Window)
+        help_action = QAction("&File Find Help And Settings", self.Search_Results_Window)
         help_action.triggered.connect(lambda: FF_Help_UI.Help_Window(self.Search_Results_Window))
         help_menu.addAction(help_action)
 
@@ -350,13 +369,55 @@ class Search_Window:
         tools_menu.addAction(compare_action)
         file_menu.addAction(compare_action)
 
-    # Options for paths
-    # Opens a file
-    def open_with_program(self):
+    # Options for files and folders
+    # Open a file with the standard app
+    def open_file(self):
+        try:
+            # Selecting the highlighted item of the focused listbox
+            selected_file = self.Search_Results_Window.focusWidget().currentItem().text()
+
+            if os.system(f"open {FF_Files.convert_file_name_for_terminal(selected_file)}") != 0:
+                FF_Additional_UI.msg.show_critical_messagebox("Error!", f"No Program found to open {selected_file}",
+                                                              self.Search_Results_Window)
+            else:
+                logging.debug(f"Opened: {selected_file}")
+        except AttributeError:
+            FF_Additional_UI.msg.show_critical_messagebox("Error!", "Select a File!", self.Search_Results_Window)
+
+    # Opens a file with a user-defined app
+    def open_in_app(self):
+        try:
+            # Prompt for an app
+            selected_program = FF_Files.convert_file_name_for_terminal(
+                QFileDialog.getOpenFileName(
+                    parent=self.Search_Results_Window,
+                    directory="/Applications",
+                    filter="*.app;")[0])
+
+            # Tests if the user selected an app
+            if selected_program != "":
+                # Get the selected file
+                selected_file = FF_Files.convert_file_name_for_terminal(self.result_listbox.currentItem().text())
+                # Open the selected file with the selected program and checking the return value
+                if os.system(f"open {selected_file} -a {selected_program}") != 0:
+                    # Error message
+                    FF_Additional_UI.msg.show_critical_messagebox("Error!", f"{selected_file} does not exist!",
+                                                                  self.Search_Results_Window)
+                    logging.error(f"Error with opening {selected_file} with {selected_program}")
+                else:
+                    logging.debug(f"Opened: {selected_file}")
+
+        # If no file is selected
+        except AttributeError:
+            FF_Additional_UI.msg.show_critical_messagebox("Error!", "Select a File!", self.Search_Results_Window)
+
+    # Open a file in the Terminal
+    def open_in_terminal(self):
         try:
             selected_file = self.result_listbox.currentItem().text()
-            if os.system("open " + str(selected_file.replace(" ", "\\ "))) != 0:
-                FF_Additional_UI.msg.show_critical_messagebox("Error!", f"No Program found to open {selected_file}",
+
+            if os.system(f"open {FF_Files.convert_file_name_for_terminal(selected_file)}") != 0:
+                FF_Additional_UI.msg.show_critical_messagebox("Error!", f"Terminal could not open: {selected_file}",
                                                               self.Search_Results_Window)
             else:
                 logging.debug(f"Opened: {selected_file}")
@@ -368,7 +429,7 @@ class Search_Window:
         try:
             selected_file = self.result_listbox.currentItem().text()
 
-            if os.system("open -R " + str(selected_file.replace(" ", "\\ "))) != 0:
+            if os.system(f"open -R {FF_Files.convert_file_name_for_terminal(selected_file)}") != 0:
                 FF_Additional_UI.msg.show_critical_messagebox("Error!", f"File not Found {selected_file}",
                                                               self.Search_Results_Window)
             else:

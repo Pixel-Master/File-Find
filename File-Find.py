@@ -10,13 +10,17 @@
 
 # Imports
 import logging
+import gc
 
 # PyQt6 Gui Imports
+from PyQt6.QtCore import QEvent
+from PyQt6.QtGui import QFileOpenEvent
 from PyQt6.QtWidgets import QApplication
 
 # Projects Library
 import FF_Files
 import FF_Main_UI
+import FF_Search
 
 if __name__ == "__main__":
     # Setup Logging
@@ -27,7 +31,24 @@ if __name__ == "__main__":
     logging.info(f"Launching File Find with Version {FF_Files.VERSION_SHORT}[{FF_Files.VERSION}]...\n")
 
     # Creating QApplication
-    app = QApplication([])
+    class create_app(QApplication):
+
+        def event(self, event: QEvent) -> bool:
+            # Executed when an event is received.
+
+            # HANDLE FILEOPEN EVENT (TRIGGERED BY MACOS WHEN DOUBLE CLICKING A FILE)
+            if event.type() == QFileOpenEvent:
+                path = event.type().path()
+                print(path)
+                FF_Search.load_search.open_file(path, self)
+
+            return super().event(event)
+
+
+    app = create_app([])
+
+    # Turning of automatic garbage collection because
+    gc.disable()
 
     # File Operation
     FF_Files.setup()
@@ -37,5 +58,9 @@ if __name__ == "__main__":
     FF_Main_UI.Main_Window()
 
     app.setQuitOnLastWindowClosed(False)
+
+    # Main loop for User-Interface
     app.exec()
+
+    # Debug
     logging.info("Closed.")

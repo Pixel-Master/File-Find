@@ -26,7 +26,7 @@ if arch != "arm64":
 sys.argv.append("py2app")
 
 APP = ["File-Find.py"]
-DATA_FILES = []
+DATA_FILES = ["assets/ffsave_icon.icns"]
 
 # py2app Options
 OPTIONS = {"arch": arch,
@@ -37,7 +37,15 @@ OPTIONS = {"arch": arch,
                      "CFBundleIdentifier": "io.github.pixel-master.file-find",
                      "CFBundleShortVersionString": "0.0",
                      "LSApplicationCategoryType": "public.app-category.utilities",
-                     "NSSupportsSuddenTermination": True}}
+                     "NSSupportsSuddenTermination": True,
+                     "CFBundleDocumentTypes":
+                         [{"CFBundleTypeExtensions": ["FFSave"],
+                           "CFBundleTypeIconFile": "ffsave_icon.icns",
+                           "CFBundleTypeName": "File Find Search",
+                           "CFBundleTypeOSTypes": ["FFSAVE"],
+                           "CFBundleTypeRole": "Viewer",
+                           "LSIsAppleDefaultForType": True,
+                           "CFBundleTypeIconSystemGenerated": True}]}}
 # Building App
 setup(
     app=APP,
@@ -50,6 +58,7 @@ setup(
 
 # Building DMG
 print("\n\nBuilding DMG...")
+# Downloading the create-dmg script from GitHub
 os.system("create-dmg "
           "--volname \"File Find\" "
           "--volicon \"assets/icon.icns\" "

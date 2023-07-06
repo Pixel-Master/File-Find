@@ -27,7 +27,7 @@ SAVED_SEARCHES_FOLDER = os.path.join(FF_LIB_FOLDER, "Saved Searches")
 ASSETS_FOLDER = os.path.join(FF_LIB_FOLDER, "assets")
 
 # Versions
-VERSION: str = "beta_18-mar-2023"
+VERSION: str = "ui3_6-jul-2023"
 VERSION_SHORT: str = "0.0"
 
 # Standard content of Settings File
@@ -115,6 +115,12 @@ def get_file_size(file: str) -> int:
         return -2
     else:
         return file_size_list_obj
+
+
+# Used for converting file names so that they can be used in the terminal
+# e.g.: "/Users/admin/Test File" = "/Users/admin/Test\ File"
+def convert_file_name_for_terminal(name):
+    return name.replace(" ", r"\ ")
 
 
 # Convert File Size to a String
