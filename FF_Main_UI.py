@@ -439,7 +439,8 @@ class Main_Window:
                                    "File Size",
                                    "File Name",
                                    "Date Modified",
-                                   "Date Created"])
+                                   "Date Created",
+                                   "Path"])
         # Display
         combobox_sorting.show()
         combobox_sorting.move(350, 10)

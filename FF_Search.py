@@ -552,24 +552,29 @@ class search:
 
         # Sorting
         if data_sort_by == "File Name":
-            logging.info("Sorting List by Name...")
-            self.ui_logger.update("Sorting List by Name...")
+            logging.info("Sorting list by name...")
+            self.ui_logger.update("Sorting list by name...")
             found_path_list.sort(key=sort.name, reverse=data_reverse_sort)
 
         elif data_sort_by == "File Size":
-            logging.info("Sorting List by Size...")
-            self.ui_logger.update("Sorting List by Size...")
+            logging.info("Sorting list by size...")
+            self.ui_logger.update("Sorting list by size...")
             found_path_list.sort(key=sort.size, reverse=not data_reverse_sort)
 
         elif data_sort_by == "Date Created":
-            logging.info("Sorting List by creation date...")
-            self.ui_logger.update("Sorting List by creation date...")
+            logging.info("Sorting list by creation date...")
+            self.ui_logger.update("Sorting list by creation date...")
             found_path_list.sort(key=sort.c_date, reverse=not data_reverse_sort)
 
         elif data_sort_by == "Date Modified":
-            logging.info("Sorting List by modification date...")
-            self.ui_logger.update("Sorting List by modification date...")
+            logging.info("Sorting list by modification date...")
+            self.ui_logger.update("Sorting list by modification date...")
             found_path_list.sort(key=sort.m_date, reverse=not data_reverse_sort)
+
+        elif data_sort_by == "Path":
+            logging.info("Sorting list by path...")
+            self.ui_logger.update("Sorting list by path...")
+            found_path_list.sort(reverse=data_reverse_sort)
 
         else:
             logging.info("Skipping Sorting")

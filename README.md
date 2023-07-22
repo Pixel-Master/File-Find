@@ -10,12 +10,14 @@
 
 [![File Find build](https://img.shields.io/github/actions/workflow/status/Pixel-Master/File-Find/File-Find.yml?branch=main&label=File%20Find%20build%20status&logo=File%20Find&style=flat-square)](https://github.com/Pixel-Master/File-Find/actions/workflows/File-Find.yml)
 [![GPLv3 License](https://img.shields.io/badge/License-GPL%20v3-blue.svg?style=flat-square)](http://www.gnu.org/licenses/gpl-3.0.html) 
-[![GitLab last commit](https://img.shields.io/gitlab/last-commit/Pixel-Mqster/File-Find.svg?style=flat-square)](https://gitlab.com/Pixel-Mqster/File-Find/commits/main)
-[![GitHub stars](https://img.shields.io/github/stars/Pixel-Master/File-Find.svg?style=flat-square&label=Stars&color=yellow)](https://gitlab.com/Pixel-Mqster/File-Find/)
-[![GitLab forks](https://img.shields.io/gitlab/forks/Pixel-Mqster/File-Find.svg?style=flat-square&label=Fork&color=red)](https://gitlab.com/Pixel-Mqster/File-Find/-/forks/new)
+[![GitLab last commit](https://img.shields.io/github/last-commit/Pixel-Master/File-Find.svg?style=flat-square)](https://github.com/Pixel-Master/File-Find/)
+[![GitHub stars](https://img.shields.io/github/stars/Pixel-Master/File-Find.svg?style=flat-square&label=Stars&color=yellow)](https://github.com/Pixel-Master/File-Find/)
+[![GitLab forks](https://img.shields.io/github/forks/Pixel-Master/File-Find.svg?style=flat-square&label=Fork&color=red)](https://github.com/Pixel-Master/File-Find/forks/)
 
-#### Automatic Builds on: [GitHub](https://github.com/Pixel-Master/File-Find), Issues and Pull Requests on: [GitLab](https://gitlab.com/Pixel-Mqster/File-Find)
+#### Automatic Builds, Bug reports and Pull request on: [GitHub](https://github.com/Pixel-Master/File-Find)
 
+<p align="center">
+  <img src="https://repository-images.githubusercontent.com/518210738/af6f7e99-7bd5-4cc1-b82c-e94d8a34612a" height="250">
 ## Content
 - [Features](#features)
 - [FAQ](#faq)
@@ -23,51 +25,50 @@
 - [File Structure](#file-structure)
 - [Running from Source](#running-from-source)
 - [Building File Find.app](#building-file-findapp)
-- [Roadmap](#roadmap)
-
 
 ## Features
-- Select filter which files to include:
+
+### Search options
+- **Basic**
+	<p align="left">
+  <img src="https://github.com/Pixel-Master/Pixel-Master.github.io/blob/main/File-Find/screenshots/File%20Find%20screenshot%20dark.png?raw=true" height="150">
+
 	* Name
 	* Name contains
 	* File extension
-	* Search in system files
 	* Directory to search in
-	* File size
-	* Only find folders or files
-    * Wildcard (Unix shell-style wildcards)
-    * File contains
-    * Date created and modified
 
-- Export search results as a **plain text file (.txt)** or as a reloadable **File Find Search (.FFSearch)**
+- **Advanced**
 
+  <img src="https://github.com/Pixel-Master/Pixel-Master.github.io/blob/main/File-Find/screenshots/advanced.png?raw=true" height="150">
+	* File contains
+	* Wildcard (Unix shell-style wildcards)
+	* Search in system files
+	* Only search for folders or files
+   * Date created and modified
+   * File size
 
-- Dark-mode
+- **Sorting**
 
-
-- Options for found files:
-	* Show in Finder
-	* Open
-	* Basic file info
-    * File hashes
-
-
-- Sort Results:
+  <img src="https://github.com/Pixel-Master/Pixel-Master.github.io/blob/main/File-Find/screenshots/sorting.png?raw=true" height="150">
 	* File size
 	* File name
 	* Date modified
 	* Date created
+	* Path
+
+### Dark / Light mode 
+![](https://github.com/Pixel-Master/Pixel-Master.github.io/blob/main/File-Find/screenshots/File%20Find%20screenshot%20white.png?raw=true)
+![](https://github.com/Pixel-Master/Pixel-Master.github.io/blob/main/File-Find/screenshots/File%20Find%20screenshot%20dark.png?raw=true)
 
 
-- Generate Terminal command from filters, supports:
-	* Name
-	* In Name
-	* File Ending
-    * Wildcard
+
+### Other
+	
+- Export search results as a **plain text file (.txt)** or as a reloadable **File Find Search (.FFSearch)**
 
 - Compare two searches and search for differences
 
-- View file hashes (md5, sha1, sha265)
 
 ## FAQ
 Q: **What is File Find and how does it work?**
@@ -76,7 +77,7 @@ A: File Find is an open-source macOS Utility, that makes it easy to find files. 
 
 Q: **Why does File Find sometimes freeze?**
 
-A: It is possible that for example reloading files or building the UI at the end of a search can cause File Find to freeze. Just wait a minute!
+A: It is possible that for example reloading files or building the UI at the end of a search can cause File Find to freeze. Just wait a few seconds!
 
 Q: **How do you clean the cache?**
 
@@ -122,7 +123,7 @@ File Find isn't ready for Release yet Run from source or download pre-build macO
 
 - `FF_Compare.py` - This file contains the code for the 'Compare Search' feature
 
-- `build.py` - Build script, requires py2app installed. See [here](#building-file-findapp)
+- `build.py` - Build script, requires py2app to be installed. See [here](#building-file-findapp)
 
 - `assets/` - Directory contains image assets for File Find
 
@@ -130,7 +131,7 @@ File Find isn't ready for Release yet Run from source or download pre-build macO
 
 ### Note:
 
-###### File Find won't work properly on Linux or Windows, because the UI displays different depending on the OS and some Features depends on the system. 
+###### File Find won't work properly on Linux or Windows, because the UI displays different depending on the operating-system and some features depend on the system.
 
 
 ### Dependencies for running
@@ -164,15 +165,15 @@ File Find isn't ready for Release yet Run from source or download pre-build macO
 
 ### Note:
 
-###### File Find won't work properly on Linux or Windows, because the UI displays different depending on the OS and some Features depends on the system. 
+###### File Find won't work properly on Linux or Windows, because the UI displays different depending on the operating-system and some features depend on the system. 
 
 
 ### Dependencies for building
 - [Python](https://python.org/) 3.9 or higher
-- [PyQt 6](https://pypi.org/project/PyQt6/) 6.4 or higher
+- [PyQt 6](https://pypi.org/project/PyQt6/) 6.4.1 or higher
 - [pyperclip](https://pypi.org/project/pyperclip/) 1.8.2 or higher
 - [py2app](https://pypi.org/project/py2app/) 5.6.2 or higher
-- [create-dmg](https://github.com/create-dmg/create-dmg) (optional for dmg building) 1.1 or higher
+- [create-dmg](https://github.com/create-dmg/create-dmg) (automatically installed) 1.1 or higher
 
 ### Building
 1. Install Python:
@@ -196,37 +197,4 @@ File Find isn't ready for Release yet Run from source or download pre-build macO
 `python3 build.py` 
 
 
-## Roadmap
-1. [x] UI:
-2. [x] Exporting and Importing Searches:
-3. [x] Caching:
-4. [ ] Multithreading:
-    1. [x] UI using different thread as Search engine
-    2. [x] Hashing with different Threads
-    3. [ ] Scanning trough different threads
-    4. [ ] Indexing trough different threads
-5. [x] Sorting:
-6. [ ] Searching:
-    1. [x] Name
-    2. [x] In Name
-    3. [x] File Ending
-    4. [x] Search in System Files
-    5. [x] Directory to search in
-    6. [x] Search only for Files or Folders
-    7. [ ] Exclude Sub-folders
-    8. [x] Contains
-    9. [ ] Search with root privileges
-    10. [x] Regex (used fn match instead (Unix shell-style wildcards))
-    11. [x] Date Modified
-    12. [x] Date Created
-    13. [x] Excluded Files
-7. [ ] Language
-   1. [x] Language UI
-   2. [ ] Languages apply
-   3. [ ] Languages:
-      1. [x] English
-      2. [ ] German
-      3. [ ] French
-      4. [ ] Spanish
-      5. [ ] Chinese
-8. [ ] Compatible with Linux and Windows?
+

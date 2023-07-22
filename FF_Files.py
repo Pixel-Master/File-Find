@@ -27,7 +27,7 @@ SAVED_SEARCHES_FOLDER = os.path.join(FF_LIB_FOLDER, "Saved Searches")
 ASSETS_FOLDER = os.path.join(FF_LIB_FOLDER, "assets")
 
 # Versions
-VERSION: str = "ui3_6-jul-2023"
+VERSION: str = "ui3_22-jul-2023"
 VERSION_SHORT: str = "0.0"
 
 # Standard content of Settings File
