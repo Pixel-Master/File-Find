@@ -32,7 +32,7 @@
 ### Search options
 - **Basic**
 	<p align="left">
-  <img src="https://github.com/Pixel-Master/Pixel-Master.github.io/blob/main/File-Find/screenshots/File%20Find%20screenshot%20dark.png?raw=true" height="150">
+  <img src="https://github.com/Pixel-Master/Pixel-Master.github.io/blob/main/File-Find/screenshots/File%20Find%20screenshot%20dark.png?raw=true" height="200">
 
 	* Name
 	* Name contains
@@ -41,7 +41,8 @@
 
 - **Advanced**
 
-  <img src="https://github.com/Pixel-Master/Pixel-Master.github.io/blob/main/File-Find/screenshots/advanced.png?raw=true" height="150">
+  <img src="https://github.com/Pixel-Master/Pixel-Master.github.io/blob/main/File-Find/screenshots/advanced.png?raw=true" height="250">
+	
 	* File contains
 	* Wildcard (Unix shell-style wildcards)
 	* Search in system files
@@ -51,15 +52,20 @@
 
 - **Sorting**
 
-  <img src="https://github.com/Pixel-Master/Pixel-Master.github.io/blob/main/File-Find/screenshots/sorting.png?raw=true" height="150">
+  <img src="https://github.com/Pixel-Master/Pixel-Master.github.io/blob/main/File-Find/screenshots/sorting.png?raw=true" height="250">
+	
 	* File size
 	* File name
 	* Date modified
 	* Date created
 	* Path
 
+	* Reverse Sort
+
 ### Dark / Light mode 
+
 ![](https://github.com/Pixel-Master/Pixel-Master.github.io/blob/main/File-Find/screenshots/File%20Find%20screenshot%20white.png?raw=true)
+
 ![](https://github.com/Pixel-Master/Pixel-Master.github.io/blob/main/File-Find/screenshots/File%20Find%20screenshot%20dark.png?raw=true)
 
 
