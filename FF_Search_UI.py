@@ -12,6 +12,7 @@
 import hashlib
 import logging
 import os
+import threading
 from pickle import dump, load
 from threading import Thread
 from time import perf_counter, ctime, time
@@ -19,7 +20,7 @@ import gc
 
 # PyQt6 Gui Imports
 from PyQt6.QtCore import QSize
-from PyQt6.QtGui import QFont, QIcon, QAction
+from PyQt6.QtGui import QFont, QIcon, QAction, QColor, QKeySequence
 from PyQt6.QtWidgets import QMainWindow, QLabel, QPushButton, QFileDialog, \
     QListWidget, QMenuBar, QMenu
 
@@ -33,7 +34,11 @@ import FF_Main_UI
 
 class Search_Window:
     def __init__(self, time_total, time_searching, time_indexing, time_sorting, matched_list, search_path, parent):
+        # Debug
         logging.info("Setting up Search UI...")
+
+        # Setting search_path to a local variable
+        self.search_path = search_path
 
         # Saves Time
         time_before_building = perf_counter()
@@ -44,7 +49,7 @@ class Search_Window:
         # Set the Title of the Window
         self.Search_Results_Window.setWindowTitle(f"File Find Search Results | {FF_Files.display_path(search_path)}")
         # Set the Size of the Window and make it not resizable
-        self.Search_Results_Window.setFixedHeight(700)
+        self.Search_Results_Window.setFixedHeight(730)
         self.Search_Results_Window.setFixedWidth(800)
         # Display the Window
         self.Search_Results_Window.show()
@@ -91,7 +96,7 @@ class Search_Window:
                                   f"Search opened: {search_opened_time}")
         timestamp_text.setFont(QFont("Arial", 10))
         timestamp_text.show()
-        timestamp_text.move(10, 680)
+        timestamp_text.move(10, 700)
         timestamp_text.adjustSize()
 
         # Listbox
@@ -127,12 +132,15 @@ class Search_Window:
                         matched_list.remove(matched_file)
                         logging.debug(f"File Does Not exist: {matched_file}")
                         removed_list.append(matched_file)
+
                 with open(os.path.join(FF_Files.CACHED_SEARCHES_FOLDER, search_path.replace("/", "-") + ".FFCache"),
                           "rb") as SearchFile:
                     cached_files = list(load(SearchFile))
-                for cached_file in cached_files:
+
+                for cached_file in cached_files[0]:
                     if cached_file in removed_list:
-                        cached_files.remove(cached_file)
+                        cached_files[0].remove(cached_file)
+
                 with open(os.path.join(FF_Files.CACHED_SEARCHES_FOLDER, search_path.replace("/", "-") + ".FFCache"),
                           "wb") as SearchFile:
                     dump(cached_files, SearchFile)
@@ -166,13 +174,17 @@ class Search_Window:
 
         # Buttons
         # Functions to automate Button
-        def generate_button(text, command):
+        def generate_button(text, command, icon=None):
             # Define the Button
             button = QPushButton(self.Search_Results_Window)
             # Change the Text
             button.setText(text)
             # Set the command
             button.clicked.connect(command)
+            # Set the icon
+            if icon is not None:
+                button.setIcon(QIcon(icon))
+                button.setIconSize(QSize(23, 23))
             # Display the Button correctly
             button.show()
             button.adjustSize()
@@ -180,32 +192,33 @@ class Search_Window:
             return button
 
         # Button to open the File in Finder
-        show_in_finder = generate_button("Open in Finder", self.open_in_finder)
-        show_in_finder.move(10, 650)
+        move_file = generate_button("Move / Rename", self.move_file,
+                                    icon=os.path.join(FF_Files.ASSETS_FOLDER, "Move_icon_small.png"))
+        move_file.move(10, 650)
 
-        # Button to open the File
-        open_file = generate_button("Open", self.open_file)
-        open_file.move(170, 650)
+        # Button to move the file to trash
+        delete_file = generate_button("Move to Trash", self.delete_file,
+                                      icon=os.path.join(FF_Files.ASSETS_FOLDER, "Trash_icon_small.png"))
+        delete_file.move(170, 650)
 
-        # Button to open File Info
-        file_info_button = generate_button("Info", self.file_info)
+        # Button to show info about the file
+        file_info_button = generate_button("Info", self.file_info,
+                                           icon=os.path.join(FF_Files.ASSETS_FOLDER, "Info_button_img_small.png"))
         file_info_button.move(580, 650)
 
-        # Button to open view the hashes of the File
-        file_hash = generate_button("File Hashes", self.view_hashes)
-        file_hash.move(680, 650)
+        # Button to open the file
+        open_file = generate_button("Open", self.open_file,
+                                    icon=os.path.join(FF_Files.ASSETS_FOLDER, "Open_icon_small.png"))
+        open_file.move(680, 650)
 
         # Time stat Button
-        show_time = generate_button(None, show_time_stats)
-        # Icon
-        show_time.setIcon(QIcon(os.path.join(FF_Files.ASSETS_FOLDER, "Time_button_img_small.png")))
-        show_time.setIconSize(QSize(23, 23))
+        show_time = generate_button(None, show_time_stats,
+                                    icon=os.path.join(FF_Files.ASSETS_FOLDER, "Time_button_img_small.png"))
         # Place
         show_time.resize(50, 40)
         show_time.move(260, 15)
 
         # More Options
-
         # Options Menu
         options_menu = QMenu(self.Search_Results_Window)
 
@@ -225,9 +238,9 @@ class Search_Window:
         options_button = generate_button(
             # Displaying the menu at the right position,
             # using the .mapToParent function with the position of the window.
-            None, lambda: options_menu.exec(options_button.mapToParent(self.Search_Results_Window.pos())))
-        # Icon
-        options_button.setIcon(QIcon(os.path.join(FF_Files.ASSETS_FOLDER, "More_button_img_small.png")))
+            None, lambda: options_menu.exec(options_button.mapToParent(self.Search_Results_Window.pos())),
+            icon=os.path.join(FF_Files.ASSETS_FOLDER, "More_button_img_small.png"))
+        # Icon size
         options_button.setIconSize(QSize(50, 50))
         # Place
         options_button.move(720, 20)
@@ -304,7 +317,7 @@ class Search_Window:
         # Open File Action
         open_action = QAction("&Open selected file", self.Search_Results_Window)
         open_action.triggered.connect(self.open_file)
-        open_action.setShortcut("Ctrl+O")
+        open_action.setShortcut(QKeySequence.StandardKey.Open)
         tools_menu.addAction(open_action)
 
         # Open File in Terminal Action
@@ -324,6 +337,21 @@ class Search_Window:
         open_in_app_action.triggered.connect(self.open_in_app)
         open_in_app_action.setShortcut("Alt+O")
         tools_menu.addAction(open_in_app_action)
+
+        # Separator
+        tools_menu.addSeparator()
+
+        # Select an app to open the selected file
+        delete_file_action = QAction("&Move selected file to trash", self.Search_Results_Window)
+        delete_file_action.triggered.connect(self.delete_file)
+        delete_file_action.setShortcut("Ctrl+Delete")
+        tools_menu.addAction(delete_file_action)
+
+        # Select an app to open the selected file
+        move_file_action = QAction("&Move or Rename selected file", self.Search_Results_Window)
+        move_file_action.triggered.connect(self.move_file)
+        move_file_action.setShortcut("Ctrl+M")
+        tools_menu.addAction(move_file_action)
 
         # Separator
         tools_menu.addSeparator()
@@ -370,6 +398,129 @@ class Search_Window:
         file_menu.addAction(compare_action)
 
     # Options for files and folders
+    # Prompts a user to select a new location for the file
+    def move_file(self):
+        # Debug
+        logging.info("Called Move file")
+
+        try:
+            # Selecting the highlighted item of the focused listbox
+            selected_file = self.Search_Results_Window.focusWidget().currentItem().text()
+
+            # Debug
+            logging.info(f"Selected file: {selected_file}, prompting for new location...")
+
+            # Prompting the user for a new location
+            new_location = QFileDialog.getSaveFileName(
+                self.Search_Results_Window,
+                caption=f"Rename / Move {os.path.basename(selected_file)}",
+                directory=selected_file
+            )[0]
+
+            logging.info(f"New file location: {new_location}")
+
+            # If no file was selected
+            if new_location == "":
+                logging.info("User pressed Cancel")
+
+            # Moving the file
+            elif os.system(f"mv {FF_Files.convert_file_name_for_terminal(selected_file)} "
+                           f"{os.path.join(FF_Files.convert_file_name_for_terminal(new_location))}") != 0:
+                # Debug
+                logging.critical(f"File not Found: {selected_file}")
+
+                # If cmd wasn't successful display this error
+                FF_Additional_UI.msg.show_critical_messagebox(
+                    "Error!",
+                    f"File not found!\nTried to move:\n\n"
+                    f" {selected_file}\n\n"
+                    f"to:\n\n"
+                    f"{new_location}",
+                    self.Search_Results_Window
+                )
+
+            else:
+                # If everything ran successful
+
+                # Debug
+                logging.debug(f"Moved {selected_file} to {new_location}")
+
+                # Set the icon
+                self.result_listbox.item(
+                    self.result_listbox.currentRow()).setIcon(
+                    QIcon(os.path.join(FF_Files.ASSETS_FOLDER, "move_icon_small.png")))
+
+                # Change the color to blue
+                self.result_listbox.item(
+                    self.result_listbox.currentRow()).setBackground(QColor("#1ccaff"))
+
+                # Remove moved file from cache
+                def remove_file_from_cache():
+                    with open(
+                            os.path.join(FF_Files.CACHED_SEARCHES_FOLDER,
+                                         self.search_path.replace("/", "-") + ".FFCache"), "rb") as SearchFile:
+                        cached_files = list(load(SearchFile))
+
+                    cached_files[0].remove(selected_file)
+
+                    with open(
+                            os.path.join(
+                                FF_Files.CACHED_SEARCHES_FOLDER,
+                                self.search_path.replace("/", "-") + ".FFCache"), "wb") as SearchFile:
+                        dump(cached_files, SearchFile)
+
+                    # Debug
+                    logging.info("Removed file from cache")
+
+                # Starting thread
+                logging.info("Removing file from cache...")
+                threading.Thread(target=remove_file_from_cache)
+        except AttributeError:
+            # Triggered when no file is selected
+            FF_Additional_UI.msg.show_critical_messagebox("Error!", "Select a File!", self.Search_Results_Window)
+
+    # Moves a file to the trash
+    def delete_file(self):
+        try:
+            # Selecting the highlighted item of the focused listbox
+            selected_file = self.Search_Results_Window.focusWidget().currentItem().text()
+
+            # Trash location
+            new_location = os.path.join(
+                FF_Files.convert_file_name_for_terminal(FF_Files.USER_FOLDER),
+                '.Trash',
+                FF_Files.convert_file_name_for_terminal(os.path.basename(selected_file)))
+            # Command to execute
+            delete_command = (
+                f"mv {FF_Files.convert_file_name_for_terminal(selected_file)} {new_location}")
+
+            # Moving the file to trash
+            if os.system(delete_command) != 0:
+
+                #  Error message
+                FF_Additional_UI.msg.show_critical_messagebox(
+                    "Error!", f"File not found: {selected_file}", self.Search_Results_Window)
+
+                # Debug
+                logging.error(f"File not found: {selected_file}")
+
+            else:
+                # Debug
+                logging.debug(f"Moved {selected_file} to trash")
+
+                # Set the icon
+                self.result_listbox.item(
+                    self.result_listbox.currentRow()).setIcon(
+                    QIcon(os.path.join(FF_Files.ASSETS_FOLDER, "trash_icon_small.png")))
+
+                # Change the color to blue
+                self.result_listbox.item(
+                    self.result_listbox.currentRow()).setBackground(QColor("#ff0000"))
+
+        except AttributeError:
+            # If no file is selected
+            FF_Additional_UI.msg.show_critical_messagebox("Error!", "Select a File!", self.Search_Results_Window)
+
     # Open a file with the standard app
     def open_file(self):
         try:

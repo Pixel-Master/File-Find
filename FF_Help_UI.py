@@ -139,13 +139,13 @@ class Help_Window:
             # Return the Label to move it
             return link
 
-        sourcecode = generate_link_button("Source Code", "https://gitlab.com/Pixel-Mqster/File-Find", "blue")
+        sourcecode = generate_link_button("Source Code", "https://github.com/Pixel-Master/File-Find", "blue")
         sourcecode.move(120, 270)
 
-        update = generate_link_button("Update", "https://gitlab.com/Pixel-Mqster/File-Find/releases", "green")
+        update = generate_link_button("Update", "https://github.com/Pixel-Master/File-Find/releases", "green")
         update.move(310, 270)
 
-        faq_link = generate_link_button("FaQ", "https://gitlab.com/Pixel-Mqster/File-Find#faq", "red")
+        faq_link = generate_link_button("FaQ", "https://github.com/Pixel-Master/File-Find#faq", "red")
         faq_link.move(470, 270)
 
         # Calling the faq functions for the Labels

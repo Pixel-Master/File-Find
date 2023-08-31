@@ -16,8 +16,7 @@
 
 #### Automatic Builds, Bug reports and Pull request on: [GitHub](https://github.com/Pixel-Master/File-Find)
 
-<p align="center">
-  <img src="https://repository-images.githubusercontent.com/518210738/af6f7e99-7bd5-4cc1-b82c-e94d8a34612a" height="250">
+![](https://github.com/Pixel-Master/Pixel-Master.github.io/blob/main/File-Find/preview/preview_without_background.png?raw=true)
 
 ## Content
 - [Features](#features)
@@ -32,35 +31,35 @@
 ### Search options
 - **Basic**
 	<p align="left">
-  <img src="https://github.com/Pixel-Master/Pixel-Master.github.io/blob/main/File-Find/screenshots/File%20Find%20screenshot%20dark.png?raw=true" height="200">
+  <img src="https://github.com/Pixel-Master/Pixel-Master.github.io/blob/main/File-Find/screenshots/File%20Find%20screenshot%20dark.png?raw=true" height="250">
 
-	* Name
-	* Name contains
-	* File extension
-	* Directory to search in
+	* **Name**: Input needs to match the name of a file exactly, ignoring case.
+	* **Name contains**: The name of a file must contain input, ignoring case
+	* **File extension**: Input needs to match the file extension (file type) without the ".", ignoring case.
+	* **Directory**: The Directory to search in.
 
 - **Advanced**
 
   <img src="https://github.com/Pixel-Master/Pixel-Master.github.io/blob/main/File-Find/screenshots/advanced.png?raw=true" height="250">
 	
-	* File contains
-	* Wildcard (Unix shell-style wildcards)
-	* Search in system files
-	* Only search for folders or files
-   * Date created and modified
-   * File size
+	* **File contains**: Allows you to search in files. Input must be in the file content. This option can take really long. Input is case-sensitive.
+	* **Wildcard (Unix shell-style wildcards)**: Unix shell-style wildcards, which are not the same as regular expressions. For further documentation: http://docs.python.org/library/fnmatch
+	* **Search in system files**: Toggle to include files in the system and library folders.
+	* **Only search for folders or files**: Toggle to only include folders or files in the search results
+    * **Date created and modified**: Specify a date range for the date the file has been created/ modified, leave at default to ignore.
+    * **File size**: Input specifies file size in Mega Bytes (MB) in a range from min to max
 
 - **Sorting**
 
   <img src="https://github.com/Pixel-Master/Pixel-Master.github.io/blob/main/File-Find/screenshots/sorting.png?raw=true" height="250">
 	
-	* File size
-	* File name
-	* Date modified
-	* Date created
-	* Path
-
-	* Reverse Sort
+	* **None** (fastest)
+	* **File size**
+	* **File name**
+	* **Date modified**
+	* **Date created**
+	* **Path**
+	* **Reverse Sort**: Reverse the sorted search results.
 
 ### Dark / Light mode 
 
@@ -154,7 +153,7 @@ File Find isn't ready for Release yet Run from source or download pre-build macO
     Homebrew: `brew install python@3.11`
 
 
-2. Clone the File Find Repository: `git clone https://gitlab.com/Pixel-Mqster/File-Find.git`
+2. Clone the File Find Repository: `git clone https://github.com/Pixel-Master/File-Find.git`
 
 
 3. cd into the repository: `cd File-Find`
@@ -190,7 +189,7 @@ File Find isn't ready for Release yet Run from source or download pre-build macO
     Homebrew: `brew install python@3.11`
 
 
-2. Clone the File Find repository: `git clone https://gitlab.com/Pixel-Mqster/File-Find.git`
+2. Clone the File Find repository: `git clone https://github.com/Pixel-Master/File-Find.git`
 
 
 3. cd into the repository: `cd File-Find`

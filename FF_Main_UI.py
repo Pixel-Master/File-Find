@@ -79,7 +79,7 @@ class Main_Window:
                                                       self.generic_tooltip("Name",
                                                                            "Input needs to match"
                                                                            " the name of a file exactly,"
-                                                                           "\nignoring case",
+                                                                           "\nignoring case.",
                                                                            "Example.txt",
                                                                            os.path.join(FF_Files.USER_FOLDER,
                                                                                         "example.txt")))
@@ -88,8 +88,8 @@ class Main_Window:
         label_name_contains = self.generate_large_filter_label("Name contains:",
                                                                self.basic_search_widget,
                                                                self.generic_tooltip("Name contains",
-                                                                                    "Input needs to be in the name "
-                                                                                    "of a file,\nignoring case",
+                                                                                    "The name of a file must contain"
+                                                                                    " input,\nignoring case.",
                                                                                     "file",
                                                                                     os.path.join(
                                                                                         FF_Files.USER_FOLDER,
@@ -101,7 +101,7 @@ class Main_Window:
                                                            self.generic_tooltip("File extension",
                                                                                 "Input needs to match the file "
                                                                                 "extension (file type)\n"
-                                                                                "without the \".\", ignoring case",
+                                                                                "without the \".\", ignoring case.",
                                                                                 "txt",
                                                                                 os.path.join(
                                                                                     FF_Files.USER_FOLDER,
@@ -111,7 +111,7 @@ class Main_Window:
         label_directory = self.generate_large_filter_label("Directory:",
                                                            self.basic_search_widget,
                                                            self.generic_tooltip("Directory",
-                                                                                "The Directory to search in",
+                                                                                "The Directory to search in.",
                                                                                 os.path.join(
                                                                                     FF_Files.USER_FOLDER,
                                                                                     "Downloads"),
@@ -131,9 +131,11 @@ class Main_Window:
                                                                self.advanced_search_widget,
                                                                self.generic_tooltip("File contains:",
                                                                                     "Allows you to search in files."
-                                                                                    "Looks if input is in a file.\n"
-                                                                                    "This can take really long.\n"
-                                                                                    "Input is case sensitive",
+                                                                                    "Input must be in the file "
+                                                                                    "content.\n"
+                                                                                    "This option can take really "
+                                                                                    "long.\n"
+                                                                                    "Input is case-sensitive.",
                                                                                     "This is an example file!",
                                                                                     os.path.join(
                                                                                         FF_Files.
@@ -147,7 +149,8 @@ class Main_Window:
                                                           self.generic_tooltip("Wildcards",
                                                                                "Unix shell-style wildcards,"
                                                                                "\nwhich are not the same as regular "
-                                                                               "expressions.\nFor documentation see: "
+                                                                               "expressions.\nFor further "
+                                                                               "documentation: "
                                                                                "http://docs.python.org/library/fnmatch",
                                                                                "exa*",
                                                                                os.path.join(
@@ -160,7 +163,7 @@ class Main_Window:
                                                         self.generic_tooltip("Date created",
                                                                              "Specify a date range for the date "
                                                                              "the file has been created,\n"
-                                                                             "leave at default to ignore",
+                                                                             "leave at default to ignore.",
                                                                              "5.Jul.2020 - 10.Aug.2020",
                                                                              os.path.join(FF_Files.USER_FOLDER,
                                                                                           "example.txt "
@@ -175,7 +178,7 @@ class Main_Window:
                                                         self.generic_tooltip("Date modified",
                                                                              "Specify a date range for the date "
                                                                              "the file has been modified,\n"
-                                                                             "leave at default to ignore",
+                                                                             "leave at default to ignore.",
                                                                              "5.Jul.2020 -  10.Aug.2020",
                                                                              os.path.join(FF_Files.USER_FOLDER,
                                                                                           "example.txt "
@@ -190,7 +193,7 @@ class Main_Window:
                                                            self.generic_tooltip("File size",
                                                                                 "Input specifies file size in "
                                                                                 "Mega Bytes (MB)\nin a range "
-                                                                                "(from min to max)",
+                                                                                "from min to max",
                                                                                 "min: 10 max: 10.3",
                                                                                 os.path.join(
                                                                                     FF_Files.USER_FOLDER,
@@ -204,9 +207,8 @@ class Main_Window:
                                                               self.advanced_search_widget,
                                                               self.generic_tooltip("Search in system files",
                                                                                    "Toggle to include "
-                                                                                   "system files in the "
-                                                                                   "search results\n"
-                                                                                   "(files in the Library folder)",
+                                                                                   "files in the "
+                                                                                   "system and library folders.",
                                                                                    "Yes",
                                                                                    os.path.join(
                                                                                        FF_Files.USER_FOLDER,
@@ -234,14 +236,15 @@ class Main_Window:
         label_sort_by = self.generate_large_filter_label("Sort by:",
                                                          self.sorting_widget,
                                                          self.generic_tooltip("Sort by",
-                                                                              "The sorting method to sort the results",
+                                                                              "Select a sorting method "
+                                                                              "to sort the results.",
                                                                               "File Size",
                                                                               "Results sorted by file size"))
         label_sort_by.move(200, 10)
         label_reverse_sort = self.generate_large_filter_label("Reverse results:",
                                                               self.sorting_widget,
                                                               self.generic_tooltip("Reverse Results",
-                                                                                   "Reverse the sorted search results",
+                                                                                   "Reverse the sorted search results.",
                                                                                    "Yes",
                                                                                    "Reversed search results"))
         label_reverse_sort.move(200, 50)
@@ -435,7 +438,7 @@ class Main_Window:
         # Defining
         combobox_sorting = QComboBox(self.sorting_widget)
         # Adding Options
-        combobox_sorting.addItems(["None",
+        combobox_sorting.addItems(["None (fastest)",
                                    "File Size",
                                    "File Name",
                                    "Date Modified",
@@ -694,7 +697,7 @@ class Main_Window:
         # Generate the Button
         button = QPushButton(tab)
         # Change the Text
-        button.setText("Select")
+        button.setText("Browse")
         # Set the command
         button.clicked.connect(command)
         # Display the Button
@@ -877,7 +880,7 @@ class Main_Window:
                                                       "Welcome to File Find!\n\n"
                                                       "If you want to contribute, look at the source code, "
                                                       "found a bug or have a feature-request\n\n"
-                                                      "Go to: https://gitlab.com/Pixel-Mqster/File-Find\n\n\n"
+                                                      "Go to: https://github.com/Pixel-Master/File-Find\n\n\n"
                                                       "I hope you find all of your files!",
                                                       self.Root_Window)
             # Setting PopUp File
@@ -896,7 +899,7 @@ class Main_Window:
                                                       f"Thanks For Upgrading File Find!\n\n"
                                                       f"File Find is an open-source macOS Utility. \n\n"
                                                       f"Get Releases at: "
-                                                      f"https://gitlab.com/Pixel-Mqster/File-Find/releases"
+                                                      f"https://github.com/Pixel-Master/File-Find/releases"
                                                       f"\n\n\n"
                                                       "File Find version: "
                                                       f"{FF_Files.VERSION_SHORT}[{FF_Files.VERSION}]",
