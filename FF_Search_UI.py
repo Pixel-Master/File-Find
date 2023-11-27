@@ -12,17 +12,16 @@
 import hashlib
 import logging
 import os
-import threading
 from pickle import dump, load
 from threading import Thread
 from time import perf_counter, ctime, time
 import gc
 
 # PyQt6 Gui Imports
-from PyQt6.QtCore import QSize
+from PyQt6.QtCore import QSize, Qt
 from PyQt6.QtGui import QFont, QIcon, QAction, QColor, QKeySequence
 from PyQt6.QtWidgets import QMainWindow, QLabel, QPushButton, QFileDialog, \
-    QListWidget, QMenuBar, QMenu
+    QListWidget, QMenuBar, QMenu, QWidget, QGridLayout, QHBoxLayout
 
 # Projects Libraries
 import FF_Additional_UI
@@ -48,16 +47,32 @@ class Search_Window:
         self.Search_Results_Window = QMainWindow(parent)
         # Set the Title of the Window
         self.Search_Results_Window.setWindowTitle(f"File Find Search Results | {FF_Files.display_path(search_path)}")
-        # Set the Size of the Window and make it not resizable
-        self.Search_Results_Window.setFixedHeight(730)
-        self.Search_Results_Window.setFixedWidth(800)
+        # Set the start size of the Window, because it's resizable
+        self.BASE_WIDTH = 700
+        self.BASE_HEIGHT = 700
+        self.Search_Results_Window.setBaseSize(self.BASE_WIDTH, self.BASE_HEIGHT)
         # Display the Window
         self.Search_Results_Window.show()
 
+        # Adding Layouts
+        # Main Layout
+        # Create a central widget
+        self.Central_Widget = QWidget(self.Search_Results_Window)
+        self.Search_Results_Window.setCentralWidget(self.Central_Widget)
+        # Create the main Layout
+        self.Search_Results_Layout = QGridLayout(self.Central_Widget)
+        self.Search_Results_Layout.setContentsMargins(20, 20, 20, 20)
+        self.Search_Results_Layout.setVerticalSpacing(20)
+
+        # Bottom Layout
+        self.Bottom_Layout = QHBoxLayout(self.Search_Results_Window)
+        self.Bottom_Layout.setContentsMargins(0, 0, 0, 0)
+        # Add to main Layout
+        self.Search_Results_Layout.addLayout(self.Bottom_Layout, 10, 0, 1, 4)
         # DON'T TRY TO USE LAYOUTS! YOU ARE JUST GOING TO END UP WASTING YOUR TIME!
         # If used File Find crashes with a 'Memory Error' and no further information.
         # I wasted several hours, trying to fix this.
-        # These undefined errors with QT are the worst
+        # Btw, You can fix it with disabling Pythons garbage collection.
 
         # Seconds needed Label
         seconds_text = QLabel(self.Search_Results_Window)
@@ -66,57 +81,51 @@ class Search_Window:
         small_text_font.setBold(True)
         seconds_text.setFont(small_text_font)
         # Displaying
-        seconds_text.show()
-        seconds_text.move(10, 20)
+        self.Search_Results_Layout.addWidget(seconds_text, 0, 0)
 
         # Files found label
         objects_text = QLabel(self.Search_Results_Window)
         objects_text.setText(f"Files found: {len(matched_list)}")
         objects_text.setFont(small_text_font)
-        objects_text.show()
-        objects_text.move(420, 20)
-        objects_text.adjustSize()
-
-        # Timestamps
-        # When cache was created
-        cache_created_time = ctime(
-            os.stat(
-                os.path.join(FF_Files.CACHED_SEARCHES_FOLDER, search_path.replace("/", "-") + ".FFCache")).st_birthtime)
-        cache_modified_time = ctime(
-            os.path.getmtime(
-                os.path.join(FF_Files.CACHED_SEARCHES_FOLDER, search_path.replace("/", "-") + ".FFCache")))
-        search_opened_time = ctime(time())
-        # Label
-        timestamp_text = QLabel(self.Search_Results_Window)
-        timestamp_text.setText(f"Cache created: {cache_created_time}")
-        # More info's whe hovering above
-        timestamp_text.setToolTip(f"Timestamps:\n\n"
-                                  f"Cache created: {cache_created_time}\n"
-                                  f"Cache modified: {cache_modified_time}\n"
-                                  f"Search opened: {search_opened_time}")
-        timestamp_text.setFont(QFont("Arial", 10))
-        timestamp_text.show()
-        timestamp_text.move(10, 700)
-        timestamp_text.adjustSize()
+        # Displaying
+        self.Search_Results_Layout.addWidget(objects_text, 0, 2)
 
         # Listbox
         self.result_listbox = QListWidget(self.Search_Results_Window)
-        # Resize the List-widget
-        self.result_listbox.resize(780, 570)
         # Place
-        self.result_listbox.move(10, 70)
-        # Connect the Listbox
+        self.Search_Results_Layout.addWidget(self.result_listbox, 1, 0, 9, 4)
+        # Display the Listbox
         self.result_listbox.show()
 
         # Show more time info's
         def show_time_stats():
-            FF_Additional_UI.msg.show_info_messagebox("Time Stats",
-                                                      f"Time needed:\n\nScanning: {round(time_searching, 3)}\nIndexing:"
-                                                      f" {round(time_indexing, 3)}\nSorting:"
-                                                      f" {round(time_sorting, 3)}\nCreating UI: "
-                                                      f"{round(time_building, 3)}\n---------\nTotal: "
-                                                      f"{round(time_total + time_building, 3)}",
-                                                      self.Search_Results_Window)
+            # Debug
+            logging.debug("Displaying time stats.")
+
+            # Getting cache metadata time
+            cache_created_time = ctime(
+                os.stat(
+                    os.path.join(FF_Files.CACHED_SEARCHES_FOLDER,
+                                 search_path.replace("/", "-") + ".FFCache")).st_birthtime)
+            cache_modified_time = ctime(
+                os.path.getmtime(
+                    os.path.join(FF_Files.CACHED_SEARCHES_FOLDER, search_path.replace("/", "-") + ".FFCache")))
+            search_opened_time = ctime(time())
+
+            # Displaying infobox with time info
+            FF_Additional_UI.msg.show_info_messagebox(
+                "Time Stats",
+                f"Time needed:\nScanning: {round(time_searching, 3)}\nIndexing:"
+                f" {round(time_indexing, 3)}\nSorting:"
+                f" {round(time_sorting, 3)}\nCreating UI: "
+                f"{round(time_building, 3)}\n---------\nTotal: "
+                f"{round(time_total + time_building, 3)}\n\n\n"
+                f""
+                f"Timestamps:\n"
+                f"Cache created: {cache_created_time}\n"
+                f"Cache modified: {cache_modified_time}\n"
+                f"Search opened: {search_opened_time}",
+                self.Search_Results_Window)
 
         # Reloads File, check all collected files, if they still exist
         def reload_files():
@@ -124,22 +133,29 @@ class Search_Window:
                 logging.info("Reload...")
                 time_before_reload = perf_counter()
                 removed_list = []
+                # TODO: os.path.exists() sometimes return false positives
                 for matched_file in matched_list:
                     if os.path.exists(matched_file):
                         continue
                     else:
-                        self.result_listbox.takeItem(matched_list.index(matched_file) + 1)
+                        # Remove file from widget if it doesn't exist
+                        self.result_listbox.takeItem(matched_list.index(matched_file))
                         matched_list.remove(matched_file)
                         logging.debug(f"File Does Not exist: {matched_file}")
+                        # Adding file to removed_list to later remove it from cache
                         removed_list.append(matched_file)
 
                 with open(os.path.join(FF_Files.CACHED_SEARCHES_FOLDER, search_path.replace("/", "-") + ".FFCache"),
                           "rb") as SearchFile:
-                    cached_files = list(load(SearchFile))
+                    cached_files: list[set, dict, dict] = list(load(SearchFile))
 
-                for cached_file in cached_files[0]:
-                    if cached_file in removed_list:
-                        cached_files[0].remove(cached_file)
+                # Removing all deleted files from cache
+                for removed_file in removed_list:
+                    try:
+                        cached_files[0].remove(removed_file)
+                    except KeyError:
+                        # File was already removed from cache
+                        pass
 
                 with open(os.path.join(FF_Files.CACHED_SEARCHES_FOLDER, search_path.replace("/", "-") + ".FFCache"),
                           "wb") as SearchFile:
@@ -185,38 +201,36 @@ class Search_Window:
             if icon is not None:
                 button.setIcon(QIcon(icon))
                 button.setIconSize(QSize(23, 23))
-            # Display the Button correctly
-            button.show()
-            button.adjustSize()
             # Return the value of the Button, to move the Button
             return button
 
         # Button to open the File in Finder
         move_file = generate_button("Move / Rename", self.move_file,
                                     icon=os.path.join(FF_Files.ASSETS_FOLDER, "Move_icon_small.png"))
-        move_file.move(10, 650)
+        self.Bottom_Layout.addWidget(move_file)
 
         # Button to move the file to trash
         delete_file = generate_button("Move to Trash", self.delete_file,
                                       icon=os.path.join(FF_Files.ASSETS_FOLDER, "Trash_icon_small.png"))
-        delete_file.move(170, 650)
-
-        # Button to show info about the file
-        file_info_button = generate_button("Info", self.file_info,
-                                           icon=os.path.join(FF_Files.ASSETS_FOLDER, "Info_button_img_small.png"))
-        file_info_button.move(580, 650)
+        self.Bottom_Layout.addWidget(delete_file)
 
         # Button to open the file
         open_file = generate_button("Open", self.open_file,
                                     icon=os.path.join(FF_Files.ASSETS_FOLDER, "Open_icon_small.png"))
-        open_file.move(680, 650)
+        self.Bottom_Layout.addWidget(open_file)
+
+        # Button to show info about the file
+        file_info_button = generate_button("Info", self.file_info,
+                                           icon=os.path.join(FF_Files.ASSETS_FOLDER, "Info_button_img_small.png"))
+        self.Bottom_Layout.addWidget(file_info_button)
 
         # Time stat Button
         show_time = generate_button(None, show_time_stats,
                                     icon=os.path.join(FF_Files.ASSETS_FOLDER, "Time_button_img_small.png"))
-        # Place
-        show_time.resize(50, 40)
-        show_time.move(260, 15)
+        # Resize
+        show_time.setMaximumSize(50, 50)
+        # Add to Layout
+        self.Search_Results_Layout.addWidget(show_time, 0, 1, alignment=Qt.AlignmentFlag.AlignLeft)
 
         # More Options
         # Options Menu
@@ -242,9 +256,10 @@ class Search_Window:
             icon=os.path.join(FF_Files.ASSETS_FOLDER, "More_button_img_small.png"))
         # Icon size
         options_button.setIconSize(QSize(50, 50))
-        # Place
-        options_button.move(720, 20)
-        options_button.resize(30, 30)
+        # Resize
+        options_button.setMaximumSize(50, 50)
+        # Add to Layout
+        self.Search_Results_Layout.addWidget(options_button, 0, 3)
 
         # Adding every object from matched_list to self.result_listbox
         logging.debug("Adding Files to Listbox...")
@@ -327,7 +342,7 @@ class Search_Window:
         tools_menu.addAction(open_terminal_action)
 
         # Show File in Finder Action
-        show_action = QAction("&Show selected file in Finder", self.Search_Results_Window)
+        show_action = QAction("&Open selected file in Finder", self.Search_Results_Window)
         show_action.triggered.connect(self.open_in_finder)
         show_action.setShortcut("Ctrl+Shift+O")
         tools_menu.addAction(show_action)
@@ -347,7 +362,7 @@ class Search_Window:
         delete_file_action.setShortcut("Ctrl+Delete")
         tools_menu.addAction(delete_file_action)
 
-        # Select an app to open the selected file
+        # Prompt the user to select a new location for the selected file
         move_file_action = QAction("&Move or Rename selected file", self.Search_Results_Window)
         move_file_action.triggered.connect(self.move_file)
         move_file_action.setShortcut("Ctrl+M")
@@ -404,8 +419,8 @@ class Search_Window:
         logging.info("Called Move file")
 
         try:
-            # Selecting the highlighted item of the focused listbox
-            selected_file = self.Search_Results_Window.focusWidget().currentItem().text()
+            # Selecting the highlighted item of the listbox
+            selected_file = self.result_listbox.currentItem().text()
 
             # Debug
             logging.info(f"Selected file: {selected_file}, prompting for new location...")
@@ -423,7 +438,7 @@ class Search_Window:
             if new_location == "":
                 logging.info("User pressed Cancel")
 
-            # Moving the file
+            # If file was selected, moving the file
             elif os.system(f"mv {FF_Files.convert_file_name_for_terminal(selected_file)} "
                            f"{os.path.join(FF_Files.convert_file_name_for_terminal(new_location))}") != 0:
                 # Debug
@@ -454,27 +469,9 @@ class Search_Window:
                 self.result_listbox.item(
                     self.result_listbox.currentRow()).setBackground(QColor("#1ccaff"))
 
-                # Remove moved file from cache
-                def remove_file_from_cache():
-                    with open(
-                            os.path.join(FF_Files.CACHED_SEARCHES_FOLDER,
-                                         self.search_path.replace("/", "-") + ".FFCache"), "rb") as SearchFile:
-                        cached_files = list(load(SearchFile))
-
-                    cached_files[0].remove(selected_file)
-
-                    with open(
-                            os.path.join(
-                                FF_Files.CACHED_SEARCHES_FOLDER,
-                                self.search_path.replace("/", "-") + ".FFCache"), "wb") as SearchFile:
-                        dump(cached_files, SearchFile)
-
-                    # Debug
-                    logging.info("Removed file from cache")
-
-                # Starting thread
+                # Removing file from cache
                 logging.info("Removing file from cache...")
-                threading.Thread(target=remove_file_from_cache)
+                self.remove_file_from_cache(selected_file)
         except AttributeError:
             # Triggered when no file is selected
             FF_Additional_UI.msg.show_critical_messagebox("Error!", "Select a File!", self.Search_Results_Window)
@@ -482,8 +479,8 @@ class Search_Window:
     # Moves a file to the trash
     def delete_file(self):
         try:
-            # Selecting the highlighted item of the focused listbox
-            selected_file = self.Search_Results_Window.focusWidget().currentItem().text()
+            # Selecting the highlighted item of the listbox
+            selected_file = self.result_listbox.currentItem().text()
 
             # Trash location
             new_location = os.path.join(
@@ -517,6 +514,10 @@ class Search_Window:
                 self.result_listbox.item(
                     self.result_listbox.currentRow()).setBackground(QColor("#ff0000"))
 
+                # Removing file from cache
+                logging.info("Removing file from cache...")
+                self.remove_file_from_cache(selected_file)
+
         except AttributeError:
             # If no file is selected
             FF_Additional_UI.msg.show_critical_messagebox("Error!", "Select a File!", self.Search_Results_Window)
@@ -525,7 +526,7 @@ class Search_Window:
     def open_file(self):
         try:
             # Selecting the highlighted item of the focused listbox
-            selected_file = self.Search_Results_Window.focusWidget().currentItem().text()
+            selected_file = self.result_listbox.currentItem().text()
 
             if os.system(f"open {FF_Files.convert_file_name_for_terminal(selected_file)}") != 0:
                 FF_Additional_UI.msg.show_critical_messagebox("Error!", f"No Program found to open {selected_file}",
@@ -704,3 +705,21 @@ class Search_Window:
         except AttributeError:
             FF_Additional_UI.msg.show_critical_messagebox("Error!", "Select a File!", self.Search_Results_Window)
             logging.error("Error! Select a File!")
+
+    # Remove moved file from cache
+    def remove_file_from_cache(self, file):
+        with open(
+                os.path.join(FF_Files.CACHED_SEARCHES_FOLDER,
+                             self.search_path.replace("/", "-") + ".FFCache"), "rb") as SearchFile:
+            cached_files = list(load(SearchFile))
+
+        cached_files[0].remove(file)
+
+        with open(
+                os.path.join(
+                    FF_Files.CACHED_SEARCHES_FOLDER,
+                    self.search_path.replace("/", "-") + ".FFCache"), "wb") as SearchFile:
+            dump(cached_files, SearchFile)
+
+        # Debug
+        logging.info("Removed file from cache")

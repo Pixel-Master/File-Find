@@ -18,9 +18,10 @@ import os
 import gc
 
 # PyQt6 Gui Imports
-from PyQt6.QtGui import QAction, QFont
-from PyQt6.QtCore import QObject, pyqtSignal, QThreadPool
-from PyQt6.QtWidgets import QMainWindow, QFileDialog, QListWidget, QMenuBar, QLabel, QPushButton
+from PyQt6.QtGui import QAction, QFont, QIcon, QColor
+from PyQt6.QtCore import QObject, pyqtSignal, QThreadPool, QSize
+from PyQt6.QtWidgets import (
+    QMainWindow, QFileDialog, QListWidget, QMenuBar, QLabel, QPushButton, QWidget, QGridLayout, QHBoxLayout)
 
 # Projects Libraries
 import FF_Files
@@ -42,10 +43,35 @@ class Compare_UI:
             f"File Find | Comparing Searches: "
             f"{FF_Files.display_path(path_of_first_search, 15)} (base) --> "
             f"{FF_Files.display_path(compared_searches.path_of_second_search[0], 15)}")
-
-        self.Compare_Window.setFixedHeight(700)
-        self.Compare_Window.setFixedWidth(800)
+        # Set the start size of the Window, because it's resizable
+        self.BASE_WIDTH = 800
+        self.BASE_HEIGHT = 700
+        self.Compare_Window.setBaseSize(self.BASE_WIDTH, self.BASE_HEIGHT)
+        # Display the window
         self.Compare_Window.show()
+
+        # Adding Layouts
+
+        # Main Layout
+        # Create a central widget
+        self.Central_Widget = QWidget(self.Compare_Window)
+        self.Compare_Window.setCentralWidget(self.Central_Widget)
+        # Create the main Layout
+        self.Compare_Layout = QGridLayout(self.Central_Widget)
+        self.Compare_Layout.setContentsMargins(20, 0, 20, 20)
+        self.Compare_Layout.setVerticalSpacing(1)
+
+        # Listbox Layout
+        self.Listbox_Layout = QHBoxLayout(self.Compare_Window)
+        self.Listbox_Layout.setContentsMargins(0, 0, 0, 0)
+        # Add to main Layout
+        self.Compare_Layout.addLayout(self.Listbox_Layout, 2, 0, 8, 2)
+
+        # Bottom Layout
+        self.Bottom_Layout = QHBoxLayout(self.Compare_Window)
+        self.Bottom_Layout.setContentsMargins(0, 0, 0, 0)
+        # Add to main Layout
+        self.Compare_Layout.addLayout(self.Bottom_Layout, 10, 0, 1, 2)
 
         # Set up both list-boxes
         # Added files / files only in first search
@@ -54,10 +80,8 @@ class Compare_UI:
         logging.debug("Setting up Added files / files only in first search listbox..")
 
         self.added_files_listbox = QListWidget(self.Compare_Window)
-        # Resize the List-widget
-        self.added_files_listbox.resize(380, 570)
-        # Place
-        self.added_files_listbox.move(10, 70)
+        # Adding to grid
+        self.Listbox_Layout.addWidget(self.added_files_listbox)
         # Show the Listbox
         self.added_files_listbox.show()
         # Add items
@@ -71,10 +95,8 @@ class Compare_UI:
         logging.debug("Done!, Setting up Removed files / files only in second search listbox..")
 
         self.removed_files_listbox = QListWidget(self.Compare_Window)
-        # Resize the List-widget
-        self.removed_files_listbox.resize(380, 570)
-        # Place
-        self.removed_files_listbox.move(410, 70)
+        # Adding to grid
+        self.Listbox_Layout.addWidget(self.removed_files_listbox)
         # Show the Listbox
         self.removed_files_listbox.show()
         # Add items
@@ -89,47 +111,52 @@ class Compare_UI:
         # Added files
         self.added_files_label1, self.added_files_label2 = self.generate_title_label(
             text="Added Files", text2=path_of_first_search, color="green")
-        self.added_files_label1.move(10, 10)
-        self.added_files_label2.move(10, 40)
+        self.Compare_Layout.addWidget(self.added_files_label1, 0, 0)
+        self.Compare_Layout.addWidget(self.added_files_label2, 1, 0)
 
         # Removed files
         self.removed_files_label1, self.removed_files_label2 = self.generate_title_label(
             text=f"Removed Files", text2=compared_searches.path_of_second_search[0], color="red")
-        self.removed_files_label1.move(410, 10)
-        self.removed_files_label2.move(410, 40)
+        self.Compare_Layout.addWidget(self.removed_files_label1, 0, 1)
+        self.Compare_Layout.addWidget(self.removed_files_label2, 1, 1)
+
+        # Buttons
+        # Button to open the File in Finder
+        move_file = self.generate_button("Move / Rename", self.move_file,
+                                         icon=os.path.join(FF_Files.ASSETS_FOLDER, "Move_icon_small.png"))
+        self.Bottom_Layout.addWidget(move_file)
+
+        # Button to move the file to trash
+        delete_file = self.generate_button("Move to Trash", self.delete_file,
+                                           icon=os.path.join(FF_Files.ASSETS_FOLDER, "Trash_icon_small.png"))
+        self.Bottom_Layout.addWidget(delete_file)
+
+        # Button to open the file
+        open_file = self.generate_button("Open", self.open_file,
+                                         icon=os.path.join(FF_Files.ASSETS_FOLDER, "Open_icon_small.png"))
+        self.Bottom_Layout.addWidget(open_file)
+
+        # Button to show info about the file
+        file_info_button = self.generate_button("Info", self.file_info,
+                                                icon=os.path.join(FF_Files.ASSETS_FOLDER, "Info_button_img_small.png"))
+        self.Bottom_Layout.addWidget(file_info_button)
 
         # Setting up the menubar...
         self.menubar()
         logging.info("Done building Compare-UI!\n")
 
-        # Buttons
-        # Button to open the File in Finder
-        show_in_finder = self.generate_button("Open in Finder", self.open_in_finder)
-        show_in_finder.move(10, 650)
-
-        # Button to open the File
-        open_file = self.generate_button("Open", self.open_file)
-        open_file.move(170, 650)
-
-        # Button to open File Info
-        file_info_button = self.generate_button("Info", self.file_info)
-        file_info_button.move(580, 650)
-
-        # Button to open view the hashes of the File
-        file_hash = self.generate_button("File Hashes", self.view_hashes)
-        file_hash.move(680, 650)
-
     # Functions to automate Button
-    def generate_button(self, text, command):
+    def generate_button(self, text, command, icon=None):
         # Define the Button
         button = QPushButton(self.Compare_Window)
         # Change the Text
         button.setText(text)
         # Set the command
         button.clicked.connect(command)
-        # Display the Button correctly
-        button.show()
-        button.adjustSize()
+        # Set the icon
+        if icon is not None:
+            button.setIcon(QIcon(icon))
+            button.setIconSize(QSize(23, 23))
         # Return the value of the Button, to move the Button
         return button
 
@@ -192,17 +219,50 @@ class Compare_UI:
         cache_action.setShortcut("Ctrl+T")
         tools_menu.addAction(cache_action)
 
+        # Separator
+        tools_menu.addSeparator()
+
         # Open File Action
-        open_action = QAction("&Open Selected File", self.Compare_Window)
+        open_action = QAction("&Open selected File", self.Compare_Window)
         open_action.triggered.connect(self.open_file)
         open_action.setShortcut("Ctrl+O")
         tools_menu.addAction(open_action)
 
+        # Open File in Terminal Action
+        open_terminal_action = QAction("&Open selected file in Terminal", self.Compare_Window)
+        open_terminal_action.triggered.connect(self.open_in_terminal)
+        open_terminal_action.setShortcut("Ctrl+Alt+O")
+        tools_menu.addAction(open_terminal_action)
+
         # Show File in Finder Action
-        show_action = QAction("&Show Selected File in Finder", self.Compare_Window)
+        show_action = QAction("&Open selected file in Finder", self.Compare_Window)
         show_action.triggered.connect(self.open_in_finder)
         show_action.setShortcut("Ctrl+Shift+O")
         tools_menu.addAction(show_action)
+
+        # Select an app to open the selected file
+        open_in_app_action = QAction("&Select an app to open the selected file...", self.Compare_Window)
+        open_in_app_action.triggered.connect(self.open_in_app)
+        open_in_app_action.setShortcut("Alt+O")
+        tools_menu.addAction(open_in_app_action)
+
+        # Separator
+        tools_menu.addSeparator()
+
+        # Select an app to open the selected file
+        delete_file_action = QAction("&Move selected file to trash", self.Compare_Window)
+        delete_file_action.triggered.connect(self.delete_file)
+        delete_file_action.setShortcut("Ctrl+Delete")
+        tools_menu.addAction(delete_file_action)
+
+        # Prompt the user to select a new location for the selected file
+        move_file_action = QAction("&Move or Rename selected file", self.Compare_Window)
+        move_file_action.triggered.connect(self.move_file)
+        move_file_action.setShortcut("Ctrl+M")
+        tools_menu.addAction(move_file_action)
+
+        # Separator
+        tools_menu.addSeparator()
 
         # File Info
         info_action = QAction("&Info for Selected File", self.Compare_Window)
@@ -234,6 +294,117 @@ class Compare_UI:
         help_menu.addAction(help_action)
 
     # Options for files and folders
+    # Prompts a user to select a new location for the file
+    def move_file(self):
+        # Debug
+        logging.info("Called Move file")
+
+        try:
+            # Selecting the highlighted item of the focused listbox
+            selected_widget = self.Compare_Window.focusWidget()
+            selected_file = self.Compare_Window.focusWidget().currentItem().text()
+
+            # Debug
+            logging.info(f"Selected file: {selected_file}, prompting for new location...")
+
+            # Prompting the user for a new location
+            new_location = QFileDialog.getSaveFileName(
+                self.Compare_Window,
+                caption=f"Rename / Move {os.path.basename(selected_file)}",
+                directory=selected_file
+            )[0]
+
+            logging.info(f"New file location: {new_location}")
+
+            # If no file was selected
+            if new_location == "":
+                logging.info("User pressed Cancel")
+
+            # If file was selected, moving the file
+            elif os.system(f"mv {FF_Files.convert_file_name_for_terminal(selected_file)} "
+                           f"{os.path.join(FF_Files.convert_file_name_for_terminal(new_location))}") != 0:
+                # Debug
+                logging.critical(f"File not Found: {selected_file}")
+
+                # If cmd wasn't successful display this error
+                FF_Additional_UI.msg.show_critical_messagebox(
+                    "Error!",
+                    f"File not found!\nTried to move:\n\n"
+                    f" {selected_file}\n\n"
+                    f"to:\n\n"
+                    f"{new_location}",
+                    self.Compare_Window
+                )
+
+            else:
+                # If everything ran successful
+
+                # Debug
+                logging.debug(f"Moved {selected_file} to {new_location}")
+
+                # Set the icon
+                move_icon = QIcon(os.path.join(FF_Files.ASSETS_FOLDER, "move_icon_small.png"))
+                current_row = selected_widget.currentRow()
+
+                selected_widget.item(current_row).setIcon(move_icon)
+
+                # Change the color to blue
+                color_blue = QColor("#1ccaff")
+
+                selected_widget.item(current_row).setBackground(color_blue)
+
+        except AttributeError:
+            # Triggered when no file is selected
+            FF_Additional_UI.msg.show_critical_messagebox(
+                "Error!",
+                "Error when trying to move file!",
+                self.Compare_Window)
+
+    # Moves a file to the trash
+    def delete_file(self):
+        try:
+            # Selecting the highlighted item of the focused listbox
+            selected_file = self.Compare_Window.focusWidget().currentItem().text()
+
+            # Trash location
+            new_location = os.path.join(
+                FF_Files.convert_file_name_for_terminal(FF_Files.USER_FOLDER),
+                '.Trash',
+                FF_Files.convert_file_name_for_terminal(os.path.basename(selected_file)))
+            # Command to execute
+            delete_command = (
+                f"mv {FF_Files.convert_file_name_for_terminal(selected_file)} {new_location}")
+
+            # Moving the file to trash
+            if os.system(delete_command) != 0:
+
+                #  Error message
+                FF_Additional_UI.msg.show_critical_messagebox(
+                    "Error!", f"File not found: {selected_file}", self.Compare_Window)
+
+                # Debug
+                logging.error(f"File not found: {selected_file}")
+
+            else:
+                # Debug
+                logging.debug(f"Moved {selected_file} to trash")
+
+                # Selected widget
+                selected_listbox = self.Compare_Window.focusWidget()
+
+                # Set the icon
+                selected_listbox.item(
+                    selected_listbox.currentRow()).setIcon(
+                    QIcon(os.path.join(FF_Files.ASSETS_FOLDER, "trash_icon_small.png")))
+
+                # Change the color to blue
+                selected_listbox.item(
+                    selected_listbox.currentRow()).setBackground(QColor("#ff0000"))
+
+        except AttributeError:
+            # If no file is selected
+            FF_Additional_UI.msg.show_critical_messagebox("Error!", "Select a File!", self.Compare_Window)
+
     # Opens a file
     def open_file(self):
         try:
@@ -425,35 +596,40 @@ class Compare_UI:
             logging.error("Error! Select a File!")
 
 
-# The engine (add threading!)
+# The engine TODO: (add threading!)
 class Compare_Searches:
     def __init__(self, files_of_first_search: list, path_of_first_search, parent):
         # Debug
         logging.debug("User pressed Compare Search")
 
-        # Setting the thread up with the pyqt signals to launch the ui
-        class signals_class(QObject):
-            finished = pyqtSignal()
+        try:
+            # Setting the thread up with the pyqt signals to launch the ui
+            class signals_class(QObject):
+                finished = pyqtSignal()
 
-        self.signals = signals_class()
-        # Connecting the signal to the user-interface class
-        self.signals.finished.connect(lambda: Compare_UI(path_of_first_search, parent))
+            self.signals = signals_class()
+            # Connecting the signal to the user-interface class
+            self.signals.finished.connect(lambda: Compare_UI(path_of_first_search, parent))
 
-        # Thread
-        comparing_thread = QThreadPool()
+            # Thread
+            comparing_thread = QThreadPool()
 
-        # Get the files of both searches
-        self.files_of_first_search = files_of_first_search
-        logging.debug("Asking for a second FFSearch file...")
-        self.files_of_second_search, self.path_of_second_search = self.load_second_search()
+            # Get the files of both searches
+            self.files_of_first_search = files_of_first_search
+            logging.debug("Asking for a second FFSearch file...")
+            self.files_of_second_search, self.path_of_second_search = self.load_second_search()
 
-        # Files which are only in one list
-        self.files_only_in_first_search = []
-        self.files_only_in_second_search = []
+            # Files which are only in one list
+            self.files_only_in_first_search = []
+            self.files_only_in_second_search = []
 
-        # Starting the thread
-        logging.debug("Starting thread...")
-        comparing_thread.start(self.compare)
+            # Starting the thread
+            logging.debug("Starting thread...")
+            comparing_thread.start(self.compare)
+        except TypeError:
+            # If no file was selected
+            logging.info("No file was selected, when comparing files")
+            pass
 
     def compare(self):
         # Debug

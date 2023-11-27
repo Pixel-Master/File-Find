@@ -58,8 +58,7 @@ setup(
 
 # Building DMG
 print("\n\nBuilding DMG...")
-# Downloading the create-dmg script from GitHub
-os.system("create-dmg "
+print('''os.system("create-dmg "
           "--volname \"File Find\" "
           "--volicon \"assets/icon.icns\" "
           "--background \"assets/background.png\" "
@@ -69,4 +68,17 @@ os.system("create-dmg "
           "--icon \"dist/File Find.app\" 200 190 "
           "--app-drop-link 600 190 "
           "\"dist/File Find.dmg\" "
-          "\"dist/\"\n")
+          "\"dist/\"\n")''')
+
+subprocess.run(
+    ['create-dmg',
+     '--volname', 'File Find',
+     '--volicon', 'assets/icon.icns',
+     '--background', 'assets/background.png',
+     '--window-pos', '200', '120',
+     '--window-size', '800', '400',
+     '--icon-size', '100',
+     '--icon', 'dist/File Find.app', '200', '190',
+     '--app-drop-link', '600', '190',
+     'dist/File Find.dmg',
+     'dist'])

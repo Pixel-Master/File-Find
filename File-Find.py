@@ -36,7 +36,7 @@ if __name__ == "__main__":
         def event(self, event: QEvent) -> bool:
             # Executed when an event is received.
 
-            # HANDLE FILEOPEN EVENT (TRIGGERED BY MACOS WHEN DOUBLE CLICKING A FILE)
+            # TODO: HANDLE FILEOPEN EVENT (TRIGGERED BY MACOS WHEN DOUBLE CLICKING A FILE)
             if event.type() == QFileOpenEvent:
                 path = event.type().path()
                 print(path)

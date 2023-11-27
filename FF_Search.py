@@ -158,10 +158,10 @@ class search:
             logging.error("Name Error! File Name and Name contains or File Type can't be used together!")
 
             # Show Popup
-            FF_Additional_UI.msg.show_critical_messagebox("NAME ERROR!",
-                                                          "Name Error!\n\nFile name and name contains or file type "
-                                                          "can't be used together",
-                                                          parent=None)
+            FF_Additional_UI.msg.show_critical_messagebox(
+                "NAME ERROR!",
+                "Name Error!\n\nFile name can't be used together with wildcard, name contains or file type",
+                parent=None)
 
         # Directory not valid
         elif data_search_from_valid != data_search_from_unchecked and not os.path.isdir(data_search_from_unchecked):
@@ -275,7 +275,7 @@ class search:
         if data_filetype.startswith("."):
             data_filetype.strip(".")
 
-        # Lower Arguments
+        # Lower Arguments to remove case sensitivity
         data_name = data_name.lower()
         data_in_name = data_in_name.lower()
         data_filetype = data_filetype.lower()
@@ -307,11 +307,12 @@ class search:
         else:
             data_search_for_needed = True
 
-        # Loading excluded files
+        # Loading excluded files and checking if the need to be scanned
         with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "rb") as ExcludedFile:
             data_excluded_files = load(ExcludedFile)["excluded_files"]
 
         if not data_excluded_files:
+            # If the list is empty
             data_excluded_files_needed = False
 
         else:

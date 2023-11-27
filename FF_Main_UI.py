@@ -74,51 +74,55 @@ class Main_Window:
         self.tabbed_widget.addTab(self.basic_search_widget, "Basic")
 
         # Creating the Labels with tooltips
-        label_name = self.generate_large_filter_label("Name:",
-                                                      self.basic_search_widget,
-                                                      self.generic_tooltip("Name",
-                                                                           "Input needs to match"
-                                                                           " the name of a file exactly,"
-                                                                           "\nignoring case.",
-                                                                           "Example.txt",
-                                                                           os.path.join(FF_Files.USER_FOLDER,
-                                                                                        "example.txt")))
+        label_name = self.generate_large_filter_label(
+            "Name:",
+            self.basic_search_widget,
+            self.generic_tooltip("Name",
+                                 "Input needs to match"
+                                 " the name of a file exactly,"
+                                 "\nignoring case.",
+                                 "Example.txt",
+                                 os.path.join(FF_Files.USER_FOLDER,
+                                              "example.txt")))
         label_name.move(200, 10)
 
-        label_name_contains = self.generate_large_filter_label("Name contains:",
-                                                               self.basic_search_widget,
-                                                               self.generic_tooltip("Name contains",
-                                                                                    "The name of a file must contain"
-                                                                                    " input,\nignoring case.",
-                                                                                    "file",
-                                                                                    os.path.join(
-                                                                                        FF_Files.USER_FOLDER,
-                                                                                        "my-file.pdf")))
+        label_name_contains = self.generate_large_filter_label(
+            "Name contains:",
+            self.basic_search_widget,
+            self.generic_tooltip("Name contains",
+                                 "The name of a file must contain"
+                                 " input,\nignoring case.",
+                                 "file",
+                                 os.path.join(
+                                     FF_Files.USER_FOLDER,
+                                     "my-file.pdf")))
         label_name_contains.move(200, 50)
 
-        label_extension = self.generate_large_filter_label("File extension:",
-                                                           self.basic_search_widget,
-                                                           self.generic_tooltip("File extension",
-                                                                                "Input needs to match the file "
-                                                                                "extension (file type)\n"
-                                                                                "without the \".\", ignoring case.",
-                                                                                "txt",
-                                                                                os.path.join(
-                                                                                    FF_Files.USER_FOLDER,
-                                                                                    "example.txt")))
+        label_extension = self.generate_large_filter_label(
+            "File extension:",
+            self.basic_search_widget,
+            self.generic_tooltip("File extension",
+                                 "Input needs to match the file "
+                                 "extension (file type)\n"
+                                 "without the \".\", ignoring case.",
+                                 "txt",
+                                 os.path.join(
+                                     FF_Files.USER_FOLDER,
+                                     "example.txt")))
         label_extension.move(200, 90)
 
-        label_directory = self.generate_large_filter_label("Directory:",
-                                                           self.basic_search_widget,
-                                                           self.generic_tooltip("Directory",
-                                                                                "The Directory to search in.",
-                                                                                os.path.join(
-                                                                                    FF_Files.USER_FOLDER,
-                                                                                    "Downloads"),
-                                                                                os.path.join(
-                                                                                    FF_Files.USER_FOLDER,
-                                                                                    "Downloads",
-                                                                                    "example.pdf")))
+        label_directory = self.generate_large_filter_label(
+            "Directory:",
+            self.basic_search_widget,
+            self.generic_tooltip("Directory",
+                                 "The Directory to search in.",
+                                 os.path.join(
+                                     FF_Files.USER_FOLDER,
+                                     "Downloads"),
+                                 os.path.join(
+                                     FF_Files.USER_FOLDER,
+                                     "Downloads",
+                                     "example.pdf")))
         label_directory.move(200, 130)
 
         # -----Advanced Search-----
@@ -127,104 +131,115 @@ class Main_Window:
         self.advanced_search_widget = QWidget()
         self.tabbed_widget.addTab(self.advanced_search_widget, "Advanced")
 
-        label_file_contains = self.generate_large_filter_label("File contains:",
-                                                               self.advanced_search_widget,
-                                                               self.generic_tooltip("File contains:",
-                                                                                    "Allows you to search in files."
-                                                                                    "Input must be in the file "
-                                                                                    "content.\n"
-                                                                                    "This option can take really "
-                                                                                    "long.\n"
-                                                                                    "Input is case-sensitive.",
-                                                                                    "This is an example file!",
-                                                                                    os.path.join(
-                                                                                        FF_Files.
-                                                                                        USER_FOLDER,
-                                                                                        "example.txt "
-                                                                                        "(which contains: "
-                                                                                        "This is an example file!)")))
+        label_file_contains = self.generate_large_filter_label(
+            "File contains:",
+            self.advanced_search_widget,
+            self.generic_tooltip("File contains:",
+                                 "Allows you to search in files."
+                                 "Input must be in the file "
+                                 "content.\n"
+                                 "This option can take really "
+                                 "long.\n"
+                                 "Input is case-sensitive.",
+                                 "This is an example file!",
+                                 os.path.join(
+                                     FF_Files.
+                                     USER_FOLDER,
+                                     "example.txt "
+                                     "(which contains: "
+                                     "This is an example file!)")))
         label_file_contains.move(10, 10)
-        label_wildcard = self.generate_large_filter_label("Wildcards:",
-                                                          self.advanced_search_widget,
-                                                          self.generic_tooltip("Wildcards",
-                                                                               "Unix shell-style wildcards,"
-                                                                               "\nwhich are not the same as regular "
-                                                                               "expressions.\nFor further "
-                                                                               "documentation: "
-                                                                               "http://docs.python.org/library/fnmatch",
-                                                                               "exa*",
-                                                                               os.path.join(
-                                                                                   FF_Files.USER_FOLDER,
-                                                                                   "example.txt")))
+        label_wildcard = self.generate_large_filter_label(
+            "Wildcards:",
+            self.advanced_search_widget,
+            self.generic_tooltip("Wildcards",
+                                 "Unix shell-style wildcards,"
+                                 "\nwhich are not the same as regular "
+                                 "expressions.\n\n"
+                                 "Pattern   Meaning\n"
+                                 "   *         matches everything\n"
+                                 "   ?         matches any single character\n"
+                                 " [seq]    matches any character in seq\n"
+                                 " [!seq]   matches any character not in seq\n\n"
+                                 "For further documentation: http://docs.python.org/library/fnmatch",
+                                 "exa*",
+                                 os.path.join(
+                                     FF_Files.USER_FOLDER,
+                                     "example.txt")))
         label_wildcard.move(10, 50)
 
-        label_c_date = self.generate_large_filter_label("Date created:",
-                                                        self.advanced_search_widget,
-                                                        self.generic_tooltip("Date created",
-                                                                             "Specify a date range for the date "
-                                                                             "the file has been created,\n"
-                                                                             "leave at default to ignore.",
-                                                                             "5.Jul.2020 - 10.Aug.2020",
-                                                                             os.path.join(FF_Files.USER_FOLDER,
-                                                                                          "example.txt "
-                                                                                          "(created at "
-                                                                                          "1.Aug.2020)")))
+        label_c_date = self.generate_large_filter_label(
+            "Date created:",
+            self.advanced_search_widget,
+            self.generic_tooltip("Date created",
+                                 "Specify a date range for the date "
+                                 "the file has been created,\n"
+                                 "leave at default to ignore.",
+                                 "5.Jul.2020 - 10.Aug.2020",
+                                 os.path.join(FF_Files.USER_FOLDER,
+                                              "example.txt "
+                                              "(created at "
+                                              "1.Aug.2020)")))
         label_c_date.move(400, 10)
         label_c_date_2 = self.generate_large_filter_label("-", self.advanced_search_widget)
         label_c_date_2.move(660, 10)
 
-        label_m_date = self.generate_large_filter_label("Date modified:",
-                                                        self.advanced_search_widget,
-                                                        self.generic_tooltip("Date modified",
-                                                                             "Specify a date range for the date "
-                                                                             "the file has been modified,\n"
-                                                                             "leave at default to ignore.",
-                                                                             "5.Jul.2020 -  10.Aug.2020",
-                                                                             os.path.join(FF_Files.USER_FOLDER,
-                                                                                          "example.txt "
-                                                                                          "(modified at "
-                                                                                          "1.Aug.2020)")))
+        label_m_date = self.generate_large_filter_label(
+            "Date modified:",
+            self.advanced_search_widget,
+            self.generic_tooltip("Date modified",
+                                 "Specify a date range for the date "
+                                 "the file has been modified,\n"
+                                 "leave at default to ignore.",
+                                 "5.Jul.2020 -  10.Aug.2020",
+                                 os.path.join(FF_Files.USER_FOLDER,
+                                              "example.txt "
+                                              "(modified at "
+                                              "1.Aug.2020)")))
         label_m_date.move(400, 50)
         label_m_date_2 = self.generate_large_filter_label("-", self.advanced_search_widget)
         label_m_date_2.move(660, 50)
 
-        label_file_size = self.generate_large_filter_label("File size(MB) min:",
-                                                           self.advanced_search_widget,
-                                                           self.generic_tooltip("File size",
-                                                                                "Input specifies file size in "
-                                                                                "Mega Bytes (MB)\nin a range "
-                                                                                "from min to max",
-                                                                                "min: 10 max: 10.3",
-                                                                                os.path.join(
-                                                                                    FF_Files.USER_FOLDER,
-                                                                                    "example.txt "
-                                                                                    "(with a size of 10.2 MB)")))
+        label_file_size = self.generate_large_filter_label(
+            "File size(MB) min:",
+            self.advanced_search_widget,
+            self.generic_tooltip("File size",
+                                 "Input specifies file size in "
+                                 "Mega Bytes (MB)\nin a range "
+                                 "from min to max",
+                                 "min: 10 max: 10.3",
+                                 os.path.join(
+                                     FF_Files.USER_FOLDER,
+                                     "example.txt "
+                                     "(with a size of 10.2 MB)")))
         label_file_size.move(400, 90)
         label_file_size_max = self.generate_large_filter_label("max:", self.advanced_search_widget)
         label_file_size_max.move(650, 90)
 
-        label_system_files = self.generate_large_filter_label("Search in system files:",
-                                                              self.advanced_search_widget,
-                                                              self.generic_tooltip("Search in system files",
-                                                                                   "Toggle to include "
-                                                                                   "files in the "
-                                                                                   "system and library folders.",
-                                                                                   "Yes",
-                                                                                   os.path.join(
-                                                                                       FF_Files.USER_FOLDER,
-                                                                                       "Library", "Caches",
-                                                                                       "example.txt")))
+        label_system_files = self.generate_large_filter_label(
+            "Search in system files:",
+            self.advanced_search_widget,
+            self.generic_tooltip("Search in system files",
+                                 "Toggle to include "
+                                 "files in the "
+                                 "system and library folders.",
+                                 "Yes",
+                                 os.path.join(
+                                     FF_Files.USER_FOLDER,
+                                     "Library", "Caches",
+                                     "example.txt")))
         label_system_files.move(10, 90)
-        label_files_folders = self.generate_large_filter_label("Search for:",
-                                                               self.advanced_search_widget,
-                                                               self.generic_tooltip("Search for",
-                                                                                    "Toggle to only include "
-                                                                                    "folders or files"
-                                                                                    " in the search results",
-                                                                                    "only Folders",
-                                                                                    os.path.join(
-                                                                                        FF_Files.USER_FOLDER,
-                                                                                        "Downloads")))
+        label_files_folders = self.generate_large_filter_label(
+            "Search for:",
+            self.advanced_search_widget,
+            self.generic_tooltip("Search for",
+                                 "Toggle to only include "
+                                 "folders or files"
+                                 " in the search results",
+                                 "only Folders",
+                                 os.path.join(
+                                     FF_Files.USER_FOLDER,
+                                     "Downloads")))
         label_files_folders.move(10, 130)
 
         # -----Sorting-----
@@ -233,20 +248,22 @@ class Main_Window:
         self.sorting_widget = QWidget()
         self.tabbed_widget.addTab(self.sorting_widget, "Sorting")
 
-        label_sort_by = self.generate_large_filter_label("Sort by:",
-                                                         self.sorting_widget,
-                                                         self.generic_tooltip("Sort by",
-                                                                              "Select a sorting method "
-                                                                              "to sort the results.",
-                                                                              "File Size",
-                                                                              "Results sorted by file size"))
+        label_sort_by = self.generate_large_filter_label(
+            "Sort by:",
+            self.sorting_widget,
+            self.generic_tooltip("Sort by",
+                                 "Select a sorting method "
+                                 "to sort the results.",
+                                 "File Size",
+                                 "Results sorted by file size"))
         label_sort_by.move(200, 10)
-        label_reverse_sort = self.generate_large_filter_label("Reverse results:",
-                                                              self.sorting_widget,
-                                                              self.generic_tooltip("Reverse Results",
-                                                                                   "Reverse the sorted search results.",
-                                                                                   "Yes",
-                                                                                   "Reversed search results"))
+        label_reverse_sort = self.generate_large_filter_label(
+            "Reverse results:",
+            self.sorting_widget,
+            self.generic_tooltip("Reverse Results",
+                                 "Reverse the sorted search results.",
+                                 "Yes",
+                                 "Reversed search results"))
         label_reverse_sort.move(200, 50)
 
         # -----Terminal Command-----
@@ -295,25 +312,57 @@ class Main_Window:
         logging.debug("Setting up Entries...")
         # Create an Entry for every Filter with the function self.generate_filter_entry()
 
-        # Name
-        edit_name = self.generate_filter_entry(self.basic_search_widget)
-        edit_name.resize(230, 25)
-        edit_name.move(340, 10)
+        # Check if "name contains", "filetype" or "wildcard" is/are used together with "name",
+        # because this causes a conflict
+        def disable_name_edit():
 
-        # Name contains
-        edit_name_contains = self.generate_filter_entry(self.basic_search_widget)
-        edit_name_contains.resize(230, 25)
-        edit_name_contains.move(340, 50)
+            # Get values
+            # The text of the text box, where text was just changed
+            value_edit_name = edit_name.text()
 
-        # File extension
-        edit_file_extension = self.generate_filter_entry(self.basic_search_widget)
-        edit_file_extension.resize(230, 25)
-        edit_file_extension.move(340, 90)
+            value_edit_name_contain = edit_name_contains.text()
+            value_edit_filetype = edit_file_extension.text()
+            value_edit_wildcard = edit_wildcard.text()
 
-        # Edit to display the Path
-        self.edit_directory = self.generate_filter_entry(self.basic_search_widget)
-        # Set text and tooltip to display the directory
-        self.edit_directory.setText(os.getcwd())
+            # Block name edit
+            if (value_edit_name_contain != ""
+                    or value_edit_filetype != ""
+                    or value_edit_wildcard != ""):
+                edit_name.setDisabled(True)
+                edit_name.setToolTip("File name can't be used together with wildcard, name contains or file type")
+                edit_name.setStyleSheet("background-color: #7f7f7f;")
+
+                # Debug
+                logging.debug("Disabling name edit.")
+
+            # Unblock name edit
+            else:
+                edit_name.setDisabled(False)
+                edit_name.setToolTip(None)
+                edit_name.setStyleSheet("")
+
+                # Debug
+                logging.debug("Enabling name edit.")
+
+            # Block name contains, file extension and wildcard text boxes
+            if value_edit_name != "":
+                for edit in (edit_name_contains, edit_file_extension, edit_wildcard):
+                    edit.setDisabled(True)
+                    edit.setToolTip("File name can't be used together with wildcard, name contains or file type")
+                    edit.setStyleSheet("background-color: #7f7f7f;")
+
+                # Debug
+                logging.debug("Disabling name contains, wildcard and filetype edit.")
+
+            # Unblock name edit
+            else:
+                for edit in (edit_name_contains, edit_file_extension, edit_wildcard):
+                    edit.setDisabled(False)
+                    edit.setToolTip(None)
+                    edit.setStyleSheet(";")
+
+                # Debug
+                logging.debug("Enabling name contains, wildcard and filetype edit.")
 
         # Auto complete paths
         def complete_path(path, check=True):
@@ -345,7 +394,7 @@ class Main_Window:
                 logging.debug("Changed QCompleter")
                 return
 
-        # Validate Paths
+        # Validate Paths in the directory box
         def validate_dir():
             # Debug
             logging.debug(f"Directory Path changed to: {self.edit_directory.text()}")
@@ -372,11 +421,38 @@ class Main_Window:
                 # Change color
                 self.edit_directory.setStyleSheet("color: red;")
 
+        # Name
+        edit_name = self.generate_filter_entry(self.basic_search_widget)
+        # Check if there is a conflict with name contains or filetype
+        edit_name.textChanged.connect(disable_name_edit)
+        # Place
+        edit_name.resize(230, 25)
+        edit_name.move(340, 10)
+
+        # Name contains
+        edit_name_contains = self.generate_filter_entry(self.basic_search_widget)
+        # Check if there is a conflict with name contains or filetype
+        edit_name_contains.textChanged.connect(disable_name_edit)
+        # Place
+        edit_name_contains.resize(230, 25)
+        edit_name_contains.move(340, 50)
+
+        # File extension
+        edit_file_extension = self.generate_filter_entry(self.basic_search_widget)
+        # Check if there is a conflict with name contains or filetype
+        edit_file_extension.textChanged.connect(disable_name_edit)
+        # Place
+        edit_file_extension.resize(230, 25)
+        edit_file_extension.move(340, 90)
+
+        # Edit to display the Path
+        self.edit_directory = self.generate_filter_entry(self.basic_search_widget)
+        # Set text and tooltip to display the directory
+        self.edit_directory.setText(os.getcwd())
         # Execute the validate_dir function if
         self.edit_directory.textChanged.connect(validate_dir)
         # Loading Completions
         complete_path(os.getcwd(), check=False)
-
         # Resize and place on screen
         self.edit_directory.resize(230, 25)
         self.edit_directory.move(340, 130)
@@ -390,6 +466,8 @@ class Main_Window:
         edit_wildcard = self.generate_filter_entry(self.advanced_search_widget)
         edit_wildcard.resize(230, 25)
         edit_wildcard.move(130, 50)
+        # Prevent conflict with name input
+        edit_wildcard.textChanged.connect(disable_name_edit)
 
         # File size min
         edit_size_min = self.generate_filter_entry(self.advanced_search_widget, True)
@@ -438,12 +516,13 @@ class Main_Window:
         # Defining
         combobox_sorting = QComboBox(self.sorting_widget)
         # Adding Options
-        combobox_sorting.addItems(["None (fastest)",
-                                   "File Size",
-                                   "File Name",
-                                   "Date Modified",
-                                   "Date Created",
-                                   "Path"])
+        combobox_sorting.addItems(
+            ["None (fastest)",
+             "File Size",
+             "File Name",
+             "Date Modified",
+             "Date Created",
+             "Path"])
         # Display
         combobox_sorting.show()
         combobox_sorting.move(350, 10)
@@ -452,9 +531,10 @@ class Main_Window:
         # Defining
         combobox_search_for = QComboBox(self.advanced_search_widget)
         # Adding Options
-        combobox_search_for.addItems(["Files and Folders",
-                                      "only Files",
-                                      "only Folders"])
+        combobox_search_for.addItems(
+            ["Files and Folders",
+             "only Files",
+             "only Folders"])
         # Display
         combobox_search_for.show()
         combobox_search_for.move(130, 125)
@@ -466,14 +546,14 @@ class Main_Window:
         c_date_from_drop_down.move(550, 10)
         c_date_to_drop_down = self.generate_day_entry(self.advanced_search_widget)
         c_date_to_drop_down.setDate(QDate.currentDate())
-        c_date_to_drop_down.move(690, 10)
+        c_date_to_drop_down.move(680, 10)
 
         # Date Modified
         m_date_from_drop_down = self.generate_day_entry(self.advanced_search_widget)
         m_date_from_drop_down.move(550, 50)
         m_date_to_drop_down = self.generate_day_entry(self.advanced_search_widget)
         m_date_to_drop_down.setDate(QDate.currentDate())
-        m_date_to_drop_down.move(690, 50)
+        m_date_to_drop_down.move(680, 50)
 
         # Push Buttons
         logging.debug("Setting up Push Buttons...")
@@ -493,19 +573,20 @@ class Main_Window:
 
         # Print the given data
         def print_data():
-            logging.info(f"\nFilters:\n"
-                         f"Name: {edit_name.text()}\n"
-                         f"In name: {edit_name_contains.text()}\n"
-                         f"File Ending: {edit_file_extension.text()}\n"
-                         f"Search from: {os.getcwd()}\n\n"
-                         f"File size(MB): min:{edit_size_min.text()} max: {edit_size_max.text()}\n"
-                         f"Date modified from: {m_date_from_drop_down.text()} to: {m_date_to_drop_down.text()}\n"
-                         f"Date created from: {c_date_from_drop_down.text()} to: {c_date_to_drop_down.text()}\n"
-                         f"Content: {edit_file_contains.text()}\n"
-                         f"Search for system files: {rb_library1.isChecked()}\n"
-                         f"Search for: {combobox_search_for.currentText()}\n\n"
-                         f"Sort results by: {combobox_sorting.currentText()}\n"
-                         f"Reverse results: {rb_reverse_sort1.isChecked()}\n")
+            logging.info(
+                f"\nFilters:\n"
+                f"Name: {edit_name.text()}\n"
+                f"In name: {edit_name_contains.text()}\n"
+                f"File Ending: {edit_file_extension.text()}\n"
+                f"Search from: {os.getcwd()}\n\n"
+                f"File size(MB): min:{edit_size_min.text()} max: {edit_size_max.text()}\n"
+                f"Date modified from: {m_date_from_drop_down.text()} to: {m_date_to_drop_down.text()}\n"
+                f"Date created from: {c_date_from_drop_down.text()} to: {c_date_to_drop_down.text()}\n"
+                f"Content: {edit_file_contains.text()}\n"
+                f"Search for system files: {rb_library1.isChecked()}\n"
+                f"Search for: {combobox_search_for.currentText()}\n\n"
+                f"Sort results by: {combobox_sorting.currentText()}\n"
+                f"Reverse results: {rb_reverse_sort1.isChecked()}\n")
 
         # Start Search with args locally
         def search_entry():
@@ -515,23 +596,24 @@ class Main_Window:
             # Print Input
             print_data()
             # Start Searching
-            FF_Search.search(data_name=edit_name.text(),
-                             data_in_name=edit_name_contains.text(),
-                             data_filetype=edit_file_extension.text(),
-                             data_file_size_min=edit_size_min.text(), data_file_size_max=edit_size_max.text(),
-                             data_library=rb_library1.isChecked(),
-                             data_search_from_valid=os.getcwd(),
-                             data_search_from_unchecked=self.edit_directory.text(),
-                             data_content=edit_file_contains.text(),
-                             data_search_for=combobox_search_for.currentText(),
-                             data_date_edits={"c_date_from": c_date_from_drop_down,
-                                              "c_date_to": c_date_to_drop_down,
-                                              "m_date_from": m_date_from_drop_down,
-                                              "m_date_to": m_date_to_drop_down},
-                             data_fn_match=edit_wildcard.text(),
-                             data_sort_by=combobox_sorting.currentText(),
-                             data_reverse_sort=rb_reverse_sort1.isChecked(),
-                             parent=self.Root_Window)
+            FF_Search.search(
+                data_name=edit_name.text(),
+                data_in_name=edit_name_contains.text(),
+                data_filetype=edit_file_extension.text(),
+                data_file_size_min=edit_size_min.text(), data_file_size_max=edit_size_max.text(),
+                data_library=rb_library1.isChecked(),
+                data_search_from_valid=os.getcwd(),
+                data_search_from_unchecked=self.edit_directory.text(),
+                data_content=edit_file_contains.text(),
+                data_search_for=combobox_search_for.currentText(),
+                data_date_edits={"c_date_from": c_date_from_drop_down,
+                                 "c_date_to": c_date_to_drop_down,
+                                 "m_date_from": m_date_from_drop_down,
+                                 "m_date_to": m_date_to_drop_down},
+                data_fn_match=edit_wildcard.text(),
+                data_sort_by=combobox_sorting.currentText(),
+                data_reverse_sort=rb_reverse_sort1.isChecked(),
+                parent=self.Root_Window)
 
         # Saves the function in a different var
         self.search_entry = search_entry
