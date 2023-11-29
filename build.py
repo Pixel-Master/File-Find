@@ -59,7 +59,7 @@ setup(
 # Building DMG
 print("\n\nBuilding DMG...")
 # Downloading the create-dmg script from GitHub
-os.system("create-dmg "
+os.system("env SHELLOPTS=xtrace create-dmg "
           '--volname "File Find" '
           f'--volicon {os.path.join("assets", "icon.icns")} '
           f'--background {os.path.join("assets", "background.png")} '
