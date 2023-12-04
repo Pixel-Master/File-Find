@@ -22,10 +22,10 @@ jobs:
     - name: Setup
       uses: actions/checkout@v3
     
-    - name: Install Python 3.12
+    - name: Install Python 3.11
       uses: actions/setup-python@v3
       with:
-        python-version: "3.12"
+        python-version: "3.11"
     
     - name: Install dependencies
       run: |
@@ -53,10 +53,10 @@ jobs:
     - name: Setup
       uses: actions/checkout@v3
       
-    - name: Install Python 3.12
+    - name: Install Python 3.11
       uses: actions/setup-python@v3
       with:
-        python-version: "3.12"
+        python-version: "3.11"
         
     - name: Install dependencies
       run: |
