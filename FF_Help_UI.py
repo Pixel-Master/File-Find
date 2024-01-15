@@ -1,6 +1,6 @@
 # This source file is a part of File Find made by Pixel-Master
 #
-# Copyright 2022-2023 Pixel-Master
+# Copyright 2022-2024 Pixel-Master
 #
 # This software is licensed under the "GPLv3" License as described in the "LICENSE" file,
 # which should be included with this package. The terms are also available at
@@ -24,8 +24,8 @@ import FF_Files
 import FF_Additional_UI
 
 
-# The class for the Help_Window
-class Help_Window:
+# The class for the help window
+class HelpWindow:
     def __init__(self, parent):
         # Debug
         logging.debug("Called Help UI")
@@ -49,7 +49,7 @@ class Help_Window:
         # A function to generate these Faq texts
         def faq(question, answer, y):
             # The Question
-            question_label = QLabel(About_Window)
+            question_label = QLabel(about_window)
             question_label.setText(question)
             bold_font = QFont("Arial", 20)
             bold_font.setBold(True)
@@ -59,7 +59,7 @@ class Help_Window:
             question_label.move(15, y)
 
             # The Answer
-            answer_label = QLabel(About_Window)
+            answer_label = QLabel(about_window)
             answer_label.setText(answer)
             answer_label.setFont(QFont("Arial", 13))
             answer_label.adjustSize()
@@ -67,13 +67,13 @@ class Help_Window:
             answer_label.move(25, y + 27)
 
         # The Base Window with Labels
-        About_Window = QMainWindow(parent)
-        About_Window.setWindowTitle("File Find Help")
-        About_Window.setFixedHeight(700)
-        About_Window.setFixedWidth(700)
+        about_window = QMainWindow(parent)
+        about_window.setWindowTitle("File Find Help")
+        about_window.setFixedHeight(700)
+        about_window.setFixedWidth(700)
 
         # File Find for macOS Label
-        ff_info = QLabel(About_Window)
+        ff_info = QLabel(about_window)
         # Change Font and Text
         ff_info.setText("File Find for macOS")
         ff_info.setFont(QFont("Futura", 30))
@@ -83,7 +83,7 @@ class Help_Window:
         ff_info.show()
 
         # File Find Logo
-        ff_logo = QLabel(About_Window)
+        ff_logo = QLabel(about_window)
         # Set the Icon
         ff_logo_img = QPixmap(os.path.join(FF_Files.ASSETS_FOLDER, "FFlogo_small.png"))
         ff_logo.setPixmap(ff_logo_img)
@@ -93,13 +93,13 @@ class Help_Window:
         ff_logo.show()
 
         # The Frame
-        fflogo_frame = QFrame(About_Window)
+        fflogo_frame = QFrame(about_window)
         fflogo_frame.setGeometry(QRect(100, 40, 500, 270))
         fflogo_frame.setFrameShape(QFrame.Shape.StyledPanel)
         fflogo_frame.show()
 
         # The Version Label
-        version_label = QLabel(About_Window)
+        version_label = QLabel(about_window)
         # Font and Text
         version_label.setText(f"v. {FF_Files.VERSION_SHORT} ({FF_Files.VERSION})")
         version_label.setFont(QFont("Arial", 15))
@@ -111,9 +111,9 @@ class Help_Window:
         version_label.move(260, 210)
 
         # The Author Label
-        author_label = QLabel(About_Window)
+        author_label = QLabel(about_window)
         # Font and Text
-        author_label.setText("Created by Pixel Master, Copyright © 2022–2023 Pixel Master.")
+        author_label.setText("Created by Pixel Master, Copyright © 2022–2024 Pixel Master.")
         author_label.setFont(QFont("Arial", 15))
         # The command and tooltip
         author_label.setToolTip(f"Version: {FF_Files.VERSION_SHORT} Extended Version: {FF_Files.VERSION}")
@@ -124,7 +124,7 @@ class Help_Window:
 
         # Links using QPushButton
         def generate_link_button(displayed_text, domain, color):
-            link = QPushButton(About_Window)
+            link = QPushButton(about_window)
             # Font and Text
             link.setText(displayed_text)
             link.setFont(QFont("Arial", 20))
@@ -160,7 +160,7 @@ class Help_Window:
 
         # Excluded Files
         # Define the Label
-        exclude_label = QLabel("Excluded Files:", parent=About_Window)
+        exclude_label = QLabel("Excluded Files:", parent=about_window)
         # Change Font
         exclude_label.setFont(QFont("Arial", 15))
         # Display the Label
@@ -169,7 +169,7 @@ class Help_Window:
         exclude_label.show()
 
         def generate_button(text, command):
-            button = QPushButton(About_Window)
+            button = QPushButton(about_window)
             button.setText(text)
             button.clicked.connect(command)
             button.show()
@@ -177,7 +177,7 @@ class Help_Window:
             return button
 
         # Listbox
-        excluded_listbox = QListWidget(About_Window)
+        excluded_listbox = QListWidget(about_window)
         # Resize the List-widget
         excluded_listbox.resize(200, 130)
         # Place
@@ -222,7 +222,7 @@ class Help_Window:
             excluded_listbox.takeItem(excluded_listbox.currentRow())
 
         def add_file():
-            selected_folder = QFileDialog.getExistingDirectory(directory=FF_Files.USER_FOLDER, parent=About_Window)
+            selected_folder = QFileDialog.getExistingDirectory(directory=FF_Files.USER_FOLDER, parent=about_window)
             if selected_folder != "":
                 edit_excluded(selected_folder)
                 excluded_listbox.addItem(selected_folder)
@@ -236,7 +236,7 @@ class Help_Window:
 
         # Ask when searching
         # Define the Label
-        ask_search_label = QLabel("Ask when searching:", parent=About_Window)
+        ask_search_label = QLabel("Ask when searching:", parent=about_window)
         # Change Font
         ask_search_label.setFont(QFont("Arial", 15))
         # Display the Label
@@ -247,7 +247,7 @@ class Help_Window:
         # Push Button
         # Ask Checkbox
         # Defining
-        ask_search_checkbox = QCheckBox(About_Window)
+        ask_search_checkbox = QCheckBox(about_window)
 
         # Open Event
         def ask_search_change():
@@ -283,7 +283,7 @@ class Help_Window:
 
         # Language
         # Define the Label
-        language_label = QLabel("Language:", parent=About_Window)
+        language_label = QLabel("Language:", parent=about_window)
         # Change Font
         language_label.setFont(QFont("Arial", 15))
         # Display the Label
@@ -294,7 +294,7 @@ class Help_Window:
         # Drop Down Menu
         # Language Menu
         # Defining
-        combobox_language = QComboBox(About_Window)
+        combobox_language = QComboBox(about_window)
         # Adding Options
         combobox_language.addItems(["English"])
         # Display
@@ -304,7 +304,7 @@ class Help_Window:
 
         # Open File Find Folder
         # Define the Label
-        open_ff_folder_label = QLabel("Open File Find Folder:", parent=About_Window)
+        open_ff_folder_label = QLabel("Open File Find Folder:", parent=about_window)
         # Change Font
         open_ff_folder_label.setFont(QFont("Arial", 15))
         # Display the Label
@@ -315,7 +315,7 @@ class Help_Window:
         # Push Button
         # Open Button
         # Defining
-        open_ff_folder_button = QPushButton(About_Window)
+        open_ff_folder_button = QPushButton(about_window)
         # Set Text
         open_ff_folder_button.setText("Open")
 
@@ -335,7 +335,7 @@ class Help_Window:
 
         # Reset Settings
         # Define the Label
-        reset_label = QLabel("Reset File Find:", parent=About_Window)
+        reset_label = QLabel("Reset File Find:", parent=about_window)
         # Change Font
         reset_label.setFont(QFont("Arial", 15))
         # Display the Label
@@ -346,7 +346,7 @@ class Help_Window:
         # Push Button
         # Reset Button
         # Defining
-        reset_button = QPushButton(About_Window)
+        reset_button = QPushButton(about_window)
         # Set Text
         reset_button.setText("Reset")
 
@@ -355,16 +355,17 @@ class Help_Window:
             # Ask to reset
             logging.info("Pressed Reset, asking...")
 
-            if QMessageBox.information(parent, "Resetting?",
-                                       "Are you sure to reset?\nResetting requires a restart!",
-                                       QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel) \
+            if QMessageBox.information(
+                    parent, "Resetting?",
+                    "Are you sure to reset?\nResetting requires a restart!",
+                    QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel) \
                     != QMessageBox.StandardButton.Cancel:
                 # Debug
-                logging.warning(f"Resetting File Find...")
+                logging.warning("Resetting File Find...")
 
                 # Display a Messagebox
-                FF_Additional_UI.msg.show_info_messagebox("Resetted!", "Resetted File Find\n\nRestarting now...",
-                                                          About_Window)
+                FF_Additional_UI.PopUps.show_info_messagebox("Resetted!", "Resetted File Find\n\nRestarting now...",
+                                                             about_window)
 
                 # Deleting the File Find Folder with the rm command
                 os.system(f"rm -rf {FF_Files.convert_file_name_for_terminal(FF_Files.FF_LIB_FOLDER)}")
@@ -382,7 +383,7 @@ class Help_Window:
 
         # Cache Settings
         # Define the Label
-        cache_label = QLabel("Delete Cache automatically:", parent=About_Window)
+        cache_label = QLabel("Delete Cache automatically:", parent=about_window)
         # Change Font
         cache_label.setFont(QFont("Arial", 15))
         # Display the Label
@@ -393,7 +394,7 @@ class Help_Window:
         # Drop Down Menu
         # Cache Options Menu
         # Defining
-        combobox_cache = QComboBox(About_Window)
+        combobox_cache = QComboBox(about_window)
         # Adding Options
         combobox_cache_items = ["On Launch", "after a Day", "after a Week", "Never"]
         combobox_cache.addItems(combobox_cache_items)
@@ -425,33 +426,33 @@ class Help_Window:
         combobox_cache.move(200, 645)
 
         # Menubar
-        menu_bar = QMenuBar(About_Window)
+        menu_bar = QMenuBar(about_window)
 
         # Menus
         window_menu = menu_bar.addMenu("&Window")
         help_menu = menu_bar.addMenu("&Help")
 
         # Close Window
-        close_action = QAction("&Close Window", About_Window)
-        close_action.triggered.connect(About_Window.hide)
+        close_action = QAction("&Close Window", about_window)
+        close_action.triggered.connect(about_window.hide)
         close_action.setShortcut("Ctrl+W")
         window_menu.addAction(close_action)
 
         # About File Find
-        about_action = QAction("&About File Find", About_Window)
-        about_action.triggered.connect(About_Window.show)
+        about_action = QAction("&About File Find", about_window)
+        about_action.triggered.connect(about_window.show)
         help_menu.addAction(about_action)
 
         # Help
-        help_action = QAction("&File Find Help and Settings", About_Window)
-        help_action.triggered.connect(About_Window.show)
+        help_action = QAction("&File Find Help and Settings", about_window)
+        help_action.triggered.connect(about_window.show)
         help_menu.addAction(help_action)
 
         # Debug
         logging.info("Finished Setting up Help UI\n")
 
         # Sets the Window
-        return About_Window
+        return about_window
 
 
 about_window_global = None

@@ -16,7 +16,7 @@
 
 #### Automatic Builds, Bug reports and Pull request on: [GitHub](https://github.com/Pixel-Master/File-Find)
 
-![](https://github.com/Pixel-Master/Pixel-Master.github.io/blob/main/File-Find/preview/preview_without_background2.png?raw=true)
+![](https://github.com/Pixel-Master/Pixel-Master.github.io/blob/main/File-Find/preview/preview_without_background.png?raw=true)
 
 ## Content
 - [Features](#features)
@@ -71,7 +71,7 @@
 
 ### Other
 	
-- Export search results as a **plain text file (.txt)** or as a reloadable **File Find Search (.FFSearch)**
+- Export search results as a **plain text file (.txt)** or as a reloadable **File Find Search (.FFSave)**
 
 - Compare two searches and search for differences
 
@@ -201,6 +201,3 @@ File Find isn't ready for Release yet Run from source or download pre-build macO
 5. Build using:
 
 `python3 build.py` 
-
-
-

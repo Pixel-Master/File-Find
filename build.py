@@ -1,6 +1,6 @@
 # This build script is a part of File Find made by Pixel-Master
 #
-# Copyright 2022-2023 Pixel-Master
+# Copyright 2022-2024 Pixel-Master
 #
 # This software is licensed under the "GPLv3" License as described in the "LICENSE" file,
 # which should be included with this package. The terms are also available at
@@ -33,7 +33,7 @@ OPTIONS = {"arch": arch,
            "iconfile": os.path.join(os.getcwd(), "assets", "icon.icns"),
            # Plist Options
            "plist": {"LSUIElement": False,
-                     "NSHumanReadableCopyright": "Copyright © 2022–2023 Pixel Master. All rights reserved.",
+                     "NSHumanReadableCopyright": "Copyright © 2022–2024 Pixel Master. All rights reserved.",
                      "CFBundleIdentifier": "io.github.pixel-master.file-find",
                      "CFBundleShortVersionString": "0.0",
                      "LSApplicationCategoryType": "public.app-category.utilities",
@@ -58,14 +58,27 @@ setup(
 
 # Building DMG
 print("\n\nBuilding DMG...")
-os.system("create-dmg "
-          '--volname "File Find" '
-          f'--volicon {os.path.join("assets", "icon.icns")} '
-          f'--background {os.path.join("assets", "background.png")} '
-          '--window-pos 200 120 '
-          '--window-size 800 400 '
-          '--icon-size 100 '
-          f'--icon "{os.path.join("dist", "File Find.app")}" 200 190 '
-          '--app-drop-link 600 190 '
-          f'"{os.path.join("dist", "File Find.dmg")}" '
-          '"dist"')
+print('''os.system("create-dmg "
+          "--volname \"File Find\" "
+          "--volicon \"assets/icon.icns\" "
+          "--background \"assets/background.png\" "
+          "--window-pos 200 120 "
+          "--window-size 800 400 "
+          "--icon-size 100 "
+          "--icon \"dist/File Find.app\" 200 190 "
+          "--app-drop-link 600 190 "
+          "\"dist/File Find.dmg\" "
+          "\"dist/\"\n")''')
+
+subprocess.run(
+    ['create-dmg',
+     '--volname', 'File Find',
+     '--volicon', 'assets/icon.icns',
+     '--background', 'assets/background.png',
+     '--window-pos', '200', '120',
+     '--window-size', '800', '400',
+     '--icon-size', '100',
+     '--icon', 'dist/File Find.app', '200', '190',
+     '--app-drop-link', '600', '190',
+     'dist/File Find.dmg',
+     'dist'])

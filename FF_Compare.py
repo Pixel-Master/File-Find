@@ -1,6 +1,6 @@
 # This source file is a part of File Find made by Pixel-Master
 #
-# Copyright 2022-2023 Pixel-Master
+# Copyright 2022-2024 Pixel-Master
 #
 # This software is licensed under the "GPLv3" License as described in the "LICENSE" file,
 # which should be included with this package. The terms are also available at
@@ -30,7 +30,7 @@ import FF_Help_UI
 
 
 # The window
-class Compare_UI:
+class CompareUi:
     def __init__(self, path_of_first_search, parent):
 
         # Debug
@@ -116,7 +116,7 @@ class Compare_UI:
 
         # Removed files
         self.removed_files_label1, self.removed_files_label2 = self.generate_title_label(
-            text=f"Removed Files", text2=compared_searches.path_of_second_search[0], color="red")
+            text="Removed Files", text2=compared_searches.path_of_second_search[0], color="red")
         self.Compare_Layout.addWidget(self.removed_files_label1, 0, 1)
         self.Compare_Layout.addWidget(self.removed_files_label2, 1, 1)
 
@@ -278,7 +278,7 @@ class Compare_UI:
 
         # About File Find
         about_action = QAction("&About File Find", self.Compare_Window)
-        about_action.triggered.connect(lambda: FF_Help_UI.Help_Window(self.Compare_Window))
+        about_action.triggered.connect(lambda: FF_Help_UI.HelpWindow(self.Compare_Window))
         help_menu.addAction(about_action)
 
         # Close Window
@@ -290,7 +290,7 @@ class Compare_UI:
 
         # Help
         help_action = QAction("&File Find Help and Settings", self.Compare_Window)
-        help_action.triggered.connect(lambda: FF_Help_UI.Help_Window(self.Compare_Window))
+        help_action.triggered.connect(lambda: FF_Help_UI.HelpWindow(self.Compare_Window))
         help_menu.addAction(help_action)
 
     # Options for files and folders
@@ -327,7 +327,7 @@ class Compare_UI:
                 logging.critical(f"File not Found: {selected_file}")
 
                 # If cmd wasn't successful display this error
-                FF_Additional_UI.msg.show_critical_messagebox(
+                FF_Additional_UI.PopUps.show_critical_messagebox(
                     "Error!",
                     f"File not found!\nTried to move:\n\n"
                     f" {selected_file}\n\n"
@@ -355,7 +355,7 @@ class Compare_UI:
 
         except AttributeError:
             # Triggered when no file is selected
-            FF_Additional_UI.msg.show_critical_messagebox(
+            FF_Additional_UI.PopUps.show_critical_messagebox(
                 "Error!",
                 "Error when trying to move file!",
                 self.Compare_Window)
@@ -379,7 +379,7 @@ class Compare_UI:
             if os.system(delete_command) != 0:
 
                 #  Error message
-                FF_Additional_UI.msg.show_critical_messagebox(
+                FF_Additional_UI.PopUps.show_critical_messagebox(
                     "Error!", f"File not found: {selected_file}", self.Compare_Window)
 
                 # Debug
@@ -403,7 +403,7 @@ class Compare_UI:
 
         except AttributeError:
             # If no file is selected
-            FF_Additional_UI.msg.show_critical_messagebox("Error!", "Select a File!", self.Compare_Window)
+            FF_Additional_UI.PopUps.show_critical_messagebox("Error!", "Select a File!", self.Compare_Window)
 
     # Opens a file
     def open_file(self):
@@ -412,12 +412,12 @@ class Compare_UI:
             selected_file = self.Compare_Window.focusWidget().currentItem().text()
 
             if os.system(f"open {FF_Files.convert_file_name_for_terminal(selected_file)}") != 0:
-                FF_Additional_UI.msg.show_critical_messagebox("Error!", f"No Program found to open {selected_file}",
-                                                              self.Compare_Window)
+                FF_Additional_UI.PopUps.show_critical_messagebox("Error!", f"No Program found to open {selected_file}",
+                                                                 self.Compare_Window)
             else:
                 logging.debug(f"Opened: {selected_file}")
         except AttributeError:
-            FF_Additional_UI.msg.show_critical_messagebox("Error!", "Select a File!", self.Compare_Window)
+            FF_Additional_UI.PopUps.show_critical_messagebox("Error!", "Select a File!", self.Compare_Window)
 
     # Opens a file with a user-defined app
     def open_in_app(self):
@@ -437,15 +437,15 @@ class Compare_UI:
                 # Open the selected file with the selected program and checking the return value
                 if os.system(f"open {selected_file} -a {selected_program}") != 0:
                     # Error message
-                    FF_Additional_UI.msg.show_critical_messagebox("Error!", f"{selected_file} does not exist!",
-                                                                  self.Compare_Window)
+                    FF_Additional_UI.PopUps.show_critical_messagebox("Error!", f"{selected_file} does not exist!",
+                                                                     self.Compare_Window)
                     logging.error(f"Error with opening {selected_file} with {selected_program}")
                 else:
                     logging.debug(f"Opened: {selected_file}")
 
         # If no file is selected
         except AttributeError:
-            FF_Additional_UI.msg.show_critical_messagebox("Error!", "Select a File!", self.Compare_Window)
+            FF_Additional_UI.PopUps.show_critical_messagebox("Error!", "Select a File!", self.Compare_Window)
 
     # Open a file in the Terminal
     def open_in_terminal(self):
@@ -454,12 +454,12 @@ class Compare_UI:
             selected_file = self.Compare_Window.focusWidget().currentItem().text()
 
             if os.system(f"open {FF_Files.convert_file_name_for_terminal(selected_file)}") != 0:
-                FF_Additional_UI.msg.show_critical_messagebox("Error!", f"Terminal could not open: {selected_file}",
-                                                              self.Compare_Window)
+                FF_Additional_UI.PopUps.show_critical_messagebox("Error!", f"Terminal could not open: {selected_file}",
+                                                                 self.Compare_Window)
             else:
                 logging.debug(f"Opened: {selected_file}")
         except AttributeError:
-            FF_Additional_UI.msg.show_critical_messagebox("Error!", "Select a File!", self.Compare_Window)
+            FF_Additional_UI.PopUps.show_critical_messagebox("Error!", "Select a File!", self.Compare_Window)
 
     # Shows a file in finder
     def open_in_finder(self):
@@ -468,12 +468,12 @@ class Compare_UI:
             selected_file = self.Compare_Window.focusWidget().currentItem().text()
 
             if os.system(f"open -R {FF_Files.convert_file_name_for_terminal(selected_file)}") != 0:
-                FF_Additional_UI.msg.show_critical_messagebox("Error!", f"File does not exists: {selected_file}!",
-                                                              self.Compare_Window)
+                FF_Additional_UI.PopUps.show_critical_messagebox("Error!", f"File does not exists: {selected_file}!",
+                                                                 self.Compare_Window)
             else:
                 logging.debug(f"Opened in Finder: {selected_file}")
         except AttributeError:
-            FF_Additional_UI.msg.show_critical_messagebox("Error!", "Select a File!", self.Compare_Window)
+            FF_Additional_UI.PopUps.show_critical_messagebox("Error!", "Select a File!", self.Compare_Window)
 
     # Get basic information about a file
     def file_info(self):
@@ -495,24 +495,25 @@ class Compare_UI:
                 else:
                     filetype = "Unknown"
 
-                FF_Additional_UI.msg.show_info_messagebox(f"Information about: {file}",
-                                                          f"File Info:\n"
-                                                          f"\n\n"
-                                                          f"Path: {file}\n"
-                                                          f"\n"
-                                                          f"Type: {filetype}\n"
-                                                          f"File Name: {os.path.basename(file)}\n"
-                                                          f"Size: "
-                                                          f"{FF_Files.conv_file_size(FF_Files.get_file_size(file))}\n"
-                                                          f"Date Created: {ctime(os.stat(file).st_birthtime)}\n"
-                                                          f"Date Modified: {ctime(os.path.getmtime(file))}\n",
-                                                          self.Compare_Window)
+                FF_Additional_UI.PopUps.show_info_messagebox(
+                    f"Information about: {file}",
+                    f"File Info:\n"
+                    f"\n\n"
+                    f"Path: {file}\n"
+                    f"\n"
+                    f"Type: {filetype}\n"
+                    f"File Name: {os.path.basename(file)}\n"
+                    f"Size: "
+                    f"{FF_Files.conv_file_size(FF_Files.get_file_size(file))}\n"
+                    f"Date Created: {ctime(os.stat(file).st_birthtime)}\n"
+                    f"Date Modified: {ctime(os.path.getmtime(file))}\n",
+                    self.Compare_Window)
             except (FileNotFoundError, PermissionError):
                 logging.error(f"{file} does not Exist!")
-                FF_Additional_UI.msg.show_critical_messagebox("File Not Found!", f"File does not exist: {file}",
-                                                              self.Compare_Window)
+                FF_Additional_UI.PopUps.show_critical_messagebox("File Not Found!", f"File does not exist: {file}",
+                                                                 self.Compare_Window)
         except AttributeError:
-            FF_Additional_UI.msg.show_critical_messagebox("Error!", "Select a File!", self.Compare_Window)
+            FF_Additional_UI.PopUps.show_critical_messagebox("Error!", "Select a File!", self.Compare_Window)
 
     # View the hashes
     def view_hashes(self):
@@ -538,8 +539,8 @@ class Compare_UI:
                         file_content = HashFile.read()
                 except FileNotFoundError:
                     logging.error(f"{HashFile} does not exist!")
-                    FF_Additional_UI.msg.show_critical_messagebox("File not found! ", f"{HashFile} does not exist!",
-                                                                  self.Compare_Window)
+                    FF_Additional_UI.PopUps.show_critical_messagebox("File not found! ", f"{HashFile} does not exist!",
+                                                                     self.Compare_Window)
                     file_content = 0
 
             # Computing Hashes
@@ -583,40 +584,41 @@ class Compare_UI:
             logging.debug(f"Took {final_time}")
 
             # Give Feedback
-            FF_Additional_UI.msg.show_info_messagebox(f"Hashes of {hash_file}",
-                                                      f"Hashes of {hash_file}:\n\n"
-                                                      f"MD5:\n {md5_hash}\n\n"
-                                                      f"SHA1:\n {sha1_hash}\n\n"
-                                                      f"SHA265:\n {sha256_hash}\n\n\n"
-                                                      f"Took: {round(final_time, 3)} sec.",
-                                                      self.Compare_Window)
+            FF_Additional_UI.PopUps.show_info_messagebox(
+                f"Hashes of {hash_file}",
+                f"Hashes of {hash_file}:\n\n"
+                f"MD5:\n {md5_hash}\n\n"
+                f"SHA1:\n {sha1_hash}\n\n"
+                f"SHA265:\n {sha256_hash}\n\n\n"
+                f"Took: {round(final_time, 3)} sec.",
+                self.Compare_Window)
 
         except AttributeError:
-            FF_Additional_UI.msg.show_critical_messagebox("Error!", "Select a File!", self.Compare_Window)
+            FF_Additional_UI.PopUps.show_critical_messagebox("Error!", "Select a File!", self.Compare_Window)
             logging.error("Error! Select a File!")
 
 
 # The engine TODO: (add threading!)
-class Compare_Searches:
+class CompareSearches:
     def __init__(self, files_of_first_search: list, path_of_first_search, parent):
         # Debug
         logging.debug("User pressed Compare Search")
 
         try:
             # Setting the thread up with the pyqt signals to launch the ui
-            class signals_class(QObject):
+            class SignalsClass(QObject):
                 finished = pyqtSignal()
 
-            self.signals = signals_class()
+            self.signals = SignalsClass()
             # Connecting the signal to the user-interface class
-            self.signals.finished.connect(lambda: Compare_UI(path_of_first_search, parent))
+            self.signals.finished.connect(lambda: CompareUi(path_of_first_search, parent))
 
             # Thread
             comparing_thread = QThreadPool()
 
             # Get the files of both searches
             self.files_of_first_search = files_of_first_search
-            logging.debug("Asking for a second FFSearch file...")
+            logging.debug("Asking for a second FFSave file...")
             self.files_of_second_search, self.path_of_second_search = self.load_second_search()
 
             # Files which are only in one list
@@ -679,4 +681,4 @@ class Compare_Searches:
             return None
 
 
-compared_searches: Compare_Searches
+compared_searches: CompareSearches

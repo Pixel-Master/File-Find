@@ -1,6 +1,6 @@
 # This source file is a part of File Find made by Pixel-Master
 #
-# Copyright 2022-2023 Pixel-Master
+# Copyright 2022-2024 Pixel-Master
 #
 # This software is licensed under the "GPLv3" License as described in the "LICENSE" file,
 # which should be included with this package. The terms are also available at
@@ -31,7 +31,7 @@ if __name__ == "__main__":
     logging.info(f"Launching File Find with Version {FF_Files.VERSION_SHORT}[{FF_Files.VERSION}]...\n")
 
     # Creating QApplication
-    class create_app(QApplication):
+    class CreateApp(QApplication):
 
         def event(self, event: QEvent) -> bool:
             # Executed when an event is received.
@@ -40,12 +40,11 @@ if __name__ == "__main__":
             if event.type() == QFileOpenEvent:
                 path = event.type().path()
                 print(path)
-                FF_Search.load_search.open_file(path, self)
+                FF_Search.LoadSearch.open_file(path, self)
 
             return super().event(event)
 
-
-    app = create_app([])
+    app = CreateApp([])
 
     # Turning of automatic garbage collection because
     gc.disable()
@@ -55,7 +54,7 @@ if __name__ == "__main__":
     FF_Files.cache_test(is_launching=True)
 
     # Launches the Main Window
-    FF_Main_UI.Main_Window()
+    FF_Main_UI.MainWindow()
 
     app.setQuitOnLastWindowClosed(False)
 

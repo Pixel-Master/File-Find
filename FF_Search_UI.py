@@ -1,6 +1,6 @@
 # This source file is a part of File Find made by Pixel-Master
 #
-# Copyright 2022-2023 Pixel-Master
+# Copyright 2022-2024 Pixel-Master
 #
 # This software is licensed under the "GPLv3" License as described in the "LICENSE" file,
 # which should be included with this package. The terms are also available at
@@ -31,7 +31,7 @@ import FF_Help_UI
 import FF_Main_UI
 
 
-class Search_Window:
+class SearchWindow:
     def __init__(self, time_total, time_searching, time_indexing, time_sorting, matched_list, search_path, parent):
         # Debug
         logging.info("Setting up Search UI...")
@@ -113,7 +113,7 @@ class Search_Window:
             search_opened_time = ctime(time())
 
             # Displaying infobox with time info
-            FF_Additional_UI.msg.show_info_messagebox(
+            FF_Additional_UI.PopUps.show_info_messagebox(
                 "Time Stats",
                 f"Time needed:\nScanning: {round(time_searching, 3)}\nIndexing:"
                 f" {round(time_indexing, 3)}\nSorting:"
@@ -123,7 +123,7 @@ class Search_Window:
                 f""
                 f"Timestamps:\n"
                 f"Cache created: {cache_created_time}\n"
-                f"Cache modified: {cache_modified_time}\n"
+                f"Cache updated: {cache_modified_time}\n"
                 f"Search opened: {search_opened_time}",
                 self.Search_Results_Window)
 
@@ -162,17 +162,18 @@ class Search_Window:
                     dump(cached_files, SearchFile)
                 logging.info(f"Reloaded found Files and removed {len(removed_list)} in"
                              f" {round(perf_counter() - time_before_reload, 3)} sec.")
-                FF_Additional_UI.msg.show_info_messagebox("Reloaded!",
-                                                          f"Reloaded found Files and removed {len(removed_list)}"
-                                                          f" in {round(perf_counter() - time_before_reload, 3)} sec.",
-                                                          self.Search_Results_Window)
+                FF_Additional_UI.PopUps.show_info_messagebox(
+                    "Reloaded!",
+                    f"Reloaded found Files and removed {len(removed_list)}"
+                    f" in {round(perf_counter() - time_before_reload, 3)} sec.",
+                    self.Search_Results_Window)
                 objects_text.setText(f"Files found: {len(matched_list)}")
                 objects_text.adjustSize()
                 del cached_files, removed_list
             except FileNotFoundError:
-                FF_Additional_UI.msg.show_info_messagebox("Cache File not Found!",
-                                                          "Cache File was deleted, couldn't Update Cache!",
-                                                          self.Search_Results_Window)
+                FF_Additional_UI.PopUps.show_info_messagebox("Cache File not Found!",
+                                                             "Cache File was deleted, couldn't Update Cache!",
+                                                             self.Search_Results_Window)
 
         # Save Search
         def save_search():
@@ -244,9 +245,9 @@ class Search_Window:
         options_menu_save_action.triggered.connect(save_search)
         # Compare Action
         options_menu_compare_action = options_menu.addAction(
-            "&Select a .FFSearch file and compare it to the opened Search...")
+            "&Select a .FFSave file and compare it to the opened Search...")
         options_menu_compare_action.triggered.connect(
-            lambda: FF_Compare.Compare_Searches(matched_list, search_path, self.Search_Results_Window))
+            lambda: FF_Compare.CompareSearches(matched_list, search_path, self.Search_Results_Window))
 
         # More Options Button
         options_button = generate_button(
@@ -290,9 +291,6 @@ class Search_Window:
                                             QIcon(os.path.join(FF_Files.ASSETS_FOLDER, "Find_button_img_small.png")),
                                             100000)
 
-        # Call the garbage collection
-        logging.debug("Cleaning Memory...")
-        # gc.collect(generation=2)
         logging.info("Finished Building Search-Results-UI!\n")
 
     def menubar(self, save_search, reload_files, matched_list, search_path, parent):
@@ -385,7 +383,7 @@ class Search_Window:
 
         # About File Find
         about_action = QAction("&About File Find", self.Search_Results_Window)
-        about_action.triggered.connect(lambda: FF_Help_UI.Help_Window(self.Search_Results_Window))
+        about_action.triggered.connect(lambda: FF_Help_UI.HelpWindow(self.Search_Results_Window))
         help_menu.addAction(about_action)
 
         # Close Window
@@ -397,13 +395,13 @@ class Search_Window:
 
         # Help
         help_action = QAction("&File Find Help And Settings", self.Search_Results_Window)
-        help_action.triggered.connect(lambda: FF_Help_UI.Help_Window(self.Search_Results_Window))
+        help_action.triggered.connect(lambda: FF_Help_UI.HelpWindow(self.Search_Results_Window))
         help_menu.addAction(help_action)
 
         # Compare Search
         compare_action = QAction(
-            "&Select a .FFSearch file and compare it to the opened Search...", self.Search_Results_Window)
-        compare_action.triggered.connect(lambda: FF_Compare.Compare_Searches(matched_list, search_path, parent))
+            "&Select a .FFSave file and compare it to the opened Search...", self.Search_Results_Window)
+        compare_action.triggered.connect(lambda: FF_Compare.CompareSearches(matched_list, search_path, parent))
         compare_action.setShortcut("Ctrl+N")
         # Separator for visual indent
         tools_menu.addSeparator()
@@ -445,7 +443,7 @@ class Search_Window:
                 logging.critical(f"File not Found: {selected_file}")
 
                 # If cmd wasn't successful display this error
-                FF_Additional_UI.msg.show_critical_messagebox(
+                FF_Additional_UI.PopUps.show_critical_messagebox(
                     "Error!",
                     f"File not found!\nTried to move:\n\n"
                     f" {selected_file}\n\n"
@@ -474,7 +472,7 @@ class Search_Window:
                 self.remove_file_from_cache(selected_file)
         except AttributeError:
             # Triggered when no file is selected
-            FF_Additional_UI.msg.show_critical_messagebox("Error!", "Select a File!", self.Search_Results_Window)
+            FF_Additional_UI.PopUps.show_critical_messagebox("Error!", "Select a File!", self.Search_Results_Window)
 
     # Moves a file to the trash
     def delete_file(self):
@@ -495,7 +493,7 @@ class Search_Window:
             if os.system(delete_command) != 0:
 
                 #  Error message
-                FF_Additional_UI.msg.show_critical_messagebox(
+                FF_Additional_UI.PopUps.show_critical_messagebox(
                     "Error!", f"File not found: {selected_file}", self.Search_Results_Window)
 
                 # Debug
@@ -520,7 +518,7 @@ class Search_Window:
 
         except AttributeError:
             # If no file is selected
-            FF_Additional_UI.msg.show_critical_messagebox("Error!", "Select a File!", self.Search_Results_Window)
+            FF_Additional_UI.PopUps.show_critical_messagebox("Error!", "Select a File!", self.Search_Results_Window)
 
     # Open a file with the standard app
     def open_file(self):
@@ -529,12 +527,12 @@ class Search_Window:
             selected_file = self.result_listbox.currentItem().text()
 
             if os.system(f"open {FF_Files.convert_file_name_for_terminal(selected_file)}") != 0:
-                FF_Additional_UI.msg.show_critical_messagebox("Error!", f"No Program found to open {selected_file}",
-                                                              self.Search_Results_Window)
+                FF_Additional_UI.PopUps.show_critical_messagebox("Error!", f"No Program found to open {selected_file}",
+                                                                 self.Search_Results_Window)
             else:
                 logging.debug(f"Opened: {selected_file}")
         except AttributeError:
-            FF_Additional_UI.msg.show_critical_messagebox("Error!", "Select a File!", self.Search_Results_Window)
+            FF_Additional_UI.PopUps.show_critical_messagebox("Error!", "Select a File!", self.Search_Results_Window)
 
     # Opens a file with a user-defined app
     def open_in_app(self):
@@ -553,15 +551,15 @@ class Search_Window:
                 # Open the selected file with the selected program and checking the return value
                 if os.system(f"open {selected_file} -a {selected_program}") != 0:
                     # Error message
-                    FF_Additional_UI.msg.show_critical_messagebox("Error!", f"{selected_file} does not exist!",
-                                                                  self.Search_Results_Window)
+                    FF_Additional_UI.PopUps.show_critical_messagebox("Error!", f"{selected_file} does not exist!",
+                                                                     self.Search_Results_Window)
                     logging.error(f"Error with opening {selected_file} with {selected_program}")
                 else:
                     logging.debug(f"Opened: {selected_file}")
 
         # If no file is selected
         except AttributeError:
-            FF_Additional_UI.msg.show_critical_messagebox("Error!", "Select a File!", self.Search_Results_Window)
+            FF_Additional_UI.PopUps.show_critical_messagebox("Error!", "Select a File!", self.Search_Results_Window)
 
     # Open a file in the Terminal
     def open_in_terminal(self):
@@ -569,12 +567,12 @@ class Search_Window:
             selected_file = self.result_listbox.currentItem().text()
 
             if os.system(f"open {FF_Files.convert_file_name_for_terminal(selected_file)}") != 0:
-                FF_Additional_UI.msg.show_critical_messagebox("Error!", f"Terminal could not open: {selected_file}",
-                                                              self.Search_Results_Window)
+                FF_Additional_UI.PopUps.show_critical_messagebox("Error!", f"Terminal could not open: {selected_file}",
+                                                                 self.Search_Results_Window)
             else:
                 logging.debug(f"Opened: {selected_file}")
         except AttributeError:
-            FF_Additional_UI.msg.show_critical_messagebox("Error!", "Select a File!", self.Search_Results_Window)
+            FF_Additional_UI.PopUps.show_critical_messagebox("Error!", "Select a File!", self.Search_Results_Window)
 
     # Shows a file in finder
     def open_in_finder(self):
@@ -582,12 +580,12 @@ class Search_Window:
             selected_file = self.result_listbox.currentItem().text()
 
             if os.system(f"open -R {FF_Files.convert_file_name_for_terminal(selected_file)}") != 0:
-                FF_Additional_UI.msg.show_critical_messagebox("Error!", f"File not Found {selected_file}",
-                                                              self.Search_Results_Window)
+                FF_Additional_UI.PopUps.show_critical_messagebox("Error!", f"File not Found {selected_file}",
+                                                                 self.Search_Results_Window)
             else:
                 logging.debug(f"Opened in Finder: {selected_file}")
         except AttributeError:
-            FF_Additional_UI.msg.show_critical_messagebox("Error!", "Select a File!", self.Search_Results_Window)
+            FF_Additional_UI.PopUps.show_critical_messagebox("Error!", "Select a File!", self.Search_Results_Window)
 
     # Get basic information about a file
     def file_info(self):
@@ -608,24 +606,26 @@ class Search_Window:
                 else:
                     filetype = "Unknown"
 
-                FF_Additional_UI.msg.show_info_messagebox(f"Information about: {file}",
-                                                          f"File Info:\n"
-                                                          f"\n\n"
-                                                          f"Path: {file}\n"
-                                                          f"\n"
-                                                          f"Type: {filetype}\n"
-                                                          f"File Name: {os.path.basename(file)}\n"
-                                                          f"Size: "
-                                                          f"{FF_Files.conv_file_size(FF_Files.get_file_size(file))}\n"
-                                                          f"Date Created: {ctime(os.stat(file).st_birthtime)}\n"
-                                                          f"Date Modified: {ctime(os.path.getmtime(file))}\n",
-                                                          self.Search_Results_Window)
+                FF_Additional_UI.PopUps.show_info_messagebox(
+                    f"Information about: {file}",
+                    f"File Info:\n"
+                    f"\n\n"
+                    f"Path: {file}\n"
+                    f"\n"
+                    f"Type: {filetype}\n"
+                    f"File Name: {os.path.basename(file)}\n"
+                    f"Size: "
+                    f"{FF_Files.conv_file_size(FF_Files.get_file_size(file))}\n"
+                    f"Date Created: {ctime(os.stat(file).st_birthtime)}\n"
+                    f"Date Modified: {ctime(os.path.getmtime(file))}\n",
+                    self.Search_Results_Window)
+
             except (FileNotFoundError, PermissionError):
                 logging.error(f"{file} does not Exist!")
-                FF_Additional_UI.msg.show_critical_messagebox("File Not Found!", "File does not exist!\nReload!",
-                                                              self.Search_Results_Window)
+                FF_Additional_UI.PopUps.show_critical_messagebox("File Not Found!", "File does not exist!\nReload!",
+                                                                 self.Search_Results_Window)
         except AttributeError:
-            FF_Additional_UI.msg.show_critical_messagebox("Error!", "Select a File!", self.Search_Results_Window)
+            FF_Additional_UI.PopUps.show_critical_messagebox("Error!", "Select a File!", self.Search_Results_Window)
 
     # View the hashes
     def view_hashes(self):
@@ -649,8 +649,8 @@ class Search_Window:
                         file_content = HashFile.read()
                 except FileNotFoundError:
                     logging.error(f"{HashFile} does not exist!")
-                    FF_Additional_UI.msg.show_critical_messagebox("File not found! ", f"{HashFile} does not exist!",
-                                                                  self.Search_Results_Window)
+                    FF_Additional_UI.PopUps.show_critical_messagebox("File not found! ", f"{HashFile} does not exist!",
+                                                                     self.Search_Results_Window)
                     file_content = 0
 
             # Computing Hashes
@@ -694,16 +694,16 @@ class Search_Window:
             logging.debug(f"Took {final_time}")
 
             # Give Feedback
-            FF_Additional_UI.msg.show_info_messagebox(f"Hashes of {hash_file}",
-                                                      f"Hashes of {hash_file}:\n\n"
-                                                      f"MD5:\n {md5_hash}\n\n"
-                                                      f"SHA1:\n {sha1_hash}\n\n"
-                                                      f"SHA265:\n {sha256_hash}\n\n\n"
-                                                      f"Took: {round(final_time, 3)} sec.",
-                                                      self.Search_Results_Window)
+            FF_Additional_UI.PopUps.show_info_messagebox(f"Hashes of {hash_file}",
+                                                         f"Hashes of {hash_file}:\n\n"
+                                                         f"MD5:\n {md5_hash}\n\n"
+                                                         f"SHA1:\n {sha1_hash}\n\n"
+                                                         f"SHA265:\n {sha256_hash}\n\n\n"
+                                                         f"Took: {round(final_time, 3)} sec.",
+                                                         self.Search_Results_Window)
 
         except AttributeError:
-            FF_Additional_UI.msg.show_critical_messagebox("Error!", "Select a File!", self.Search_Results_Window)
+            FF_Additional_UI.PopUps.show_critical_messagebox("Error!", "Select a File!", self.Search_Results_Window)
             logging.error("Error! Select a File!")
 
     # Remove moved file from cache

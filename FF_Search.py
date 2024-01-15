@@ -28,7 +28,7 @@ import FF_Search_UI
 
 
 # Sorting algorithms
-class sort:
+class Sort:
 
     # Sort by Size
     @staticmethod
@@ -62,7 +62,7 @@ class sort:
 
 
 # Class for Generating the terminal command
-class generate_terminal_command:
+class GenerateTerminalCommand:
     def __init__(self, name: str, name_contains: str, file_ending: str, fn_match: str):
         self.shell_command = f"find {os.getcwd()}"
         self.name_string = ""
@@ -88,7 +88,7 @@ class generate_terminal_command:
 
 
 # Loading a saved search
-class load_search:
+class LoadSearch:
     def __init__(self, parent):
         load_dialog = QFileDialog.getOpenFileName(parent,
                                                   "Export File Find Search",
@@ -112,14 +112,14 @@ class load_search:
                                            f"{load_file}.FFCache".replace("/", "-")),
                               "wb") as CachedSearch:
                         dump(saved_file_content, file=CachedSearch)
-                FF_Search_UI.Search_Window(*[0, 0, 0, 0, saved_file_content, load_file, parent])
+                FF_Search_UI.SearchWindow(*[0, 0, 0, 0, saved_file_content, load_file, parent])
 
 
 # The Search Engine
-class search:
+class Search:
     def __init__(self, data_name, data_in_name, data_filetype, data_file_size_min, data_file_size_max, data_library,
                  data_search_for, data_search_from_valid, data_search_from_unchecked, data_content, data_date_edits,
-                 data_sort_by, data_reverse_sort, data_fn_match, parent: QWidget):
+                 data_sort_by, data_reverse_sort, data_file_group, parent: QWidget):
         # Debug
         logging.debug("Converting Date-times...")
 
@@ -152,15 +152,22 @@ class search:
             unix_time_list[time_drop_down[0]] = time_to_add_to_time_list
 
         # Fetching Errors
-        # Name contains and Name can't be used together
-        if data_name != "" and data_in_name != "" or data_name != "" and data_filetype != "":
+        # Testing if file ending, file groups or name contains are used together with name,
+        # because if they do no file will be found
+        # Also testing if wildcard syntax is used in data_name,
+        # because wildcard is supported and so no error should appear
+        if (((data_name != "" and data_in_name != "") or
+             (data_name != "" and data_filetype != "") or
+             (data_name != "" and data_file_group != list(FF_Files.FILE_FORMATS.keys())))
+                and
+                (not (("[" in data_name) or ("?" in data_name) or ("*" in data_name)))):
             # Debug
-            logging.error("Name Error! File Name and Name contains or File Type can't be used together!")
+            logging.error("File name can't be used together with file type, name contains or file ending")
 
             # Show Popup
-            FF_Additional_UI.msg.show_critical_messagebox(
+            FF_Additional_UI.PopUps.show_critical_messagebox(
                 "NAME ERROR!",
-                "Name Error!\n\nFile name can't be used together with wildcard, name contains or file type",
+                "Name Error!\n\nFile name can't be used together with file type, name contains or file ending",
                 parent=None)
 
         # Directory not valid
@@ -169,9 +176,10 @@ class search:
             logging.error("Directory Error! Given directory is not a valid folder!")
 
             # Show Popup
-            FF_Additional_UI.msg.show_critical_messagebox("Directory Error!",
-                                                          "Directory Error!\n\nGiven directory is not a valid folder!",
-                                                          parent=None)
+            FF_Additional_UI.PopUps.show_critical_messagebox(
+                "Directory Error!",
+                "Directory Error!\n\nGiven directory is not a valid folder!",
+                parent=None)
 
         # File Size max must be larger than File Size min
         elif data_file_size_min >= data_file_size_max and not data_file_size_min == data_file_size_max:
@@ -179,9 +187,10 @@ class search:
             logging.error("Size Error! File Size min is larger than File Size max!")
 
             # Show Popup
-            FF_Additional_UI.msg.show_critical_messagebox("SIZE ERROR!",
-                                                          "Size Error!\n\nFile size min is larger than file size max!",
-                                                          parent=None)
+            FF_Additional_UI.PopUps.show_critical_messagebox(
+                "SIZE ERROR!",
+                "Size Error!\n\nFile size min is larger than file size max!",
+                parent=None)
 
         # First Date must be earlier than second Date
         elif unix_time_list["c_date_from"] >= unix_time_list["c_date_to"] or \
@@ -190,12 +199,12 @@ class search:
             logging.error("Date Error! First Date is later than second Date!")
 
             # Show Popup
-            FF_Additional_UI.msg.show_critical_messagebox("DATE ERROR!",
-                                                          "Date Error!\n\n"
-                                                          "First date must be earlier than second date!\n\n"
-                                                          "e.g.:\nvalid: 15.Feb.2022 - 17.Feb.2023\n"
-                                                          "invalid: 17.Feb.2023 - 15.Feb.2022",
-                                                          parent=None)
+            FF_Additional_UI.PopUps.show_critical_messagebox("DATE ERROR!",
+                                                             "Date Error!\n\n"
+                                                             "First date must be earlier than second date!\n\n"
+                                                             "e.g.:\nvalid: 15.Feb.2022 - 17.Feb.2023\n"
+                                                             "invalid: 17.Feb.2023 - 15.Feb.2022",
+                                                             parent=None)
 
         # Search in System Files disabled, but Search path is in library Folder
         elif ((not data_library) and ("/Library" in data_search_from_valid)) or \
@@ -204,14 +213,14 @@ class search:
             logging.error("System Files Error! Search in System Files disabled, but Directory is in Library Folder")
 
             # Show Popup
-            FF_Additional_UI.msg.show_critical_messagebox("System Files Error!",
-                                                          "System Files Error!\n\nActivate Search in System Files!\n"
-                                                          "Search in system files disabled"
-                                                          " but search directory is in library folder!",
-                                                          parent=None)
+            FF_Additional_UI.PopUps.show_critical_messagebox("System Files Error!",
+                                                             "System Files Error!\n\nActivate Search in System Files!\n"
+                                                             "Search in system files disabled"
+                                                             " but search directory is in library folder!",
+                                                             parent=None)
 
         # QMessageBox to confirm searching
-        elif not FF_Additional_UI.msg.show_search_question(parent):
+        elif not FF_Additional_UI.PopUps.show_search_question(parent):
             logging.info("Cancelled Searching!")
 
         # Start Searching
@@ -221,8 +230,8 @@ class search:
             global ACTIVE_SEARCH_THREADS
             ACTIVE_SEARCH_THREADS += 1
 
-            # Defining menubar log
-            self.ui_logger = FF_Main_UI.search_update(lambda: exit(0), data_search_from_valid)
+            # Defining menu bar log
+            self.ui_logger = FF_Main_UI.SearchUpdate(lambda: exit(0), data_search_from_valid)
 
             # Testing Cache
             FF_Files.cache_test(is_launching=False)
@@ -236,26 +245,27 @@ class search:
             logging.debug("Setting up QThreadPool...")
 
             # Creating Qt Signal
-            class signals_class(QObject):
+            class SignalClass(QObject):
                 finished = pyqtSignal()
 
             # Defining thread
             self.thread = QThreadPool(parent)
 
             # Setup pyqt Signal
-            self.signals = signals_class()
+            self.signals = SignalClass()
             # Debug
             self.signals.finished.connect(lambda: logging.info("Finished Search Thread!\n"))
             # Launching UI
-            self.signals.finished.connect(lambda: FF_Search_UI.Search_Window(*SEARCH_OUTPUT))
+            self.signals.finished.connect(lambda: FF_Search_UI.SearchWindow(*SEARCH_OUTPUT))
             # Updating Status Indicator
-            self.signals.finished.connect(FF_Main_UI.Main_Window.update_search_status_label)
+            self.signals.finished.connect(FF_Main_UI.MainWindow.update_search_status_label)
 
             # Starting the Thread
             self.thread.start(
-                lambda: self.searching(data_name, data_in_name, data_filetype, data_file_size_min, data_file_size_max,
-                                       data_library, data_search_from_valid, data_search_for, data_content,
-                                       unix_time_list, data_sort_by, data_reverse_sort, data_fn_match, parent))
+                lambda: self.searching(
+                    data_name, data_in_name, data_filetype, data_file_size_min, data_file_size_max, data_library,
+                    data_search_from_valid, data_search_for, data_content, unix_time_list, data_sort_by,
+                    data_reverse_sort, data_file_group, parent))
 
             # Debug
             logging.debug("Finished Setting up QThreadPool!")
@@ -263,7 +273,7 @@ class search:
     # The search engine
     def searching(self, data_name, data_in_name, data_filetype, data_file_size_min, data_file_size_max, data_library,
                   data_search_from, data_search_for, data_content, data_time, data_sort_by, data_reverse_sort,
-                  data_fn_match, parent):
+                  data_file_group, parent):
         # Debug
         logging.info("Starting Search...")
         self.ui_logger.update("Starting Search...")
@@ -279,7 +289,6 @@ class search:
         data_name = data_name.lower()
         data_in_name = data_in_name.lower()
         data_filetype = data_filetype.lower()
-        data_fn_match = data_fn_match.lower()
 
         # Checking if created time checking is needed
         if data_time["c_date_from"] == self.DEFAULT_TIME_INPUT["c_date_from"] and \
@@ -303,8 +312,12 @@ class search:
 
         # Checking if data_search_for is needed
         if data_search_for == "All Files and Folders":
+            # needed
+            logging.debug("Files and folders checking is needed")
             data_search_for_needed = False
         else:
+            # not needed
+            logging.debug("Files and folders checking is NOT needed")
             data_search_for_needed = True
 
         # Loading excluded files and checking if the need to be scanned
@@ -313,10 +326,33 @@ class search:
 
         if not data_excluded_files:
             # If the list is empty
+            logging.debug("excluded files checking is NOT needed")
             data_excluded_files_needed = False
 
         else:
+            logging.debug("excluded files checking is needed")
             data_excluded_files_needed = True
+
+        # Checking if check for file groups is needed
+        if data_file_group != FF_Files.FILE_FORMATS.keys():
+            logging.debug("file groups checking is needed")
+
+            # Creating a set and adding every needed file format to it
+            allowed_filetypes = set()
+            disallowed_filetypes = set()  # Needed if "other" is activated
+
+            for file_group in FF_Files.FILE_FORMATS.keys():
+                if file_group in data_file_group:
+                    for file in FF_Files.FILE_FORMATS[file_group]:
+                        allowed_filetypes.add(file)
+                else:
+                    for file in FF_Files.FILE_FORMATS[file_group]:
+                        disallowed_filetypes.add(file)
+        else:
+            logging.debug("file groups checking is NOT needed")
+
+            allowed_filetypes = None
+            disallowed_filetypes = None
 
         # Debug
         logging.info("Starting Scanning...")
@@ -375,8 +411,9 @@ class search:
         # Update the menubar status
         self.ui_logger.update("Indexing...")
 
-        # Set for files that have to be removed
-        remove_path_set = set()
+        # Creating a copy because items can't be removed while iterating over a set ad for caching
+        copy_found_path_set = found_path_set.copy()
+        original_found_path_set = found_path_set.copy()
 
         # Applies filters, when they don't match the function remove them from the found_path_dict
         # Name
@@ -386,8 +423,11 @@ class search:
 
             # Scan every file
             for name_file in found_path_set:
-                if data_name != low_basename_dict[name_file]:
-                    remove_path_set.add(name_file)
+                if not fnmatch(low_basename_dict[name_file], data_name):
+                    copy_found_path_set.remove(name_file)
+
+        # Making the copy and the original the same
+        found_path_set = copy_found_path_set.copy()
 
         # Name contains
         logging.info("Indexing Name contains...")
@@ -397,27 +437,23 @@ class search:
             # Scan every file
             for name_contains_file in found_path_set:
                 if not (data_in_name in low_basename_dict[name_contains_file]):
-                    remove_path_set.add(name_contains_file)
+                    copy_found_path_set.remove(name_contains_file)
+
+        # Making the copy and the original the same
+        found_path_set = copy_found_path_set.copy()
 
         # Filetype
-        logging.info("Indexing Filetype...")
-        self.ui_logger.update("Indexing Filetype...")
+        logging.info("Indexing file ending...")
+        self.ui_logger.update("Indexing file ending...")
         if data_filetype != "":
 
             # Scan every file
             for filetype_file in found_path_set:
                 if not low_basename_dict[filetype_file].endswith(f".{data_filetype}"):
-                    remove_path_set.add(filetype_file)
+                    copy_found_path_set.remove(filetype_file)
 
-        # Wildcard
-        logging.info("Indexing Wildcard...")
-        self.ui_logger.update("Indexing Wildcard...")
-        if data_fn_match != "":
-
-            # Scan every file
-            for wildcard_file in found_path_set:
-                if not fnmatch(low_basename_dict[wildcard_file], data_fn_match):
-                    remove_path_set.add(wildcard_file)
+        # Making the copy and the original the same
+        found_path_set = copy_found_path_set.copy()
 
         # Search in System Files
         logging.info("Indexing System Files...")
@@ -428,7 +464,10 @@ class search:
             for library_file in found_path_set:
                 if "/Library" in library_file or library_file.startswith("/System"):
                     # Remove the file
-                    remove_path_set.add(library_file)
+                    copy_found_path_set.remove(library_file)
+
+        # Making the copy and the original the same
+        found_path_set = copy_found_path_set.copy()
 
         # Exclude or Include Folders or Files
         logging.info("Indexing Exclude or Include Folders or Files...")
@@ -439,12 +478,63 @@ class search:
             if data_search_for == "only Files":
                 for file_file in found_path_set:
                     if type_dict[file_file] != "file":
-                        remove_path_set.add(file_file)
+                        copy_found_path_set.remove(file_file)
             # Checks for Directories
             elif data_search_for == "only Folders":
                 for folder_file in found_path_set:
                     if type_dict[folder_file] != "folder":
-                        remove_path_set.add(folder_file)
+                        copy_found_path_set.remove(folder_file)
+
+        # Making the copy and the original the same
+        found_path_set = copy_found_path_set.copy()
+        # Filter some unnecessary System Files
+        logging.info("Filtering for file groups...")
+        self.ui_logger.update("Filtering for file groups...")
+
+        # if "other" files is activated
+        if allowed_filetypes is not None:
+            if "*" in allowed_filetypes:
+                for file_group_file in found_path_set:
+                    for file_ending in disallowed_filetypes:
+                        if file_group_file.lower().endswith(f".{file_ending}"):
+                            copy_found_path_set.remove(file_group_file)
+
+            else:
+                for file_group_file in found_path_set:
+                    for file_ending in allowed_filetypes:
+                        if file_group_file.lower().endswith(f".{file_ending}"):
+                            break
+                        else:
+                            pass
+                    else:
+                        copy_found_path_set.remove(file_group_file)
+
+        # Making the copy and the original the same
+        found_path_set = copy_found_path_set.copy()
+
+        # Filter some unnecessary System Files
+        logging.info("Removing dump files...")
+        self.ui_logger.update("Removing dump files...")
+        for system_file in found_path_set:
+
+            basename = low_basename_dict[system_file]
+            if basename in (".ds_store", ".localized", "desktop.ini", "thumbs.db"):
+                copy_found_path_set.remove(system_file)
+
+        # Making the copy and the original the same
+        found_path_set = copy_found_path_set.copy()
+
+        # Excluded Files
+        logging.info("Filtering excluded files...")
+        self.ui_logger.update("Filtering excluded files...")
+        if data_excluded_files_needed:
+            for test_file in found_path_set:
+                for excluded_file in data_excluded_files:
+                    if test_file.startswith(excluded_file):
+                        copy_found_path_set.remove(test_file)
+
+        # Making the copy and the original the same
+        found_path_set = copy_found_path_set.copy()
 
         # Checking for Date Created
         # Checking if File Date is between Filter Dates
@@ -460,10 +550,13 @@ class search:
 
                     # Checking for file time and which values in data_time are modified
                     if not (data_time["c_date_from"] <= file_c_time <= data_time["c_date_to"]):
-                        remove_path_set.add(c_date_file)
+                        copy_found_path_set.remove(c_date_file)
 
                 except FileNotFoundError:
-                    remove_path_set.add(c_date_file)
+                    copy_found_path_set.remove(c_date_file)
+
+        # Making the copy and the original the same
+        found_path_set = copy_found_path_set.copy()
 
         # Checking for Date Modified
         logging.info("Indexing Date modified...")
@@ -478,10 +571,13 @@ class search:
 
                     # Checking for file time and which values in data_time are modified
                     if not (data_time["m_date_from"] <= file_m_time <= data_time["m_date_to"]):
-                        remove_path_set.add(m_date_file)
+                        copy_found_path_set.remove(m_date_file)
 
                 except FileNotFoundError:
-                    remove_path_set.add(m_date_file)
+                    copy_found_path_set.remove(m_date_file)
+
+        # Making the copy and the original the same
+        found_path_set = copy_found_path_set.copy()
 
         # File Size
         logging.info("Indexing file size...")
@@ -494,7 +590,10 @@ class search:
                        >= int(FF_Files.get_file_size(size_file)) \
                        >= (float(data_file_size_min) * 1000000):
                     # Remove file
-                    remove_path_set.add(size_file)
+                    copy_found_path_set.remove(size_file)
+
+        # Making the copy and the original the same
+        found_path_set = copy_found_path_set.copy()
 
         # File contains
         logging.info("Indexing file contains...")
@@ -505,48 +604,29 @@ class search:
             for content_file in found_path_set:
                 does_contain = False
                 try:
-                    with open(content_file, "r") as ContentFile:
+                    # Opening every file in read mode
+                    with open(content_file) as ContentFile:
                         for line in ContentFile:
                             if data_content in line:
                                 does_contain = True
                                 break
                     if not does_contain:
-                        remove_path_set.add(content_file)
+                        copy_found_path_set.remove(content_file)
                 except (UnicodeDecodeError, FileNotFoundError, OSError):
-                    remove_path_set.add(content_file)
+                    copy_found_path_set.remove(content_file)
                 else:
                     if os.path.isdir(content_file):
-                        remove_path_set.add(content_file)
+                        copy_found_path_set.remove(content_file)
 
-        # Filter some unnecessary System Files
-        logging.info("Removing dump files...")
-        self.ui_logger.update("Removing dump files...")
-        for system_file in found_path_set:
+        # Making the copy and the original the same and deleting the copy
+        found_path_set = copy_found_path_set.copy()
+        del copy_found_path_set
 
-            basename = low_basename_dict[system_file]
-            if basename == ".ds_store" or basename == ".localized" or basename == "desktop.ini" \
-                    or basename == "thumbs.db":
-                remove_path_set.add(system_file)
+        # Prints out files found
+        logging.info(f"Found {len(found_path_set)} Files and Folders")
 
-        # Excluded Files
-        logging.info("Filtering excluded files...")
-        self.ui_logger.update("Filtering excluded files...")
-        if data_excluded_files_needed:
-            for test_file in found_path_set:
-                for excluded_file in data_excluded_files:
-                    if test_file.startswith(excluded_file):
-                        remove_path_set.add(test_file)
-
-        # Prints out seconds needed
-        logging.info(f"Found {len(found_path_set) - len(remove_path_set)} Files and Folders")
-
-        # Removing removed files from set and creating a backup for caching
-        found_path_list = found_path_set.copy()
-
-        for remove_item in remove_path_set:
-            found_path_list.remove(remove_item)
-
-        found_path_list = list(found_path_list)
+        # Creating a lsit for sorting from set and creating a backup for caching
+        found_path_list = list(found_path_set)
 
         # Saving time
         time_after_indexing = perf_counter() - (time_after_searching + time_before_start)
@@ -555,22 +635,22 @@ class search:
         if data_sort_by == "File Name":
             logging.info("Sorting list by name...")
             self.ui_logger.update("Sorting list by name...")
-            found_path_list.sort(key=sort.name, reverse=data_reverse_sort)
+            found_path_list.sort(key=Sort.name, reverse=data_reverse_sort)
 
         elif data_sort_by == "File Size":
             logging.info("Sorting list by size...")
             self.ui_logger.update("Sorting list by size...")
-            found_path_list.sort(key=sort.size, reverse=not data_reverse_sort)
+            found_path_list.sort(key=Sort.size, reverse=not data_reverse_sort)
 
         elif data_sort_by == "Date Created":
             logging.info("Sorting list by creation date...")
             self.ui_logger.update("Sorting list by creation date...")
-            found_path_list.sort(key=sort.c_date, reverse=not data_reverse_sort)
+            found_path_list.sort(key=Sort.c_date, reverse=not data_reverse_sort)
 
         elif data_sort_by == "Date Modified":
             logging.info("Sorting list by modification date...")
             self.ui_logger.update("Sorting list by modification date...")
-            found_path_list.sort(key=sort.m_date, reverse=not data_reverse_sort)
+            found_path_list.sort(key=Sort.m_date, reverse=not data_reverse_sort)
 
         elif data_sort_by == "Path":
             logging.info("Sorting list by path...")
@@ -587,7 +667,7 @@ class search:
         # Caching Results with pickle
         # Testing if cache file exist, if it doesn't exist it caches scanned files
         if not used_cached:
-            # Debug and menubar logg
+            # Debug and menubar log
             logging.info("Caching Search Results...")
             self.ui_logger.update("Caching Search Results...")
 
@@ -595,17 +675,18 @@ class search:
             with open(os.path.join(FF_Files.CACHED_SEARCHES_FOLDER, data_search_from.replace("/", "-") + ".FFCache"),
                       "wb") as resultFile:
                 # Dumping with pickle
-                dump([found_path_set, low_basename_dict, type_dict], resultFile)
+                dump([original_found_path_set, low_basename_dict, type_dict], resultFile)
 
         else:
             logging.info("Cache file already exist, skipping caching...")
+        # Deleting the original_found_path_set
 
         # Calculating time
         time_after_sorting = perf_counter() - (time_after_indexing + time_after_searching + time_before_start)
         time_total = perf_counter() - time_before_start
 
         # Cleaning Memory
-        # del type_dict, found_path_set, low_basename_dict, remove_path_set
+        del type_dict, found_path_set, low_basename_dict, original_found_path_set
 
         # Debug
         logging.info("Finished Searching!")
