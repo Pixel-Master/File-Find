@@ -16,7 +16,7 @@
 
 #### Automatic Builds, Bug reports and Pull request on: [GitHub](https://github.com/Pixel-Master/File-Find)
 
-![](https://github.com/Pixel-Master/Pixel-Master.github.io/blob/main/File-Find/preview/preview_without_background.png2?raw=true)
+![](https://github.com/Pixel-Master/Pixel-Master.github.io/blob/main/File-Find/preview/preview_without_background2.png?raw=true)
 
 ## Content
 - [Features](#features)
