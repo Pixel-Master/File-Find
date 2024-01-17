@@ -326,16 +326,16 @@ class Search:
 
         if not data_excluded_files:
             # If the list is empty
-            logging.debug("excluded files checking is NOT needed")
+            logging.debug("Excluded files checking is NOT needed")
             data_excluded_files_needed = False
 
         else:
-            logging.debug("excluded files checking is needed")
+            logging.debug("Excluded files checking is needed")
             data_excluded_files_needed = True
 
         # Checking if check for file groups is needed
-        if data_file_group != FF_Files.FILE_FORMATS.keys():
-            logging.debug("file groups checking is needed")
+        if set(data_file_group) != set(FF_Files.FILE_FORMATS.keys()):
+            logging.debug("File groups checking is needed")
 
             # Creating a set and adding every needed file format to it
             allowed_filetypes = set()
@@ -349,7 +349,7 @@ class Search:
                     for file in FF_Files.FILE_FORMATS[file_group]:
                         disallowed_filetypes.add(file)
         else:
-            logging.debug("file groups checking is NOT needed")
+            logging.debug("File groups checking is NOT needed")
 
             allowed_filetypes = None
             disallowed_filetypes = None

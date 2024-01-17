@@ -500,6 +500,55 @@ class MainWindow:
         combobox_file_types.show()
         self.basic_search_widget_layout.addWidget(combobox_file_types, 2, 2)
 
+        # The combobox for file types and the file ending line edit can not be used together,
+        # as there will be no files found
+        def block_file_types():
+            # Block / Unblock File ending edit
+            if combobox_file_types.all_checked_items() != list(FF_Files.FILE_FORMATS.keys()):
+                # Disable File ending edit
+                # Debug
+                logging.debug("Disabled file ending edit")
+                # Block the file ending edit
+                edit_file_extension.setDisabled(True)
+                edit_file_extension.setToolTip("File types can't be used together with file extension")
+                edit_file_extension.setStyleSheet("background-color: #7f7f7f;")
+            else:
+                # Debug
+                logging.debug("Enabled file ending edit")
+                # Enable the file ending edit
+                edit_file_extension.setDisabled(False)
+                edit_file_extension.setToolTip(None)
+                edit_file_extension.setStyleSheet(";")
+
+            # Block/ Unblock FIle groups combobox
+            if edit_file_extension.text() == "":
+                # Debug
+                logging.debug("Enabled combobox file groups")
+                # Enable Combobox
+                # Set the displayed text to the original
+                combobox_file_types.setPlaceholderText(combobox_file_types.determine_text())
+                combobox_file_types.setDisabled(False)
+                combobox_file_types.setToolTip(None)
+                # Enabling "select all" and "Deselect all" buttons
+                combobox_file_types.data_changed()
+
+            # If something is written in the file ending edit
+            else:
+                # Enable Combobox
+                # Debug
+                logging.debug("Disabled combobox file groups")
+                # Set the displayed text to the text of the line edit
+                combobox_file_types.setPlaceholderText(edit_file_extension.text())
+                combobox_file_types.setDisabled(True)
+                combobox_file_types.setToolTip("File types can't be used together with file extension")
+                # Disabling "select all" and "Deselect all" buttons
+                deselect_all_button.setDisabled(True)
+                select_all_button.setDisabled(True)
+
+        # Conecting change signals to the function defined above
+        edit_file_extension.textChanged.connect(block_file_types)
+        combobox_file_types.model().dataChanged.connect(block_file_types)
+
         # Date-Time Entries
         logging.debug("Setting up Day Entries...")
         # Date Created

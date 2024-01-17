@@ -39,25 +39,25 @@ class CheckableComboBox(QComboBox):
 
         self.button_signals = ButtonSignalsClass(parent)
 
-        # if date in the model changes, the placeholder text is changed
-        def data_changed():
-            if self.all_checked_items() == self.all_items_text():
-                # Send signal to disable "Deselect all" button
-                self.button_signals.all_selected.emit()
-            elif not self.all_checked_items():
-                # Send signal to disable "Select all" button
-                self.button_signals.all_deselected.emit()
-            else:
-                # Send signal to enable all buttons
-                self.button_signals.some_selected.emit()
-
-            # Start function to change text display on mainUI
-            text = self.determine_text()
-            self.setPlaceholderText(text)
-
-        self.model().dataChanged.connect(data_changed)
+        self.model().dataChanged.connect(self.data_changed)
         # display the placeholder text with setting the index to -1
         self.setCurrentIndex(-1)
+
+    # if date in the model changes, the placeholder text is changed
+    def data_changed(self):
+        if self.all_checked_items() == self.all_items_text():
+            # Send signal to disable "Deselect all" button
+            self.button_signals.all_selected.emit()
+        elif not self.all_checked_items():
+            # Send signal to disable "Select all" button
+            self.button_signals.all_deselected.emit()
+        else:
+            # Send signal to enable all buttons
+            self.button_signals.some_selected.emit()
+
+        # Start function to change text display on mainUI
+        text = self.determine_text()
+        self.setPlaceholderText(text)
 
     def addItems(self, texts):
         for item in texts:
