@@ -77,7 +77,7 @@ class SearchWindow:
         # Seconds needed Label
         seconds_text = QLabel(self.Search_Results_Window)
         # Setting a Font
-        small_text_font = QFont("Futura", 20)
+        small_text_font = QFont("Arial", 17)
         small_text_font.setBold(True)
         seconds_text.setFont(small_text_font)
         # Displaying
@@ -490,31 +490,32 @@ class SearchWindow:
                 f"mv {FF_Files.convert_file_name_for_terminal(selected_file)} {new_location}")
 
             # Moving the file to trash
-            if os.system(delete_command) != 0:
+            if FF_Additional_UI.PopUps.show_delete_question(self.Search_Results_Window, selected_file):
+                if os.system(delete_command) != 0:
 
-                #  Error message
-                FF_Additional_UI.PopUps.show_critical_messagebox(
-                    "Error!", f"File not found: {selected_file}", self.Search_Results_Window)
+                    #  Error message
+                    FF_Additional_UI.PopUps.show_critical_messagebox(
+                        "Error!", f"File not found: {selected_file}", self.Search_Results_Window)
 
-                # Debug
-                logging.error(f"File not found: {selected_file}")
+                    # Debug
+                    logging.error(f"File not found: {selected_file}")
 
-            else:
-                # Debug
-                logging.debug(f"Moved {selected_file} to trash")
+                else:
+                    # Debug
+                    logging.debug(f"Moved {selected_file} to trash")
 
-                # Set the icon
-                self.result_listbox.item(
-                    self.result_listbox.currentRow()).setIcon(
-                    QIcon(os.path.join(FF_Files.ASSETS_FOLDER, "trash_icon_small.png")))
+                    # Set the icon
+                    self.result_listbox.item(
+                        self.result_listbox.currentRow()).setIcon(
+                        QIcon(os.path.join(FF_Files.ASSETS_FOLDER, "trash_icon_small.png")))
 
-                # Change the color to blue
-                self.result_listbox.item(
-                    self.result_listbox.currentRow()).setBackground(QColor("#ff0000"))
+                    # Change the color to blue
+                    self.result_listbox.item(
+                        self.result_listbox.currentRow()).setBackground(QColor("#ff0000"))
 
-                # Removing file from cache
-                logging.info("Removing file from cache...")
-                self.remove_file_from_cache(selected_file)
+                    # Removing file from cache
+                    logging.info("Removing file from cache...")
+                    self.remove_file_from_cache(selected_file)
 
         except AttributeError:
             # If no file is selected

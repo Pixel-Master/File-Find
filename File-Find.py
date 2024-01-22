@@ -35,12 +35,20 @@ if __name__ == "__main__":
 
         def event(self, event: QEvent) -> bool:
             # Executed when an event is received.
+            # 116 is the event number of the QFIleOpenEvent
+            file_open_event_number = 116
 
-            # TODO: HANDLE FILEOPEN EVENT (TRIGGERED BY MACOS WHEN DOUBLE CLICKING A FILE)
-            if event.type() == QFileOpenEvent:
-                path = event.type().path()
-                print(path)
-                FF_Search.LoadSearch.open_file(path, self)
+            # HANDLE FILEOPEN EVENT (TRIGGERED BY MACOS WHEN DOUBLE CLICKING A FILE)
+            # Testing if the event is triggered by an opened file
+            if event.type() == file_open_event_number:
+                # Getting the path of the file
+                path = QFileOpenEvent.url(event).path()
+
+                # If the opened file is a file find search
+                if path.endswith("FFSave"):
+                    # Debug
+                    logging.info(f"Opening {path}...")
+                    FF_Search.LoadSearch.open_file(path, None)
 
             return super().event(event)
 

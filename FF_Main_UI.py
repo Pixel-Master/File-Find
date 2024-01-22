@@ -96,8 +96,7 @@ class MainWindow:
             "Name:",
             self.basic_search_widget,
             self.generic_tooltip("Name",
-                                 "Input needs to match the name of a file exactly,"
-                                 "\nignoring case.\n\n"
+                                 "Input needs to match the name of a file exactly, \nignoring case.\n\n"
                                  "Also supports unix shell-style wildcards,\n"
                                  "which are not the same as regular expressions. (also ignoring case)\n\nUsage:\n"
                                  "Pattern   Meaning\n"
@@ -114,12 +113,9 @@ class MainWindow:
             "Name contains:",
             self.basic_search_widget,
             self.generic_tooltip("Name contains",
-                                 "The name of a file must contain"
-                                 " input,\nignoring case.",
+                                 "The name of a file must contain input,\nignoring case.",
                                  "file",
-                                 os.path.join(
-                                     FF_Files.USER_FOLDER,
-                                     "my-file.pdf")))
+                                 os.path.join(FF_Files.USER_FOLDER, "my-file.pdf")))
         self.basic_search_widget_layout.addWidget(label_name_contains, 1, 1)
 
         label_file_group = self.generate_large_filter_label(
@@ -156,7 +152,7 @@ class MainWindow:
         self.content_search_widget_layout.addItem(horizontal_spacer, 0, 0)
         self.content_search_widget_layout.addItem(horizontal_spacer, 0, 6)
         # Add Tab
-        self.tabbed_widget.addTab(self.content_search_widget, "File Content")
+        self.tabbed_widget.addTab(self.content_search_widget, "Properties")
 
         # Search for file content
         label_file_contains = self.generate_large_filter_label(
@@ -287,7 +283,7 @@ class MainWindow:
         label_command_title.setText("Command:")
         label_command_title.setToolTip(
             "Terminal command:\nYou can paste this command into the Terminal app to search with the \"find\" tool")
-        label_command_title.setFont(QFont("Arial", 20))
+        label_command_title.setFont(QFont("Arial", 17))
         self.Main_Layout.addWidget(label_command_title, 11, 0)
         label_command_title.hide()
 
@@ -402,7 +398,7 @@ class MainWindow:
         # File extension
         edit_file_extension = self.generate_filter_entry(self.advanced_search_widget)
         # Place
-        self.advanced_search_widget_layout.addWidget(edit_file_extension, 0, 2)
+        self.advanced_search_widget_layout.addWidget(edit_file_extension, 0, 2, 1, 5)
 
         # Edit for displaying the Path
         self.edit_directory = self.generate_filter_entry(self.basic_search_widget)
@@ -442,7 +438,7 @@ class MainWindow:
         # Radio Button 2
         rb_library2 = self.create_radio_button(library_group, "No", self.advanced_search_widget)
         # Add the button to the layout
-        self.advanced_search_widget_layout.addWidget(rb_library2, 1, 3)
+        self.advanced_search_widget_layout.addWidget(rb_library2, 1, 2, 1, 4, Qt.AlignmentFlag.AlignCenter)
         # Select the Button 2
         rb_library2.setChecked(True)
 

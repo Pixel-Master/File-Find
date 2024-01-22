@@ -221,6 +221,10 @@ class HelpWindow:
                 pass
             excluded_listbox.takeItem(excluded_listbox.currentRow())
 
+            # Disable button if there are no files
+            if excluded_listbox.count() == 0:
+                remove_button.setDisabled(True)
+
         def add_file():
             selected_folder = QFileDialog.getExistingDirectory(directory=FF_Files.USER_FOLDER, parent=about_window)
             if selected_folder != "":
@@ -228,15 +232,23 @@ class HelpWindow:
                 excluded_listbox.addItem(selected_folder)
                 logging.info(f"Added Excluded Folder: {selected_folder}")
 
+            # Enable button if there are  files
+            if excluded_listbox.count() != 0:
+                remove_button.setDisabled(False)
+
         remove_button = generate_button("-", remove_file)
         remove_button.move(430, 650)
+
+        # Disable button if there are no files
+        if excluded_listbox.count() == 0:
+            remove_button.setDisabled(True)
 
         add_button = generate_button("+", add_file)
         add_button.move(430, 620)
 
         # Ask when searching
         # Define the Label
-        ask_search_label = QLabel("Ask when searching:", parent=about_window)
+        ask_search_label = QLabel("Ask before deleting a file:", parent=about_window)
         # Change Font
         ask_search_label.setFont(QFont("Arial", 15))
         # Display the Label
@@ -247,39 +259,39 @@ class HelpWindow:
         # Push Button
         # Ask Checkbox
         # Defining
-        ask_search_checkbox = QCheckBox(about_window)
+        ask_delete_checkbox = QCheckBox(about_window)
 
         # Open Event
-        def ask_search_change():
+        def ask_delete_change():
             # Saving the Settings and replacing the old settings with the new one
             with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "rb") as ReadFile:
                 # Loading Settings
                 settings = load(ReadFile)
 
             # Changing Settings
-            settings["popup"]["search_question"] = ask_search_checkbox.isChecked()
+            settings["popup"]["delete_question"] = ask_delete_checkbox.isChecked()
 
-            logging.info(f"Changed PopUp Settings Search Question:"
-                         f" Ask when Searching {ask_search_checkbox.isChecked()}")
+            logging.info(f"Changed PopUp Settings Delete Question:"
+                         f" Ask before deleting {ask_delete_checkbox.isChecked()}")
             # Dumping new Settings
             with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "wb") as WriteFile:
                 dump(settings, WriteFile)
-
-        ask_search_checkbox.toggled.connect(ask_search_change)
+        # Connecting the checkbox to the function above
+        ask_delete_checkbox.toggled.connect(ask_delete_change)
 
         # Loading Settings
         with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "rb") as ReadLoadFile:
             # Loading Settings
-            ask_searching_settings = load(ReadLoadFile)["popup"]["search_question"]
+            ask_searching_settings = load(ReadLoadFile)["popup"]["delete_question"]
 
             # Changing Settings
             if ask_searching_settings:
-                ask_search_checkbox.setChecked(True)
+                ask_delete_checkbox.setChecked(True)
 
         # Display
-        ask_search_checkbox.show()
-        ask_search_checkbox.adjustSize()
-        ask_search_checkbox.move(205, 525)
+        ask_delete_checkbox.show()
+        ask_delete_checkbox.adjustSize()
+        ask_delete_checkbox.move(205, 525)
 
         # Language
         # Define the Label

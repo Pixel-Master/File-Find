@@ -164,13 +164,13 @@ class PopUps:
 
     # Ask to search MessageBoy
     @staticmethod
-    def show_search_question(parent):
+    def show_delete_question(parent, file):
 
         # Opens the Settings File for the Ask when Searching Setting
         with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "rb") as SettingsFile:
-            if load(SettingsFile)["popup"]["search_question"]:
-                if QMessageBox.information(parent, "This may take some Time!",
-                                           "This may take some Time!\nPress OK to Start Searching",
+            if load(SettingsFile)["popup"]["delete_question"]:
+                if QMessageBox.information(parent, "Are You Sure You Want To Delete This File?",
+                                           f"Do you want to delete {file}?",
                                            QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel) \
                         == QMessageBox.StandardButton.Ok:
                     return True

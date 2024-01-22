@@ -72,7 +72,7 @@ STANDARD_SETTINGS = {"first_version": f"{VERSION_SHORT}[{VERSION}]",
                      "version": f"{VERSION_SHORT}[{VERSION}]",
                      "excluded_files": [],
                      "cache": "On Launch",
-                     "popup": {"FF_ver_welcome": False, "FF_welcome": True, "search_question": False}}
+                     "popup": {"FF_ver_welcome": False, "FF_welcome": True, "delete_question": False}}
 
 
 # Remove Search cache
@@ -209,7 +209,7 @@ def setup():
             settings["cache"] = settings["cache"]
             settings["popup"] = {"FF_ver_welcome": settings["popup"]["FF_ver_welcome"],
                                  "FF_welcome": settings["popup"]["FF_welcome"],
-                                 "search_question": settings["popup"]["search_question"]}
+                                 "delete_question": settings["popup"]["delete_question"]}
             if updated:
                 settings["popup"]["FF_ver_welcome"] = True
 

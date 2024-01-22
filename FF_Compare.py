@@ -376,30 +376,32 @@ class CompareUi:
                 f"mv {FF_Files.convert_file_name_for_terminal(selected_file)} {new_location}")
 
             # Moving the file to trash
-            if os.system(delete_command) != 0:
+            #
+            if FF_Additional_UI.PopUps.show_delete_question(self.Compare_Window, selected_file):
+                if os.system(delete_command) != 0:
 
-                #  Error message
-                FF_Additional_UI.PopUps.show_critical_messagebox(
-                    "Error!", f"File not found: {selected_file}", self.Compare_Window)
+                    #  Error message
+                    FF_Additional_UI.PopUps.show_critical_messagebox(
+                        "Error!", f"File not found: {selected_file}", self.Compare_Window)
 
-                # Debug
-                logging.error(f"File not found: {selected_file}")
+                    # Debug
+                    logging.error(f"File not found: {selected_file}")
 
-            else:
-                # Debug
-                logging.debug(f"Moved {selected_file} to trash")
+                else:
+                    # Debug
+                    logging.debug(f"Moved {selected_file} to trash")
 
-                # Selected widget
-                selected_listbox = self.Compare_Window.focusWidget()
+                    # Selected widget
+                    selected_listbox = self.Compare_Window.focusWidget()
 
-                # Set the icon
-                selected_listbox.item(
-                    selected_listbox.currentRow()).setIcon(
-                    QIcon(os.path.join(FF_Files.ASSETS_FOLDER, "trash_icon_small.png")))
+                    # Set the icon
+                    selected_listbox.item(
+                        selected_listbox.currentRow()).setIcon(
+                        QIcon(os.path.join(FF_Files.ASSETS_FOLDER, "trash_icon_small.png")))
 
-                # Change the color to blue
-                selected_listbox.item(
-                    selected_listbox.currentRow()).setBackground(QColor("#ff0000"))
+                    # Change the color to blue
+                    selected_listbox.item(
+                        selected_listbox.currentRow()).setBackground(QColor("#ff0000"))
 
         except AttributeError:
             # If no file is selected

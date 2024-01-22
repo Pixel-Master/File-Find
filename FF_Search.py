@@ -219,10 +219,6 @@ class Search:
                                                              " but search directory is in library folder!",
                                                              parent=None)
 
-        # QMessageBox to confirm searching
-        elif not FF_Additional_UI.PopUps.show_search_question(parent):
-            logging.info("Cancelled Searching!")
-
         # Start Searching
         else:
 
