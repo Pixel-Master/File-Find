@@ -90,9 +90,9 @@ def cache_test(is_launching):
     logging.debug("Testing if cache should be deleted..")
 
     # Loading Settings File
-    with open(os.path.join(FF_LIB_FOLDER, "Settings"), "rb") as SettingsFile:
+    with open(os.path.join(FF_LIB_FOLDER, "Settings"), "rb") as settings_file:
         # Taking the item four because it is the Cache Setting
-        cache_settings = load(SettingsFile)["cache"]
+        cache_settings = load(settings_file)["cache"]
         logging.debug(f"{cache_settings = }")
 
     # Deleting Cache on Launch
@@ -194,8 +194,8 @@ def setup():
         # Debug
         logging.info("Loading Settings...")
 
-        with open(os.path.join(FF_LIB_FOLDER, "Settings"), "rb") as SettingsLoadFile:
-            settings: dict = load(SettingsLoadFile)
+        with open(os.path.join(FF_LIB_FOLDER, "Settings"), "rb") as settings_load_file:
+            settings: dict = load(settings_load_file)
 
             # Testing if an update was performed
             if settings["version"] != f"{VERSION_SHORT}[{VERSION}]":
@@ -223,8 +223,8 @@ def setup():
         # Debug
         logging.info(f"Resetting settings to: {STANDARD_SETTINGS}\n because of:\n{FileError}")
 
-    with open(os.path.join(FF_LIB_FOLDER, "Settings"), "wb") as ExcludedDumpFile:
-        dump(settings, ExcludedDumpFile)
+    with open(os.path.join(FF_LIB_FOLDER, "Settings"), "wb") as excluded_dump_file:
+        dump(settings, excluded_dump_file)
 
     # Byte-Encoded Images
     # Calculate hash of file-find assets folder to test if assets must be replaced
@@ -233,8 +233,8 @@ def setup():
     file_content = b""
 
     for file in os.listdir(ASSETS_FOLDER):
-        with open(os.path.join(ASSETS_FOLDER, file), "rb") as HashFile:
-            file_content = HashFile.read() + file_content
+        with open(os.path.join(ASSETS_FOLDER, file), "rb") as hash_file:
+            file_content = hash_file.read() + file_content
     assets_folder_hash = hashlib.sha256(file_content).hexdigest()
 
     # Check if calculated hash and target hash are equal

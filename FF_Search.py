@@ -103,15 +103,16 @@ class LoadSearch:
     @staticmethod
     def open_file(load_file, parent):
         if load_file != "":
-            with open(load_file, "rb") as OpenedFile:
-                saved_file_content = load(OpenedFile)
+            with open(load_file, "rb") as opened_file:
+                saved_file_content = load(opened_file)
                 if not os.path.exists(
                         os.path.join(FF_Files.CACHED_SEARCHES_FOLDER,
                                      f"{load_file}.FFCache".replace("/", "-"))):
-                    with open(os.path.join(FF_Files.CACHED_SEARCHES_FOLDER,
-                                           f"{load_file}.FFCache".replace("/", "-")),
-                              "wb") as CachedSearch:
-                        dump(saved_file_content, file=CachedSearch)
+                    with open(
+                            os.path.join(
+                                FF_Files.CACHED_SEARCHES_FOLDER, f"{load_file}.FFCache".replace(
+                                    "/", "-")), "wb") as cached_search:
+                        dump(saved_file_content, file=cached_search)
                 FF_Search_UI.SearchWindow(*[0, 0, 0, 0, saved_file_content, load_file, parent])
 
 
@@ -317,8 +318,8 @@ class Search:
             data_search_for_needed = True
 
         # Loading excluded files and checking if the need to be scanned
-        with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "rb") as ExcludedFile:
-            data_excluded_files = load(ExcludedFile)["excluded_files"]
+        with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "rb") as excluded_file:
+            data_excluded_files = load(excluded_file)["excluded_files"]
 
         if not data_excluded_files:
             # If the list is empty
@@ -366,8 +367,8 @@ class Search:
 
             with open(
                     os.path.join(FF_Files.CACHED_SEARCHES_FOLDER, data_search_from.replace("/", "-") + ".FFCache"),
-                    "rb") as SearchResults:
-                load_input = load(SearchResults)
+                    "rb") as search_results:
+                load_input = load(search_results)
                 found_path_set = load_input[0]
                 low_basename_dict = load_input[1]
                 type_dict = load_input[2]
@@ -601,8 +602,8 @@ class Search:
                 does_contain = False
                 try:
                     # Opening every file in read mode
-                    with open(content_file) as ContentFile:
-                        for line in ContentFile:
+                    with open(content_file) as opened_content_file:
+                        for line in opened_content_file:
                             if data_content in line:
                                 does_contain = True
                                 break
@@ -621,7 +622,7 @@ class Search:
         # Prints out files found
         logging.info(f"Found {len(found_path_set)} Files and Folders")
 
-        # Creating a lsit for sorting from set and creating a backup for caching
+        # Creating a list for sorting from set and creating a backup for caching
         found_path_list = list(found_path_set)
 
         # Saving time
@@ -669,9 +670,9 @@ class Search:
 
             # Creating file
             with open(os.path.join(FF_Files.CACHED_SEARCHES_FOLDER, data_search_from.replace("/", "-") + ".FFCache"),
-                      "wb") as resultFile:
+                      "wb") as result_file:
                 # Dumping with pickle
-                dump([original_found_path_set, low_basename_dict, type_dict], resultFile)
+                dump([original_found_path_set, low_basename_dict, type_dict], result_file)
 
         else:
             logging.info("Cache file already exist, skipping caching...")

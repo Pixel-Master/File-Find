@@ -141,7 +141,7 @@ class CompareUi:
                                                 icon=os.path.join(FF_Files.ASSETS_FOLDER, "Info_button_img_small.png"))
         self.Bottom_Layout.addWidget(file_info_button)
 
-        # Setting up the menubar...
+        # Setting up the menu bar...
         self.menubar()
         logging.info("Done building Compare-UI!\n")
 
@@ -530,19 +530,19 @@ class CompareUi:
                 for root, dirs, files in os.walk(hash_file):
                     for i in files:
                         try:
-                            with open(os.path.join(root, i), "rb") as HashFile:
-                                file_content = HashFile.read() + file_content
+                            with open(os.path.join(root, i), "rb") as hash_file:
+                                file_content = hash_file.read() + file_content
                         except FileNotFoundError:
-                            logging.error(f"{HashFile} does not exist!")
+                            logging.error(f"{hash_file} does not exist!")
 
             else:
                 try:
-                    with open(hash_file, "rb") as HashFile:
-                        file_content = HashFile.read()
+                    with open(hash_file, "rb") as hash_file:
+                        file_content = hash_file.read()
                 except FileNotFoundError:
-                    logging.error(f"{HashFile} does not exist!")
-                    FF_Additional_UI.PopUps.show_critical_messagebox("File not found! ", f"{HashFile} does not exist!",
-                                                                     self.Compare_Window)
+                    logging.error(f"{hash_file} does not exist!")
+                    FF_Additional_UI.PopUps.show_critical_messagebox(
+                        "File not found! ", f"{hash_file} does not exist!", self.Compare_Window)
                     file_content = 0
 
             # Computing Hashes
@@ -676,8 +676,8 @@ class CompareSearches:
 
         # Load list from file and return path and files
         try:
-            with open(second_search_file[0], "rb") as SearchFile:
-                return load(SearchFile), second_search_file
+            with open(second_search_file[0], "rb") as search_file:
+                return load(search_file), second_search_file
         except FileNotFoundError:
             # if the user pressed cancel
             return None

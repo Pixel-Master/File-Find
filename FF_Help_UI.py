@@ -186,8 +186,8 @@ class HelpWindow:
         excluded_listbox.show()
 
         # Load Files
-        with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "rb") as ExcludedFile:
-            files = load(ExcludedFile)["excluded_files"]
+        with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "rb") as excluded_file:
+            files = load(excluded_file)["excluded_files"]
         for file in files:
             excluded_listbox.addItem(file)
 
@@ -195,8 +195,8 @@ class HelpWindow:
         def edit_excluded(input_file, added=True):
 
             # Load Settings
-            with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "rb") as SettingsFile:
-                settings = load(SettingsFile)
+            with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "rb") as settings_file:
+                settings = load(settings_file)
                 excluded_files = settings["excluded_files"]
 
             # Remove or add input to list
@@ -210,8 +210,8 @@ class HelpWindow:
             settings["excluded_files"] = excluded_files
 
             # Dump new settings
-            with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "wb") as SettingsFile:
-                dump(settings, SettingsFile)
+            with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "wb") as settings_file:
+                dump(settings, settings_file)
 
         def remove_file():
             try:
@@ -264,9 +264,9 @@ class HelpWindow:
         # Open Event
         def ask_delete_change():
             # Saving the Settings and replacing the old settings with the new one
-            with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "rb") as ReadFile:
+            with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "rb") as read_file:
                 # Loading Settings
-                settings = load(ReadFile)
+                settings = load(read_file)
 
             # Changing Settings
             settings["popup"]["delete_question"] = ask_delete_checkbox.isChecked()
@@ -274,15 +274,15 @@ class HelpWindow:
             logging.info(f"Changed PopUp Settings Delete Question:"
                          f" Ask before deleting {ask_delete_checkbox.isChecked()}")
             # Dumping new Settings
-            with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "wb") as WriteFile:
-                dump(settings, WriteFile)
+            with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "wb") as write_file:
+                dump(settings, write_file)
         # Connecting the checkbox to the function above
         ask_delete_checkbox.toggled.connect(ask_delete_change)
 
         # Loading Settings
-        with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "rb") as ReadLoadFile:
+        with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "rb") as read_load_file:
             # Loading Settings
-            ask_searching_settings = load(ReadLoadFile)["popup"]["delete_question"]
+            ask_searching_settings = load(read_load_file)["popup"]["delete_question"]
 
             # Changing Settings
             if ask_searching_settings:
@@ -410,22 +410,22 @@ class HelpWindow:
         # Adding Options
         combobox_cache_items = ["On Launch", "after a Day", "after a Week", "Never"]
         combobox_cache.addItems(combobox_cache_items)
-        with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "rb") as ReadDefineFile:
-            combobox_cache.setCurrentText(load(ReadDefineFile)["cache"])
+        with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "rb") as read_define_file:
+            combobox_cache.setCurrentText(load(read_define_file)["cache"])
 
         # Updating on change
         def update_cache_settings():
             # Saving the Settings and replacing the old settings with the new one
-            with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "rb") as ReadFile:
+            with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "rb") as read_file:
                 # Loading Settings
-                settings = load(ReadFile)
+                settings = load(read_file)
 
             # Changing Settings
             settings["cache"] = combobox_cache.currentText()
 
             # Dumping new Settings
-            with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "wb") as WriteFile:
-                dump(settings, WriteFile)
+            with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "wb") as write_rile:
+                dump(settings, write_rile)
 
             # Debug
             logging.info(f"Changed Cache Settings to : {combobox_cache.currentText()}")

@@ -541,7 +541,7 @@ class MainWindow:
                 deselect_all_button.setDisabled(True)
                 select_all_button.setDisabled(True)
 
-        # Conecting change signals to the function defined above
+        # Connecting change signals to the function defined above
         edit_file_extension.textChanged.connect(block_file_types)
         combobox_file_types.model().dataChanged.connect(block_file_types)
 
@@ -972,8 +972,8 @@ class MainWindow:
         logging.debug("Testing for PopUps...")
 
         # Loading already displayed Popups with pickle
-        with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "rb") as SettingsFile:
-            settings = load(SettingsFile)
+        with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "rb") as settings_file:
+            settings = load(settings_file)
             popup_dict = settings["popup"]
 
         if popup_dict["FF_welcome"]:
@@ -1006,8 +1006,8 @@ class MainWindow:
             # Setting PopUp File
             popup_dict["FF_welcome"] = False
             settings["popup"] = popup_dict
-            with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "wb") as SettingsFile:
-                dump(settings, SettingsFile)
+            with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "wb") as settings_file:
+                dump(settings, settings_file)
 
         # Version Welcome PopUps
         elif popup_dict["FF_ver_welcome"]:
@@ -1027,8 +1027,8 @@ class MainWindow:
             # Setting PopUp File
             popup_dict["FF_ver_welcome"] = False
             settings["popup"] = popup_dict
-            with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "wb") as SettingsFile:
-                dump(settings, SettingsFile)
+            with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "wb") as settings_file:
+                dump(settings, settings_file)
 
     # Debug
     logging.info("Finished PopUps")

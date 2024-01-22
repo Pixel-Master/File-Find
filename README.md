@@ -33,9 +33,9 @@
 	<p align="left">
   <img src="https://github.com/Pixel-Master/Pixel-Master.github.io/blob/main/File-Find/screenshots/File%20Find%20screenshot%20dark.png?raw=true" height="250">
 
-	* **Name**: Input needs to match the name of a file exactly, ignoring case. Also supports unix shell-style wildcards, which are not the same as regular expressions. (also ignoring case)
-	* **Name contains**: The name of a file must contain input, ignoring case
-    * **File Type**: Select groups of files that should be included in search results"
+	* **Name**: Input needs to match the name of a file exactly, ignoring case. Also supports unix shell-style wildcards, which are not the same as regular expressions (also ignoring case).
+	* **Name contains**: The name of a file must contain input, ignoring case.
+    * **File Type**: Select groups of files that should be included in search results.
     * **Directory**: The Directory to search in.
     * 
 - **Properties**
@@ -44,7 +44,7 @@
 	
 	* **File contains**: Allows you to search in files. Input must be in the file content. This option can take really long. Input is case-sensitive.
     * **Date created and modified**: Specify a date range for the date the file has been created/ modified, leave at default to ignore.
-    * **File size**: Input specifies file size in Mega Bytes (MB) in a range from min to max
+    * **File size**: Input specifies file size in Mega Bytes (MB) in a range from min to max.
 
 
 - **Advanced**
@@ -53,7 +53,7 @@
   
     * **Search in system files**: Toggle to include files in the system and library folders.
 	* **File extension**: Input needs to match the file extension (file type) without the ".", ignoring case.
-    * **Only search for folders or files**: Toggle to only include folders or files in the search results
+    * **Only search for folders or files**: Toggle to only include folders or files in the search results.
 
 - **Sorting**
 

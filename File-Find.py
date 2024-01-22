@@ -38,7 +38,7 @@ if __name__ == "__main__":
             # 116 is the event number of the QFIleOpenEvent
             file_open_event_number = 116
 
-            # HANDLE FILEOPEN EVENT (TRIGGERED BY MACOS WHEN DOUBLE CLICKING A FILE)
+            # HANDLE FILEOPEN EVENT (TRIGGERED BY MACOS WHEN DOUBLE-CLICKING A FILE)
             # Testing if the event is triggered by an opened file
             if event.type() == file_open_event_number:
                 # Getting the path of the file
