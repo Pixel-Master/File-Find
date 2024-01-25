@@ -26,7 +26,7 @@ if arch != "arm64":
 sys.argv.append("py2app")
 
 APP = ["File-Find.py"]
-DATA_FILES = ["assets/ffsave_icon.icns"]
+DATA_FILES = []
 
 # py2app Options
 OPTIONS = {"arch": arch,
