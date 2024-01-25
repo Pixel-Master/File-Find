@@ -77,7 +77,7 @@
 
 ### Other
 	
-- Export search results as a **plain text file (.txt)** or as a reloadable **File Find Search (.FFSave)**
+- Export search results as a **plain text file (.txt)** or as a reloadable **File Find Search (.FFSearch)**
 
 - Compare two searches and search for differences
 

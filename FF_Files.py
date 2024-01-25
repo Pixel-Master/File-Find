@@ -11,7 +11,7 @@
 # Imports
 import os
 import logging
-from pickle import load, dump, UnpicklingError
+from json import load, dump, JSONDecodeError
 from time import time
 import hashlib
 
@@ -19,7 +19,7 @@ import hashlib
 import FF_Additional_UI
 
 # Versions
-VERSION: str = "rc_15-jan-24"
+VERSION: str = "rc_23-jan-24"
 VERSION_SHORT: str = "0.0"
 
 # Creating File-Find dir and deleting Cache
@@ -90,7 +90,7 @@ def cache_test(is_launching):
     logging.debug("Testing if cache should be deleted..")
 
     # Loading Settings File
-    with open(os.path.join(FF_LIB_FOLDER, "Settings"), "rb") as settings_file:
+    with open(os.path.join(FF_LIB_FOLDER, "Settings")) as settings_file:
         # Taking the item four because it is the Cache Setting
         cache_settings = load(settings_file)["cache"]
         logging.debug(f"{cache_settings = }")
@@ -194,7 +194,7 @@ def setup():
         # Debug
         logging.info("Loading Settings...")
 
-        with open(os.path.join(FF_LIB_FOLDER, "Settings"), "rb") as settings_load_file:
+        with open(os.path.join(FF_LIB_FOLDER, "Settings")) as settings_load_file:
             settings: dict = load(settings_load_file)
 
             # Testing if an update was performed
@@ -216,14 +216,14 @@ def setup():
             logging.info(f"Settings: {settings}")
 
     # If the settings file doesn't exist or is too old, replacing it
-    except (UnpicklingError, EOFError, FileNotFoundError, KeyError) as FileError:
+    except (JSONDecodeError, UnicodeDecodeError, EOFError, FileNotFoundError, KeyError) as FileError:
         # Replacing the settings var
         settings = STANDARD_SETTINGS
 
         # Debug
         logging.info(f"Resetting settings to: {STANDARD_SETTINGS}\n because of:\n{FileError}")
 
-    with open(os.path.join(FF_LIB_FOLDER, "Settings"), "wb") as excluded_dump_file:
+    with open(os.path.join(FF_LIB_FOLDER, "Settings"), "w") as excluded_dump_file:
         dump(settings, excluded_dump_file)
 
     # Byte-Encoded Images

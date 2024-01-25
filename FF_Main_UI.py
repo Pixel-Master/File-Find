@@ -11,7 +11,7 @@
 # Imports
 import logging
 import os
-from pickle import load, dump
+from json import load, dump
 from sys import exit
 
 # PyQt6 Gui Imports
@@ -972,7 +972,7 @@ class MainWindow:
         logging.debug("Testing for PopUps...")
 
         # Loading already displayed Popups with pickle
-        with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "rb") as settings_file:
+        with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings")) as settings_file:
             settings = load(settings_file)
             popup_dict = settings["popup"]
 
@@ -1006,7 +1006,7 @@ class MainWindow:
             # Setting PopUp File
             popup_dict["FF_welcome"] = False
             settings["popup"] = popup_dict
-            with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "wb") as settings_file:
+            with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "w") as settings_file:
                 dump(settings, settings_file)
 
         # Version Welcome PopUps
@@ -1027,7 +1027,7 @@ class MainWindow:
             # Setting PopUp File
             popup_dict["FF_ver_welcome"] = False
             settings["popup"] = popup_dict
-            with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "wb") as settings_file:
+            with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "w") as settings_file:
                 dump(settings, settings_file)
 
     # Debug

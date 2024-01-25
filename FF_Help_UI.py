@@ -10,7 +10,7 @@
 
 # Imports
 import os
-from pickle import load, dump
+from json import load, dump
 import logging
 
 # PyQt6 Gui Imports
@@ -186,7 +186,7 @@ class HelpWindow:
         excluded_listbox.show()
 
         # Load Files
-        with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "rb") as excluded_file:
+        with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings")) as excluded_file:
             files = load(excluded_file)["excluded_files"]
         for file in files:
             excluded_listbox.addItem(file)
@@ -195,7 +195,7 @@ class HelpWindow:
         def edit_excluded(input_file, added=True):
 
             # Load Settings
-            with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "rb") as settings_file:
+            with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings")) as settings_file:
                 settings = load(settings_file)
                 excluded_files = settings["excluded_files"]
 
@@ -210,7 +210,7 @@ class HelpWindow:
             settings["excluded_files"] = excluded_files
 
             # Dump new settings
-            with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "wb") as settings_file:
+            with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "w") as settings_file:
                 dump(settings, settings_file)
 
         def remove_file():
@@ -264,7 +264,7 @@ class HelpWindow:
         # Open Event
         def ask_delete_change():
             # Saving the Settings and replacing the old settings with the new one
-            with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "rb") as read_file:
+            with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings")) as read_file:
                 # Loading Settings
                 settings = load(read_file)
 
@@ -274,13 +274,13 @@ class HelpWindow:
             logging.info(f"Changed PopUp Settings Delete Question:"
                          f" Ask before deleting {ask_delete_checkbox.isChecked()}")
             # Dumping new Settings
-            with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "wb") as write_file:
+            with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "w") as write_file:
                 dump(settings, write_file)
         # Connecting the checkbox to the function above
         ask_delete_checkbox.toggled.connect(ask_delete_change)
 
         # Loading Settings
-        with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "rb") as read_load_file:
+        with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings")) as read_load_file:
             # Loading Settings
             ask_searching_settings = load(read_load_file)["popup"]["delete_question"]
 
@@ -410,13 +410,13 @@ class HelpWindow:
         # Adding Options
         combobox_cache_items = ["On Launch", "after a Day", "after a Week", "Never"]
         combobox_cache.addItems(combobox_cache_items)
-        with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "rb") as read_define_file:
+        with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings")) as read_define_file:
             combobox_cache.setCurrentText(load(read_define_file)["cache"])
 
         # Updating on change
         def update_cache_settings():
             # Saving the Settings and replacing the old settings with the new one
-            with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "rb") as read_file:
+            with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings")) as read_file:
                 # Loading Settings
                 settings = load(read_file)
 
@@ -424,7 +424,7 @@ class HelpWindow:
             settings["cache"] = combobox_cache.currentText()
 
             # Dumping new Settings
-            with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "wb") as write_rile:
+            with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "w") as write_rile:
                 dump(settings, write_rile)
 
             # Debug

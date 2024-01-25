@@ -11,7 +11,7 @@
 # Imports
 import logging
 import os
-from pickle import load
+from json import load
 
 # PyQt6 Gui Imports
 from PyQt6.QtWidgets import QMessageBox, QComboBox
@@ -167,7 +167,8 @@ class PopUps:
     def show_delete_question(parent, file):
 
         # Opens the Settings File for the Ask when Searching Setting
-        with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "rb") as settings_file:
+        with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings")) as settings_file:
+            # Load Settings with json
             if load(settings_file)["popup"]["delete_question"]:
                 if QMessageBox.information(parent, "Are You Sure You Want To Delete This File?",
                                            f"Do you want to delete {file}?",

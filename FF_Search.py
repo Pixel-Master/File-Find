@@ -12,7 +12,7 @@
 import logging
 import os
 from fnmatch import fnmatch
-from pickle import dump, load
+from json import dump, load
 from sys import exit
 from time import perf_counter, mktime
 
@@ -93,7 +93,7 @@ class LoadSearch:
         load_dialog = QFileDialog.getOpenFileName(parent,
                                                   "Export File Find Search",
                                                   FF_Files.SAVED_SEARCHES_FOLDER,
-                                                  "*.FFSave;")
+                                                  "*.FFSearch;")
         self.load_file = load_dialog[0]
 
         # Open file
@@ -103,16 +103,21 @@ class LoadSearch:
     @staticmethod
     def open_file(load_file, parent):
         if load_file != "":
-            with open(load_file, "rb") as opened_file:
+            with open(load_file) as opened_file:
                 saved_file_content = load(opened_file)
+                # If the cache doesn't exist
                 if not os.path.exists(
                         os.path.join(FF_Files.CACHED_SEARCHES_FOLDER,
                                      f"{load_file}.FFCache".replace("/", "-"))):
+                    # Create a new cache file
                     with open(
                             os.path.join(
                                 FF_Files.CACHED_SEARCHES_FOLDER, f"{load_file}.FFCache".replace(
-                                    "/", "-")), "wb") as cached_search:
-                        dump(saved_file_content, file=cached_search)
+                                    "/", "-")), "w") as cached_search:
+                        # Dump the content of the save into the cache with JSON into the file
+                        dump({"found_path_set": saved_file_content}, cached_search)
+
+                # Open the UI
                 FF_Search_UI.SearchWindow(*[0, 0, 0, 0, saved_file_content, load_file, parent])
 
 
@@ -318,7 +323,7 @@ class Search:
             data_search_for_needed = True
 
         # Loading excluded files and checking if the need to be scanned
-        with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "rb") as excluded_file:
+        with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings")) as excluded_file:
             data_excluded_files = load(excluded_file)["excluded_files"]
 
         if not data_excluded_files:
@@ -335,19 +340,29 @@ class Search:
             logging.debug("File groups checking is needed")
 
             # Creating a set and adding every needed file format to it
-            allowed_filetypes = set()
-            disallowed_filetypes = set()  # Needed if "other" is activated
+            allowed_filetypes_set = set()
+            disallowed_filetypes_set = set()  # Needed if "other" is activated
 
+            # Iterating through the list of file group type
             for file_group in FF_Files.FILE_FORMATS.keys():
+                # Needing two lists because of "other",
+                # when it's activated all groups, which are not allowed are collected
+                # Else all allowed groups are collected
+                # This is because "other" is everything else, which isn't in a group.
                 if file_group in data_file_group:
                     for file in FF_Files.FILE_FORMATS[file_group]:
-                        allowed_filetypes.add(file)
+                        allowed_filetypes_set.add(file)
                 else:
                     for file in FF_Files.FILE_FORMATS[file_group]:
-                        disallowed_filetypes.add(file)
+                        disallowed_filetypes_set.add(file)
+
+            # Making tuples out of the sets for better performance
+            allowed_filetypes = tuple(allowed_filetypes_set)
+            disallowed_filetypes = tuple(disallowed_filetypes_set)
+
         else:
             logging.debug("File groups checking is NOT needed")
-
+            # Because checking isn't needed and wwe don't want automated tools to flag this as "possibly unassigned"
             allowed_filetypes = None
             disallowed_filetypes = None
 
@@ -364,14 +379,13 @@ class Search:
             logging.info("Scanning using cached Data..")
 
             used_cached = True
-
-            with open(
-                    os.path.join(FF_Files.CACHED_SEARCHES_FOLDER, data_search_from.replace("/", "-") + ".FFCache"),
-                    "rb") as search_results:
+            # Load cache
+            with open(os.path.join(FF_Files.CACHED_SEARCHES_FOLDER,
+                                   data_search_from.replace("/", "-") + ".FFCache")) as search_results:
                 load_input = load(search_results)
-                found_path_set = load_input[0]
-                low_basename_dict = load_input[1]
-                type_dict = load_input[2]
+                found_path_set = set(load_input["found_path_set"])
+                low_basename_dict = load_input["low_basename_dict"]
+                type_dict = load_input["type_dict"]
 
         else:
 
@@ -670,9 +684,12 @@ class Search:
 
             # Creating file
             with open(os.path.join(FF_Files.CACHED_SEARCHES_FOLDER, data_search_from.replace("/", "-") + ".FFCache"),
-                      "wb") as result_file:
+                      "w") as result_file:
                 # Dumping with pickle
-                dump([original_found_path_set, low_basename_dict, type_dict], result_file)
+                dump({
+                    "found_path_set": list(original_found_path_set),
+                    "low_basename_dict": low_basename_dict,
+                    "type_dict": type_dict}, result_file)
 
         else:
             logging.info("Cache file already exist, skipping caching...")

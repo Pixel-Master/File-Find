@@ -39,10 +39,9 @@ OPTIONS = {"arch": arch,
                      "LSApplicationCategoryType": "public.app-category.utilities",
                      "NSSupportsSuddenTermination": True,
                      "CFBundleDocumentTypes":
-                         [{"CFBundleTypeExtensions": ["FFSave"],
-                           "CFBundleTypeIconFile": "ffsave_icon.icns",
+                         [{"CFBundleTypeExtensions": ["FFSearch"],
                            "CFBundleTypeName": "File Find Search",
-                           "CFBundleTypeOSTypes": ["FFSAVE"],
+                           "CFBundleTypeOSTypes": ["FFSEARCH"],
                            "CFBundleTypeRole": "Viewer",
                            "LSIsAppleDefaultForType": True,
                            "CFBundleTypeIconSystemGenerated": True}]}}

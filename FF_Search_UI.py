@@ -12,7 +12,7 @@
 import hashlib
 import logging
 import os
-from pickle import dump, load
+from json import dump, load
 from threading import Thread
 from time import perf_counter, ctime, time
 import gc
@@ -102,7 +102,7 @@ class SearchWindow:
             # Debug
             logging.debug("Displaying time stats.")
 
-            # Getting cache metadata time
+            # Getting the creation time of the cache file
             cache_created_time = ctime(
                 os.stat(
                     os.path.join(FF_Files.CACHED_SEARCHES_FOLDER,
@@ -145,21 +145,20 @@ class SearchWindow:
                         # Adding file to removed_list to later remove it from cache
                         removed_list.append(matched_file)
 
-                with open(os.path.join(FF_Files.CACHED_SEARCHES_FOLDER, search_path.replace("/", "-") + ".FFCache"),
-                          "rb") as search_file:
-                    cached_files: list[set, dict, dict] = list(load(search_file))
+                with open(os.path.join(FF_Files.CACHED_SEARCHES_FOLDER, search_path.replace("/", "-") + ".FFCache")) as search_file:
+                    cached_file: dict[list, dict, dict] = load(search_file)
 
                 # Removing all deleted files from cache
                 for removed_file in removed_list:
                     try:
-                        cached_files[0].remove(removed_file)
-                    except KeyError:
+                        cached_file["found_path_set"].remove(removed_file)
+                    except (KeyError, ValueError):
                         # File was already removed from cache
                         pass
 
                 with open(os.path.join(FF_Files.CACHED_SEARCHES_FOLDER, search_path.replace("/", "-") + ".FFCache"),
-                          "wb") as search_file:
-                    dump(cached_files, search_file)
+                          "w") as search_file:
+                    dump(cached_file, search_file)
                 logging.info(f"Reloaded found Files and removed {len(removed_list)} in"
                              f" {round(perf_counter() - time_before_reload, 3)} sec.")
                 FF_Additional_UI.PopUps.show_info_messagebox(
@@ -167,9 +166,12 @@ class SearchWindow:
                     f"Reloaded found Files and removed {len(removed_list)}"
                     f" in {round(perf_counter() - time_before_reload, 3)} sec.",
                     self.Search_Results_Window)
+                # UI
                 objects_text.setText(f"Files found: {len(matched_list)}")
                 objects_text.adjustSize()
-                del cached_files, removed_list
+
+                # Delete variables out of memory
+                del cached_file, removed_list
             except FileNotFoundError:
                 FF_Additional_UI.PopUps.show_info_messagebox("Cache File not Found!",
                                                              "Cache File was deleted, couldn't Update Cache!",
@@ -179,14 +181,14 @@ class SearchWindow:
         def save_search():
             save_dialog = QFileDialog.getSaveFileName(self.Search_Results_Window, "Export File Find Search",
                                                       FF_Files.SAVED_SEARCHES_FOLDER,
-                                                      "File Find Search (*.FFSave);;Plain Text File (*.txt)")
+                                                      "File Find Search (*.FFSearch);;Plain Text File (*.txt)")
             save_file = save_dialog[0]
             if save_file.endswith(".txt") and not os.path.exists(save_file):
                 with open(save_file, "w") as export_file:
                     for save_file in matched_list:
                         export_file.write(save_file + "\n")
-            elif save_file.endswith(".FFSave") and not os.path.exists(save_file):
-                with open(save_file, "wb") as export_file:
+            elif save_file.endswith(".FFSearch") and not os.path.exists(save_file):
+                with open(save_file, "w") as export_file:
                     dump(matched_list, export_file)
 
         # Buttons
@@ -245,7 +247,7 @@ class SearchWindow:
         options_menu_save_action.triggered.connect(save_search)
         # Compare Action
         options_menu_compare_action = options_menu.addAction(
-            "&Select a .FFSave file and compare it to the opened Search...")
+            "&Select a .FFSearch file and compare it to the opened Search...")
         options_menu_compare_action.triggered.connect(
             lambda: FF_Compare.CompareSearches(matched_list, search_path, self.Search_Results_Window))
 
@@ -400,7 +402,7 @@ class SearchWindow:
 
         # Compare Search
         compare_action = QAction(
-            "&Select a .FFSave file and compare it to the opened Search...", self.Search_Results_Window)
+            "&Select a .FFSearch file and compare it to the opened Search...", self.Search_Results_Window)
         compare_action.triggered.connect(lambda: FF_Compare.CompareSearches(matched_list, search_path, parent))
         compare_action.setShortcut("Ctrl+N")
         # Separator for visual indent
@@ -639,14 +641,14 @@ class SearchWindow:
                 for root, dirs, files in os.walk(hash_file):
                     for i in files:
                         try:
-                            with open(os.path.join(root, i), "rb") as hash_file:
+                            with open(os.path.join(root, i)) as hash_file:
                                 file_content = hash_file.read() + file_content
                         except FileNotFoundError:
                             logging.error(f"{hash_file} does not exist!")
 
             else:
                 try:
-                    with open(hash_file, "rb") as hash_file:
+                    with open(hash_file) as hash_file:
                         file_content = hash_file.read()
                 except FileNotFoundError:
                     logging.error(f"{hash_file} does not exist!")
@@ -709,17 +711,18 @@ class SearchWindow:
 
     # Remove moved file from cache
     def remove_file_from_cache(self, file):
-        with open(
-                os.path.join(FF_Files.CACHED_SEARCHES_FOLDER,
-                             self.search_path.replace("/", "-") + ".FFCache"), "rb") as search_file:
-            cached_files = list(load(search_file))
+        with open(os.path.join(
+                FF_Files.CACHED_SEARCHES_FOLDER,
+                self.search_path.replace("/", "-") + ".FFCache")) as search_file:
 
-        cached_files[0].remove(file)
+            cached_files = load(search_file)
+
+        cached_files["found_path_set"].remove(file)
 
         with open(
                 os.path.join(
                     FF_Files.CACHED_SEARCHES_FOLDER,
-                    self.search_path.replace("/", "-") + ".FFCache"), "wb") as search_file:
+                    self.search_path.replace("/", "-") + ".FFCache"), "w") as search_file:
             dump(cached_files, search_file)
 
         # Debug

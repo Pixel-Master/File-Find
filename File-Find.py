@@ -45,7 +45,7 @@ if __name__ == "__main__":
                 path = QFileOpenEvent.url(event).path()
 
                 # If the opened file is a file find search
-                if path.endswith("FFSave"):
+                if path.endswith("FFSearch"):
                     # Debug
                     logging.info(f"Opening {path}...")
                     FF_Search.LoadSearch.open_file(path, None)

@@ -9,7 +9,7 @@
 # This file contains the code for the 'Compare Search' feature
 
 # Imports
-from pickle import load
+from json import load
 from threading import Thread
 from time import perf_counter, ctime
 import hashlib
@@ -530,14 +530,14 @@ class CompareUi:
                 for root, dirs, files in os.walk(hash_file):
                     for i in files:
                         try:
-                            with open(os.path.join(root, i), "rb") as hash_file:
+                            with open(os.path.join(root, i)) as hash_file:
                                 file_content = hash_file.read() + file_content
                         except FileNotFoundError:
                             logging.error(f"{hash_file} does not exist!")
 
             else:
                 try:
-                    with open(hash_file, "rb") as hash_file:
+                    with open(hash_file) as hash_file:
                         file_content = hash_file.read()
                 except FileNotFoundError:
                     logging.error(f"{hash_file} does not exist!")
@@ -620,7 +620,7 @@ class CompareSearches:
 
             # Get the files of both searches
             self.files_of_first_search = files_of_first_search
-            logging.debug("Asking for a second FFSave file...")
+            logging.debug("Asking for a second FFSearch file...")
             self.files_of_second_search, self.path_of_second_search = self.load_second_search()
 
             # Files which are only in one list
@@ -669,14 +669,14 @@ class CompareSearches:
             parent=None,
             caption="Select Second Search",
             directory=FF_Files.SAVED_SEARCHES_FOLDER,
-            filter="*.FFSave;")
+            filter="*.FFSearch;")
 
         # Debug
         logging.debug(f"Second search: {second_search_file}, Reading file...")
 
         # Load list from file and return path and files
         try:
-            with open(second_search_file[0], "rb") as search_file:
+            with open(second_search_file[0]) as search_file:
                 return load(search_file), second_search_file
         except FileNotFoundError:
             # if the user pressed cancel
