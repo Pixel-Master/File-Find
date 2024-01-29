@@ -22,14 +22,13 @@ import FF_Additional_UI
 VERSION: str = "rc_23-jan-24"
 VERSION_SHORT: str = "0.0"
 
-# Creating File-Find dir and deleting Cache
+# Defining folder variables
 USER_FOLDER = os.path.expanduser("~")
-os.chdir(USER_FOLDER)
-
-FF_LIB_FOLDER = os.path.join(os.getcwd(), "Library", "Application Support", "File-Find")
+FF_LIB_FOLDER = os.path.join(USER_FOLDER, "Library", "Application Support", "File-Find")
 CACHED_SEARCHES_FOLDER = os.path.join(FF_LIB_FOLDER, "Cached Searches")
 SAVED_SEARCHES_FOLDER = os.path.join(FF_LIB_FOLDER, "Saved Searches")
 ASSETS_FOLDER = os.path.join(FF_LIB_FOLDER, "assets")
+
 # Hash for the assets folder in the library dir
 TARGET_ASSETS_FOLDER_HASH = "01421374e772777b376643001f1bb985fcb448325074ac1899a43a6d25047c9a"
 # Time
@@ -185,6 +184,10 @@ def display_path(path: str, length_of_first_part_of_string: int = 40):
 # Setup File-Find dir
 def setup():
     logging.info("Setting up Library Folder...\n")
+    # Set the current working directory to the folder of the user
+    os.chdir(USER_FOLDER)
+
+    # Creating necessary directories
     os.makedirs(SAVED_SEARCHES_FOLDER, exist_ok=True)
     os.makedirs(CACHED_SEARCHES_FOLDER, exist_ok=True)
     os.makedirs(ASSETS_FOLDER, exist_ok=True)
