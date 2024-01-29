@@ -14,10 +14,10 @@ import os
 from json import load, dump
 from sys import exit
 
-# PyQt6 Gui Imports
-from PyQt6.QtCore import QSize, Qt, QDate
-from PyQt6.QtGui import QFont, QDoubleValidator, QIcon, QAction, QKeySequence
-from PyQt6.QtWidgets import QWidget, QLabel, QPushButton, QRadioButton, QFileDialog, \
+# PySide6 Gui Imports
+from PySide6.QtCore import QSize, Qt, QDate
+from PySide6.QtGui import QFont, QDoubleValidator, QIcon, QAction, QKeySequence
+from PySide6.QtWidgets import QWidget, QLabel, QPushButton, QRadioButton, QFileDialog, \
     QLineEdit, QButtonGroup, QDateEdit, QComboBox, QMenuBar, QSystemTrayIcon, QMenu, QCompleter, QTabWidget, \
     QMainWindow, QGridLayout, QSpacerItem, QSizePolicy
 from pyperclip import copy
@@ -74,7 +74,7 @@ class MainWindow:
         # Display at the correct position
         self.Main_Layout.addWidget(self.tabbed_widget, 1, 0, 10, 13)
         # Spacer for having blank spaces
-        horizontal_spacer = QSpacerItem(600, 0, hPolicy=QSizePolicy.Policy.Maximum)
+        horizontal_spacer = QSpacerItem(600, 0, hData=QSizePolicy.Policy.Maximum)
 
         # Labels
         logging.debug("Setting up Labels...")
@@ -524,7 +524,7 @@ class MainWindow:
                 # Set the displayed text to the original
                 combobox_file_types.setPlaceholderText(combobox_file_types.determine_text())
                 combobox_file_types.setDisabled(False)
-                combobox_file_types.setToolTip(None)
+                combobox_file_types.setToolTip("")
                 # Enabling "select all" and "Deselect all" buttons
                 combobox_file_types.data_changed()
 
@@ -1042,13 +1042,15 @@ class MainWindow:
     # Updating Actives Searches Label
     @staticmethod
     def update_search_status_label():
-        # If there are now active searches
+        # Debug
+        logging.debug(f"Updating search status label, active searches: {FF_Search.ACTIVE_SEARCH_THREADS}")
+        # If there are no active searches
         if FF_Search.ACTIVE_SEARCH_THREADS == 0:
             search_status_label.setText("Inactive")
             search_status_label.setStyleSheet("color: green;")
             search_status_label.adjustSize()
 
-        # When there are Threads updating Label
+        # If there are ongoing searches updating label
         else:
             search_status_label.setText(f"Searching...({FF_Search.ACTIVE_SEARCH_THREADS})")
             search_status_label.setStyleSheet("color: red;")

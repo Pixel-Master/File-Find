@@ -148,7 +148,7 @@ File Find isn't ready for Release yet Run from source or download pre-build macO
 
 ### Dependencies for running
 - [Python](https://python.org/) 3.9 or higher **(Python 3.12 does not work yet!)**
-- [PyQt 6](https://pypi.org/project/PyQt6/) 6.4 or higher
+- [PySide 6](https://pypi.org/project/PySide6/) 6.4 or higher
 - [pyperclip](https://pypi.org/project/pyperclip/) 1.8.2 or higher
 
 ### Building
@@ -182,7 +182,7 @@ File Find isn't ready for Release yet Run from source or download pre-build macO
 
 ### Dependencies for building
 - [Python](https://python.org/) 3.9 or higher **(Python 3.12 does not work yet!)**
-- [PyQt 6](https://pypi.org/project/PyQt6/) 6.4.1 or higher
+- [PySide6](https://pypi.org/project/PySide6/) 6.4.1 or higher
 - [pyperclip](https://pypi.org/project/pyperclip/) 1.8.2 or higher
 - [py2app](https://pypi.org/project/py2app/) 5.6.2 or higher
 - [create-dmg](https://github.com/create-dmg/create-dmg) 1.1 or higher

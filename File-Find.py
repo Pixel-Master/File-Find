@@ -12,16 +12,15 @@
 import logging
 import gc
 
-# PyQt6 Gui Imports
-from PyQt6.QtCore import QEvent
-from PyQt6.QtGui import QFileOpenEvent
-from PyQt6.QtWidgets import QApplication
+# PySide6 Gui Imports
+from PySide6.QtCore import QEvent
+from PySide6.QtGui import QFileOpenEvent
+from PySide6.QtWidgets import QApplication
 
 # Projects Library
 import FF_Files
 import FF_Main_UI
 import FF_Search
-
 if __name__ == "__main__":
     # Setup Logging
     logging.basicConfig(level=logging.DEBUG,
@@ -35,12 +34,10 @@ if __name__ == "__main__":
 
         def event(self, event: QEvent) -> bool:
             # Executed when an event is received.
-            # 116 is the event number of the QFIleOpenEvent
-            file_open_event_number = 116
 
             # HANDLE FILEOPEN EVENT (TRIGGERED BY MACOS WHEN DOUBLE-CLICKING A FILE)
             # Testing if the event is triggered by an opened file
-            if event.type() == file_open_event_number:
+            if event.type() == QEvent.Type.FileOpen:
                 # Getting the path of the file
                 path = QFileOpenEvent.url(event).path()
 

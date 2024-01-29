@@ -16,9 +16,9 @@ from json import dump, load
 from sys import exit
 from time import perf_counter, mktime
 
-# PyQt6 Gui Imports
-from PyQt6.QtCore import QThreadPool, pyqtSignal, QObject, QDate
-from PyQt6.QtWidgets import QFileDialog, QWidget
+# PySide6 Gui Imports
+from PySide6.QtCore import QThreadPool, Signal, QObject, QDate, Qt
+from PySide6.QtWidgets import QFileDialog, QWidget
 
 # Projects Libraries
 import FF_Additional_UI
@@ -248,19 +248,17 @@ class Search:
 
             # Creating Qt Signal
             class SignalClass(QObject):
-                finished = pyqtSignal()
+                finished = Signal()
 
             # Defining thread
             self.thread = QThreadPool(parent)
 
-            # Setup pyqt Signal
+            # Setup Qt6 Signal
             self.signals = SignalClass()
             # Debug
             self.signals.finished.connect(lambda: logging.info("Finished Search Thread!\n"))
             # Launching UI
             self.signals.finished.connect(lambda: FF_Search_UI.SearchWindow(*SEARCH_OUTPUT))
-            # Updating Status Indicator
-            self.signals.finished.connect(FF_Main_UI.MainWindow.update_search_status_label)
 
             # Starting the Thread
             self.thread.start(
@@ -706,20 +704,34 @@ class Search:
         logging.info("Finished Searching!")
         self.ui_logger.update("Building UI...")
 
+        # The parameter passed on to the UI builder
         global SEARCH_OUTPUT
         SEARCH_OUTPUT = [time_total, time_after_searching, time_after_indexing, time_after_sorting, found_path_list,
                          data_search_from, parent]
 
-        # Starting the UI with the emitted signal
-        self.signals.finished.emit()
-
         # Updating Thread count
         global ACTIVE_SEARCH_THREADS
         ACTIVE_SEARCH_THREADS -= 1
+        # Building the UI with emitting the signal
+        self.signals.finished.emit()
 
+    """
+    Converting Date-times
+    Converting the output of QDateEdit into the unix time by first using QDateEdit.date() to get
+    something like this: QDate(1,3,2000), after that using QDate.toString with the conversion of to
+    ISO standard Date to get this: 2024-01-26
+    than we can use .split("-") to convert 2024-01-26 into a list [2024,1,26], after that we use time.mktime
+    to get the unix time format that means something like, that: 946854000.0, only to match this with
+    os.getctime, what we can use to get the creation date of a file.
+
+    Yes it would be easier if Qt had a function to get the unix time
+    """
     @staticmethod
     def conv_qdate_to_unix_time(input_edit: QDate, expand_days_num: int = 1):
-        time_list = str(input_edit.toPyDate()).split("-")
+        # Expand days on the second date of the range because if input is 1.Jan.2024 - 1.Jan-2024 there will be no files
+        time_string = str(input_edit.toString(Qt.DateFormat.ISODate))
+        time_list = time_string.split("-")
+        # Fill in hours, minutes and second with 0 because we don't have them
         unix_time = mktime(
             (int(time_list[0]), int(time_list[1]), int(time_list[2]) + expand_days_num, 0, 0, 0, 0, 0, 0))
         return unix_time

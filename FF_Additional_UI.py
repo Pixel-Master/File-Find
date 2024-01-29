@@ -13,9 +13,9 @@ import logging
 import os
 from json import load
 
-# PyQt6 Gui Imports
-from PyQt6.QtWidgets import QMessageBox, QComboBox
-from PyQt6.QtCore import Qt, pyqtSignal, QObject
+# PySide6 Gui Imports
+from PySide6.QtWidgets import QMessageBox, QComboBox
+from PySide6.QtCore import Qt, Signal, QObject
 
 # Projects Libraries
 import FF_Files
@@ -33,9 +33,9 @@ class CheckableComboBox(QComboBox):
 
         # Signal for deactivating/activating buttons
         class ButtonSignalsClass(QObject):
-            all_selected = pyqtSignal()
-            all_deselected = pyqtSignal()
-            some_selected = pyqtSignal()
+            all_selected = Signal()
+            all_deselected = Signal()
+            some_selected = Signal()
 
         self.button_signals = ButtonSignalsClass(parent)
 

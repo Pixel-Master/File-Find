@@ -17,10 +17,10 @@ from threading import Thread
 from time import perf_counter, ctime, time
 import gc
 
-# PyQt6 Gui Imports
-from PyQt6.QtCore import QSize, Qt
-from PyQt6.QtGui import QFont, QIcon, QAction, QColor, QKeySequence
-from PyQt6.QtWidgets import QMainWindow, QLabel, QPushButton, QFileDialog, \
+# PySide6 Gui Imports
+from PySide6.QtCore import QSize, Qt
+from PySide6.QtGui import QFont, QIcon, QAction, QColor, QKeySequence
+from PySide6.QtWidgets import QMainWindow, QLabel, QPushButton, QFileDialog, \
     QListWidget, QMenuBar, QMenu, QWidget, QGridLayout, QHBoxLayout
 
 # Projects Libraries
@@ -145,7 +145,12 @@ class SearchWindow:
                         # Adding file to removed_list to later remove it from cache
                         removed_list.append(matched_file)
 
-                with open(os.path.join(FF_Files.CACHED_SEARCHES_FOLDER, search_path.replace("/", "-") + ".FFCache")) as search_file:
+                # Loading cache to update it
+                with open(
+                        os.path.join(
+                            FF_Files.CACHED_SEARCHES_FOLDER,
+                            search_path.replace("/", "-") + ".FFCache")) as search_file:
+
                     cached_file: dict[list, dict, dict] = load(search_file)
 
                 # Removing all deleted files from cache
@@ -292,6 +297,8 @@ class SearchWindow:
         FF_Main_UI.menubar_icon.showMessage("File Find - Search finished!", f"Your Search finished!\nin {search_path}",
                                             QIcon(os.path.join(FF_Files.ASSETS_FOLDER, "Find_button_img_small.png")),
                                             100000)
+        # Updated Search indicator
+        FF_Main_UI.MainWindow.update_search_status_label()
 
         logging.info("Finished Building Search-Results-UI!\n")
 

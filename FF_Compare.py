@@ -17,10 +17,10 @@ import logging
 import os
 import gc
 
-# PyQt6 Gui Imports
-from PyQt6.QtGui import QAction, QFont, QIcon, QColor
-from PyQt6.QtCore import QObject, pyqtSignal, QThreadPool, QSize
-from PyQt6.QtWidgets import (
+# PySide6 Gui Imports
+from PySide6.QtGui import QAction, QFont, QIcon, QColor
+from PySide6.QtCore import QObject, Signal, QThreadPool, QSize
+from PySide6.QtWidgets import (
     QMainWindow, QFileDialog, QListWidget, QMenuBar, QLabel, QPushButton, QWidget, QGridLayout, QHBoxLayout)
 
 # Projects Libraries
@@ -600,16 +600,16 @@ class CompareUi:
             logging.error("Error! Select a File!")
 
 
-# The engine TODO: (add threading!)
+# The engine
 class CompareSearches:
     def __init__(self, files_of_first_search: list, path_of_first_search, parent):
         # Debug
         logging.debug("User pressed Compare Search")
 
         try:
-            # Setting the thread up with the pyqt signals to launch the ui
+            # Setting the thread up with the Qt6 signals to launch the ui
             class SignalsClass(QObject):
-                finished = pyqtSignal()
+                finished = Signal()
 
             self.signals = SignalsClass()
             # Connecting the signal to the user-interface class

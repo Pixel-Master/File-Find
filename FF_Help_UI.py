@@ -13,10 +13,10 @@ import os
 from json import load, dump
 import logging
 
-# PyQt6 Gui Imports
-from PyQt6.QtCore import QRect
-from PyQt6.QtGui import QFont, QPixmap, QAction
-from PyQt6.QtWidgets import QMainWindow, QLabel, QPushButton, QFrame, QListWidget, QFileDialog, QComboBox, QMenuBar, \
+# PySide6 Gui Imports
+from PySide6.QtCore import QRect
+from PySide6.QtGui import QFont, QPixmap, QAction
+from PySide6.QtWidgets import QMainWindow, QLabel, QPushButton, QFrame, QListWidget, QFileDialog, QComboBox, QMenuBar, \
     QMessageBox, QCheckBox
 
 # Projects Libraries

@@ -216,12 +216,12 @@ def setup():
             logging.info(f"Settings: {settings}")
 
     # If the settings file doesn't exist or is too old, replacing it
-    except (JSONDecodeError, UnicodeDecodeError, EOFError, FileNotFoundError, KeyError) as FileError:
+    except (JSONDecodeError, UnicodeDecodeError, EOFError, FileNotFoundError, KeyError) as file_error:
         # Replacing the settings var
         settings = STANDARD_SETTINGS
 
         # Debug
-        logging.info(f"Resetting settings to: {STANDARD_SETTINGS}\n because of:\n{FileError}")
+        logging.info(f"Resetting settings to: {STANDARD_SETTINGS}\n because of:\n{file_error}")
 
     with open(os.path.join(FF_LIB_FOLDER, "Settings"), "w") as excluded_dump_file:
         dump(settings, excluded_dump_file)
