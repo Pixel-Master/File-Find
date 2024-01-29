@@ -32,7 +32,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install flake8 pytest
           # flake 8 plugins
-          pip install flake8-warnings flake8-qt-tr flake8-alfred flake8-debugger flake8-use-fstring pep8-naming flake8-eradicate flake8-bandit flake8-builtins
+          pip install flake8-warnings flake8-qt-tr flake8-alfred flake8-debugger flake8-use-fstring pep8-naming flake8-eradicate flake8-bugbear flake8-builtins
           pip install -r requirements.txt
           
     - name: Testing Syntax
