@@ -135,7 +135,7 @@ File Find isn't ready for Release yet Run from source or download pre-build macO
 
 - `FF_Compare.py` - This file contains the code for the 'Compare Search' feature
 
-- `build.py` - Build script, requires py2app to be installed. See [here](#building-file-findapp)
+- `build.py` - Build script, requires nuitka to be installed. See [here](#building-file-findapp)
 
 - `assets/` - Directory contains image assets for File Find
 
@@ -184,7 +184,7 @@ File Find isn't ready for Release yet Run from source or download pre-build macO
 - [Python](https://python.org/) 3.9 or higher **(Python 3.12 does not work yet!)**
 - [PySide6](https://pypi.org/project/PySide6/) 6.4.1 or higher
 - [pyperclip](https://pypi.org/project/pyperclip/) 1.8.2 or higher
-- [py2app](https://pypi.org/project/py2app/) 5.6.2 or higher
+- [nuitka](https://pypi.org/project/nuitka/) 2.0 or higher
 - [create-dmg](https://github.com/create-dmg/create-dmg) 1.1 or higher
 
 ### Building
@@ -201,7 +201,7 @@ File Find isn't ready for Release yet Run from source or download pre-build macO
 3. cd into the repository: `cd File-Find`
 
 
-4. [Install python dependencies](#dependencies-for-building): `pip3 install -r requirements.txt && pip3 install py2app`
+4. [Install python dependencies](#dependencies-for-building): `pip3 install -r requirements.txt`
 
 
 5. Build using:

@@ -645,7 +645,7 @@ class SearchWindow:
             logging.info(f"Collecting {hash_file}...")
             if os.path.isdir(hash_file):
                 file_content = b""
-                for root, dirs, files in os.walk(hash_file):
+                for root, _dirs, files in os.walk(hash_file):
                     for i in files:
                         try:
                             with open(os.path.join(root, i)) as hash_file:

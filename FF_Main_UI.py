@@ -11,7 +11,6 @@
 # Imports
 import logging
 import os
-from json import load, dump
 from sys import exit
 
 # PySide6 Gui Imports
@@ -432,29 +431,29 @@ class MainWindow:
         # Group for Radio Buttons
         library_group = QButtonGroup(self.Root_Window)
         # Radio Button 1
-        rb_library1 = self.create_radio_button(library_group, "Yes", self.advanced_search_widget)
+        rb_library_yes = self.create_radio_button(library_group, "Yes", self.advanced_search_widget)
         # Add the button to the layout
-        self.advanced_search_widget_layout.addWidget(rb_library1, 1, 2)
+        self.advanced_search_widget_layout.addWidget(rb_library_yes, 1, 2)
         # Radio Button 2
-        rb_library2 = self.create_radio_button(library_group, "No", self.advanced_search_widget)
+        rb_library_no = self.create_radio_button(library_group, "No", self.advanced_search_widget)
         # Add the button to the layout
-        self.advanced_search_widget_layout.addWidget(rb_library2, 1, 2, 1, 4, Qt.AlignmentFlag.AlignCenter)
+        self.advanced_search_widget_layout.addWidget(rb_library_no, 1, 2, 1, 4, Qt.AlignmentFlag.AlignCenter)
         # Select the Button 2
-        rb_library2.setChecked(True)
+        rb_library_no.setChecked(True)
 
         # Reverse Sort
         # Group for Radio Buttons
         reverse_sort_group = QButtonGroup(self.Root_Window)
         # Radio Button 1
-        rb_reverse_sort1 = self.create_radio_button(reverse_sort_group, "Yes", self.sorting_widget)
+        rb_reverse_sort_yes = self.create_radio_button(reverse_sort_group, "Yes", self.sorting_widget)
         # Add the button to the layout
-        self.sorting_widget_layout.addWidget(rb_reverse_sort1, 1, 2)
+        self.sorting_widget_layout.addWidget(rb_reverse_sort_yes, 1, 2)
         # Radio Button 2
-        rb_reverse_sort2 = self.create_radio_button(reverse_sort_group, "No", self.sorting_widget)
+        rb_reverse_sort_no = self.create_radio_button(reverse_sort_group, "No", self.sorting_widget)
         # Add the button to the layout
-        self.sorting_widget_layout.addWidget(rb_reverse_sort2, 1, 3)
+        self.sorting_widget_layout.addWidget(rb_reverse_sort_no, 1, 3)
         # Select the Button
-        rb_reverse_sort2.setChecked(True)
+        rb_reverse_sort_no.setChecked(True)
 
         # Drop Down Menus
         logging.debug("Setting up Combo Boxes...")
@@ -573,14 +572,14 @@ class MainWindow:
             try:
                 os.chdir(search_from)
                 self.edit_directory.setText(search_from)
-            except (FileNotFoundError, OSError):
+            except OSError:
                 pass
 
         browse_path_button = self.generate_edit_button(open_dialog, self.basic_search_widget, text="Browse")
         browse_path_button.setFixedWidth(80)
         self.basic_search_widget_layout.addWidget(browse_path_button, 3, 3)
 
-        # Select and deselect all options in the checkable file group combobox
+        # Select and deselect all options in the check able file group combobox
         select_all_button = self.generate_edit_button(
             combobox_file_types.select_all, self.basic_search_widget, text="Select all")
         select_all_button.setFixedWidth(80)
@@ -615,11 +614,11 @@ class MainWindow:
                 f"Date modified from: {m_date_from_drop_down.text()} to: {m_date_to_drop_down.text()}\n"
                 f"Date created from: {c_date_from_drop_down.text()} to: {c_date_to_drop_down.text()}\n"
                 f"Content: {edit_file_contains.text()}\n\n"
-                f"Search for system files: {rb_library1.isChecked()}\n"
+                f"Search for system files: {rb_library_yes.isChecked()}\n"
                 f"Search for: {combobox_search_for.currentText()}\n"
                 f"File Groups: {combobox_file_types.all_checked_items()}\n\n"
                 f"Sort results by: {combobox_sorting.currentText()}\n"
-                f"Reverse results: {rb_reverse_sort1.isChecked()}\n")
+                f"Reverse results: {rb_reverse_sort_yes.isChecked()}\n")
 
         # Start Search with args locally
         def search_entry():
@@ -634,7 +633,7 @@ class MainWindow:
                 data_in_name=edit_name_contains.text(),
                 data_filetype=edit_file_extension.text(),
                 data_file_size_min=edit_size_min.text(), data_file_size_max=edit_size_max.text(),
-                data_library=rb_library1.isChecked(),
+                data_library=rb_library_yes.isChecked(),
                 data_search_from_valid=os.getcwd(),
                 data_search_from_unchecked=self.edit_directory.text(),
                 data_content=edit_file_contains.text(),
@@ -644,12 +643,47 @@ class MainWindow:
                                  "m_date_from": m_date_from_drop_down,
                                  "m_date_to": m_date_to_drop_down},
                 data_sort_by=combobox_sorting.currentText(),
-                data_reverse_sort=rb_reverse_sort1.isChecked(),
+                data_reverse_sort=rb_reverse_sort_yes.isChecked(),
                 data_file_group=combobox_file_types.all_checked_items(),
                 parent=self.Root_Window)
 
         # Saves the function in a different var
         self.search_entry = search_entry
+
+        # Resetting all filters
+        def reset_filters():
+            # Debug
+            logging.info("Resetting all filters...")
+
+            # Resetting basic window
+            edit_name.setText("")
+            edit_name_contains.setText("")
+            combobox_file_types.select_all()
+            self.edit_directory.setText(FF_Files.USER_FOLDER)
+
+            # Resetting Properties
+            edit_file_contains.setText("")
+            m_date_from_drop_down.setDate(QDate(2000, 1, 1))
+            c_date_from_drop_down.setDate(QDate(2000, 1, 1))
+            m_date_to_drop_down.setDate(QDate.currentDate())
+            c_date_to_drop_down.setDate(QDate.currentDate())
+            edit_size_max.setText("")
+            edit_size_min.setText("")
+
+            # Resetting Advanced
+            edit_file_extension.setText("")
+            rb_library_yes.setChecked(False)
+            combobox_search_for.setCurrentIndex(0)
+
+            # Resetting Sorting
+            combobox_sorting.setCurrentIndex(0)
+            rb_reverse_sort_no.setChecked(True)
+
+            # Debug
+            logging.info("Resetted all filters")
+
+        # Make the function available for the menubar
+        self.reset_filters = reset_filters
 
         # Generate a shell command, that displays in the UI
         def generate_terminal_command():
@@ -706,8 +740,8 @@ class MainWindow:
         # Separator
         context_menu.addSeparator()
 
-        # Open Search Action
-        action_open_search = QAction("Open Search", self.Root_Window)
+        # Load Search Action
+        action_open_search = QAction("Load Search", self.Root_Window)
         action_open_search.triggered.connect(lambda: FF_Search.LoadSearch(self.Root_Window))
         context_menu.addAction(action_open_search)
 
@@ -715,6 +749,14 @@ class MainWindow:
         action_terminal = QAction("Generate Terminal Command", self.Root_Window)
         action_terminal.triggered.connect(generate_terminal_command)
         context_menu.addAction(action_terminal)
+
+        # Separator
+        context_menu.addSeparator()
+
+        # Reset Action
+        reset_action = QAction("Reset filters", self.Root_Window)
+        reset_action.triggered.connect(reset_filters)
+        context_menu.addAction(reset_action)
 
         # Defining Button
         search_button = self.generate_large_button("Find", search_entry, 25)
@@ -743,7 +785,7 @@ class MainWindow:
         self.menu_bar(generate_terminal_command)
 
         # Showing PopUps
-        self.popups()
+        FF_Additional_UI.welcome_popups(parent=self.Root_Window)
 
         # Debug
         logging.info("Finished Setting up Main UI\n")
@@ -867,11 +909,22 @@ class MainWindow:
         cmd_action.setShortcut("Ctrl+G")
         tools_menu.addAction(cmd_action)
 
+        # Reset filter
+        reset_action = QAction("&Reset all filters", self.Root_Window)
+        reset_action.triggered.connect(self.reset_filters)
+        reset_action.setShortcut("Ctrl+R")
+        tools_menu.addAction(reset_action)
+
         # About File Find
         about_action = QAction("&About File Find", self.Root_Window)
         about_action.triggered.connect(lambda: FF_Help_UI.HelpWindow(self.Root_Window))
-        about_action.setShortcut("Ctrl+,")
         help_menu.addAction(about_action)
+
+        # Settings
+        settings_action = QAction("&Settings", self.Root_Window)
+        settings_action.triggered.connect(lambda: FF_Help_UI.HelpWindow(self.Root_Window))
+        settings_action.setShortcut("Ctrl+,")
+        help_menu.addAction(settings_action)
 
         # Help
         help_action = QAction("&File Find Help and Settings", self.Root_Window)
@@ -965,73 +1018,6 @@ class MainWindow:
         menubar_icon.show()
 
         return menubar_icon
-
-    # Displaying Welcome Popups
-    def popups(self):
-        # Debug
-        logging.debug("Testing for PopUps...")
-
-        # Loading already displayed Popups with pickle
-        with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings")) as settings_file:
-            settings = load(settings_file)
-            popup_dict = settings["popup"]
-
-        if popup_dict["FF_welcome"]:
-            # Debug
-            logging.info("Showing Welcomes PopUp...")
-
-            # Showing welcome messages
-            FF_Additional_UI.PopUps.show_info_messagebox("Welcome to File Find",
-                                                         "Welcome to File Find!\n\nThanks for downloading File Find!\n"
-                                                         "File Find is an open-source macOS utility,"
-                                                         " that makes it easy to find files.\n\n"
-                                                         "To search fill in the filters you need and leave those"
-                                                         " you don't need empty.\n\n\n"
-                                                         "File Find version: "
-                                                         f"{FF_Files.VERSION_SHORT}[{FF_Files.VERSION}]",
-                                                         self.Root_Window)
-            FF_Additional_UI.PopUps.show_info_messagebox("Welcome to File Find",
-                                                         "Welcome to File Find!\n\nSearch with the Find button.\n\n"
-                                                         "You can find all Settings in the About section!\n\n"
-                                                         "Press on the File Find icon in "
-                                                         "the Menubar to check the Search Status!",
-                                                         self.Root_Window)
-            FF_Additional_UI.PopUps.show_info_messagebox("Welcome to File Find",
-                                                         "Welcome to File Find!\n\n"
-                                                         "If you want to contribute, look at the source code, "
-                                                         "found a bug or have a feature-request\n\n"
-                                                         "Go to: https://github.com/Pixel-Master/File-Find\n\n\n"
-                                                         "I hope you find all of your files!",
-                                                         self.Root_Window)
-            # Setting PopUp File
-            popup_dict["FF_welcome"] = False
-            settings["popup"] = popup_dict
-            with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "w") as settings_file:
-                dump(settings, settings_file)
-
-        # Version Welcome PopUps
-        elif popup_dict["FF_ver_welcome"]:
-            # Debug
-            logging.info("Showing Version Welcomes PopUp...")
-
-            # Showing welcome messages
-            FF_Additional_UI.PopUps.show_info_messagebox("Thanks For Upgrading File Find!",
-                                                         f"Thanks For Upgrading File Find!\n\n"
-                                                         f"File Find is an open-source macOS Utility. \n\n"
-                                                         f"Get Releases at: "
-                                                         f"https://github.com/Pixel-Master/File-Find/releases"
-                                                         f"\n\n\n"
-                                                         "File Find version: "
-                                                         f"{FF_Files.VERSION_SHORT}[{FF_Files.VERSION}]",
-                                                         self.Root_Window)
-            # Setting PopUp File
-            popup_dict["FF_ver_welcome"] = False
-            settings["popup"] = popup_dict
-            with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "w") as settings_file:
-                dump(settings, settings_file)
-
-    # Debug
-    logging.info("Finished PopUps")
 
     # Generic Label input
     @staticmethod

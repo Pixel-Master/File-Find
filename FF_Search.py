@@ -621,7 +621,7 @@ class Search:
                                 break
                     if not does_contain:
                         copy_found_path_set.remove(content_file)
-                except (UnicodeDecodeError, FileNotFoundError, OSError):
+                except (UnicodeDecodeError, OSError):
                     copy_found_path_set.remove(content_file)
                 else:
                     if os.path.isdir(content_file):

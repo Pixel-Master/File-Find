@@ -129,18 +129,18 @@ def cache_test(is_launching):
 def get_file_size(file: str) -> int:
     if os.path.isdir(file):
         file_size_list_obj = 0
-        # Gets the size
-        for path, dirs, files in os.walk(file):
+        # Gets the size if the path is a folder with recursively searching th director<
+        for path, _dirs, files in os.walk(file):
             for file in files:
                 try:
                     if not os.path.islink(file):
                         file_size_list_obj += os.path.getsize(os.path.join(path, file))
-                except FileNotFoundError or ValueError:
+                except (FileNotFoundError, ValueError):
                     continue
     elif os.path.isfile(file):
         try:
             file_size_list_obj = os.path.getsize(file)
-        except FileNotFoundError or ValueError:
+        except (FileNotFoundError, ValueError):
             return -1
     else:
         return -1

@@ -39,27 +39,27 @@ if sys.platform == "darwin":
     subprocess.run(["mv", "File-Find.app", os.path.join("dist", "File Find.app")])
     # Setting the plist
     with open(os.path.join(os.getcwd(), "dist", "File Find.app", "Contents", "Info.plist"), "wb") as plist:
-        plistlib.dump(value=
-            {'CFBundleDisplayName': 'File Find',
-             "CFBundleExecutable": "File-Find",
-             "CFBundleIconFile": "icon.icns",
-             "CFBundleDocumentTypes": [{"CFBundleTypeExtensions": ["FFSearch"],
-                                        "CFBundleTypeIconSystemGenerated": True,
-                                        "CFBundleTypeName": "File Find Search",
-                                        "CFBundleTypeOSTypes": ["FFSEARCH"],
-                                        "CFBundleTypeRole": "Viewer",
-                                        "LSIsAppleDefaultForType": True}],
-             "CFBundleIdentifier": "io.github.pixel-master.file-find",
-             "CFBundleShortVersionString": FF_Files.VERSION_SHORT,
-             "CFBundleVersion": FF_Files.VERSION,
-             "CFBundleName": "File-Find",
-             "CFBundlePackageType": "APPL",
-             "LSApplicationCategoryType": "public.app-category.utilities",
-             "LSUIElement": False,
-             "NSHumanReadableCopyright": "Copyright © 2022–2024 Pixel Master. Some rights reserved.",
-             "NSSupportsSuddenTermination": False,
-             "CFBundleInfoDictionaryVersion": "6.0",
-             "NSHighResolutionCapable": True}, fp=plist)
+        plistlib.dump(
+            value={'CFBundleDisplayName': 'File Find',
+                   "CFBundleExecutable": "File-Find",
+                   "CFBundleIconFile": "icon.icns",
+                   "CFBundleDocumentTypes": [{"CFBundleTypeExtensions": ["FFSearch"],
+                                              "CFBundleTypeIconSystemGenerated": True,
+                                              "CFBundleTypeName": "File Find Search",
+                                              "CFBundleTypeOSTypes": ["FFSEARCH"],
+                                              "CFBundleTypeRole": "Viewer",
+                                              "LSIsAppleDefaultForType": True}],
+                   "CFBundleIdentifier": "io.github.pixel-master.file-find",
+                   "CFBundleShortVersionString": FF_Files.VERSION_SHORT,
+                   "CFBundleVersion": FF_Files.VERSION,
+                   "CFBundleName": "File-Find",
+                   "CFBundlePackageType": "APPL",
+                   "LSApplicationCategoryType": "public.app-category.utilities",
+                   "LSUIElement": False,
+                   "NSHumanReadableCopyright": "Copyright © 2022–2024 Pixel Master. Some rights reserved.",
+                   "NSSupportsSuddenTermination": False,
+                   "CFBundleInfoDictionaryVersion": "6.0",
+                   "NSHighResolutionCapable": True}, fp=plist)
 
     # Building DMG
     print("\n\nBuilding DMG...")

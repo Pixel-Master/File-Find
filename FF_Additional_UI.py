@@ -11,7 +11,7 @@
 # Imports
 import logging
 import os
-from json import load
+from json import load, dump
 
 # PySide6 Gui Imports
 from PySide6.QtWidgets import QMessageBox, QComboBox
@@ -19,6 +19,7 @@ from PySide6.QtCore import Qt, Signal, QObject
 
 # Projects Libraries
 import FF_Files
+import FF_Main_UI
 
 
 # A custom checkbox
@@ -179,3 +180,85 @@ class PopUps:
                     return False
             else:
                 return True
+
+
+# Displaying Welcome Popups
+def welcome_popups(parent):
+    # Debug
+    logging.debug("Testing for PopUps...")
+
+    # Loading already displayed Popups with pickle
+    with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings")) as settings_file:
+        settings = load(settings_file)
+        popup_dict = settings["popup"]
+
+    if popup_dict["FF_welcome"]:
+        # Debug
+        logging.info("Showing Welcomes PopUp...")
+
+        # Asking if tutorial is necessary
+        question_popup = QMessageBox(text="Do you want to have a short tutorial?", parent=parent)
+
+        question_popup.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+        question_popup.exec()
+
+        if question_popup == QMessageBox.ButtonRole.YesRole:
+
+            # Showing welcome messages
+            PopUps.show_info_messagebox(
+                title="Welcome to File Find",
+                text="Welcome to File Find!\n\nThanks for downloading File Find!\n"
+                     "File Find is an open-source macOS utility,"
+                     " that makes it easy to search and find files.\n\n"
+                     "To search fill in the filters you need and leave those"
+                     " you don't need empty.\n\n\n"
+                     "File Find version: "
+                     f"{FF_Files.VERSION_SHORT}[{FF_Files.VERSION}]",
+                parent=parent)
+            PopUps.show_info_messagebox(
+                title="Welcome to File Find",
+                text="Welcome to File Find!\n\nSearch with the Find button.\n\n"
+                     "You can find all info's and settings in the Settings section!\n\n"
+                     "If you press on the File Find icon in the menubar and go to \"Searches:\","
+                     " you can see the state of all your searches",
+                parent=parent)
+            PopUps.show_info_messagebox(
+                title="Welcome to File Find",
+                text="Welcome to File Find!\n\n"
+                     "If you want to contribute, look at the source code, "
+                     "found a bug or have a feature-request\n\n"
+                     "Go to: github.com/Pixel-Master/File-Find\n"
+                     "File Find Website: pixel-master.github.io/file-find\n\n"
+                     "I hope you find all of your files!",
+                parent=parent)
+            # Setting PopUp File
+            popup_dict["FF_welcome"] = False
+            settings["popup"] = popup_dict
+            with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "w") as settings_file:
+                dump(settings, settings_file)
+
+    # Version Welcome PopUps
+    elif popup_dict["FF_ver_welcome"]:
+        # Debug
+        logging.info("Showing Version Welcomes PopUp...")
+
+        # Showing welcome messages
+        PopUps.show_info_messagebox(
+            title="Thanks For Upgrading File Find!",
+            text="Thanks For Upgrading File Find!\n\n"
+                 f"File Find is an open-source macOS Utility. \n\n"
+                 f"Get new versions at: "
+                 f"https://pixel-master.github.io/File-Find/"
+                 f"\n\n\n"
+                 "File Find version: "
+                 f"{FF_Files.VERSION_SHORT}[{FF_Files.VERSION}]",
+            parent=parent)
+        # Setting PopUp File
+        popup_dict["FF_ver_welcome"] = False
+        settings["popup"] = popup_dict
+        with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "w") as settings_file:
+            dump(settings, settings_file)
+
+
+# Debug
+logging.info("Finished PopUps")
