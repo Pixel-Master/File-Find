@@ -5,7 +5,7 @@
 
 <h3 align="center">A macOS file search utility that helps you find files easier.</h3>
 
-<h4 align="center">Completely open-source and free.</h4>
+<h4 align="center">Completely open-source and free. By Pixel-Master</h4>
 
 
 [![File Find build](https://img.shields.io/github/actions/workflow/status/Pixel-Master/File-Find/File-Find.yml?branch=main&label=File%20Find%20build%20status&logo=File%20Find&style=flat-square)](https://github.com/Pixel-Master/File-Find/actions/workflows/File-Find.yml)
@@ -14,17 +14,21 @@
 [![GitHub stars](https://img.shields.io/github/stars/Pixel-Master/File-Find.svg?style=flat-square&label=Stars&color=yellow)](https://github.com/Pixel-Master/File-Find/)
 [![GitLab forks](https://img.shields.io/github/forks/Pixel-Master/File-Find.svg?style=flat-square&label=Fork&color=red)](https://github.com/Pixel-Master/File-Find/forks/)
 
-#### Automatic Builds, Bug reports and Pull request on: [GitHub](https://github.com/Pixel-Master/File-Find)
+#### Links: [GitHub](https://github.com/Pixel-Master/File-Find), [Website](https://pixel-master.github.io/File-Find)
 
-![](https://github.com/Pixel-Master/Pixel-Master.github.io/blob/main/File-Find/preview/preview_without_background2.png?raw=true)
+![https://github.com/Pixel-Master/File-Find](https://github.com/Pixel-Master/Pixel-Master.github.io/blob/main/File-Find/preview/preview_without_background2.png?raw=true)
 
 ## Content
-- [Features](#features)
-- [FAQ](#faq)
 - [Download](#download)
+- [Features](#features)
+- [Building from source](#building-from-source)
+- [FAQ](#faq)
 - [File Structure](#file-structure)
-- [Running from Source](#running-from-source)
-- [Building File Find.app](#building-file-findapp)
+
+## Download
+File Find isn't ready for Release yet Run from source or download pre-build macOS Apps from the GitHub action Page.
+- [Building from Source](#building-from-source)
+- [GitHub Action Page](https://github.com/Pixel-Master/File-Find/actions/workflows/File-Find.yml)
 
 ## Features
 
@@ -82,6 +86,47 @@
 - Compare two searches and search for differences
 
 
+
+## Building from source
+
+### Note:
+
+###### File Find won't work properly on Linux or Windows, because the UI displays different depending on the operating-system and some features depend on the system. 
+
+
+### Dependencies for building
+- [Python](https://python.org/) 3.9 or higher **(Python 3.12 does not work yet!)**
+- [PySide6](https://pypi.org/project/PySide6/) 6.4.1 or higher
+- [pyperclip](https://pypi.org/project/pyperclip/) 1.8.2 or higher
+- [nuitka](https://pypi.org/project/nuitka/) 2.0 or higher
+- [create-dmg](https://github.com/create-dmg/create-dmg) 1.1 or higher
+
+### Building
+1. Install Python:
+    
+    Download the installer: [here](https://www.python.org/ftp/python/3.11.6/python-3.11.6-macos11.pkg) or use
+
+    Homebrew: `brew install python@3.11`
+
+
+2. Clone the File Find repository: `git clone https://github.com/Pixel-Master/File-Find.git`
+
+
+3. cd into the repository: `cd File-Find`
+
+
+4. Create a virtual environment: 
+   1. Create: `python3 -m venv ./venv`
+   2. Activate the virtual environment: `source venv/bin/activate`
+
+
+5. [Install python dependencies](#dependencies-for-building): `pip3 install -r requirements.txt`
+
+
+6. Build using:
+
+`python3 build.py` 
+
 ## FAQ
 Q: **What is File Find and how does it work?**
 
@@ -111,12 +156,6 @@ Q: **Does File Find connect to the Internet?**
 
 A: **File Find does not connect to the Internet**, everything stays on your machine.
 
-## Download
-File Find isn't ready for Release yet Run from source or download pre-build macOS Apps from the GitHub action Page.
-- [Running from Source](#running-from-source)
-- [Building File Find.app](#building-file-findapp)
-- [GitHub Action Page](https://github.com/Pixel-Master/File-Find/actions/workflows/File-Find.yml)
-
 ## File Structure
 
 - `File-Find.py` - Main file, execute this for running File Find
@@ -139,71 +178,3 @@ File Find isn't ready for Release yet Run from source or download pre-build macO
 
 - `assets/` - Directory contains image assets for File Find
 
-## Running from source
-
-### Note:
-
-###### File Find won't work properly on Linux or Windows, because the UI displays different depending on the operating-system and some features depend on the system.
-
-
-### Dependencies for running
-- [Python](https://python.org/) 3.9 or higher **(Python 3.12 does not work yet!)**
-- [PySide 6](https://pypi.org/project/PySide6/) 6.4 or higher
-- [pyperclip](https://pypi.org/project/pyperclip/) 1.8.2 or higher
-
-### Building
-1. Install Python:
-    
-    Download the installer: https://python.org/download or use
-
-    Homebrew: `brew install python@3.11`
-
-
-2. Clone the File Find Repository: `git clone https://github.com/Pixel-Master/File-Find.git`
-
-
-3. cd into the repository: `cd File-Find`
-
-
-4. [Install dependencies](#dependencies-for-running): `pip3 -r requierments.txt`
-
-
-5. Run:
-
-`python3 File-Find.py` 
-
-
-## Building File Find.app
-
-### Note:
-
-###### File Find won't work properly on Linux or Windows, because the UI displays different depending on the operating-system and some features depend on the system. 
-
-
-### Dependencies for building
-- [Python](https://python.org/) 3.9 or higher **(Python 3.12 does not work yet!)**
-- [PySide6](https://pypi.org/project/PySide6/) 6.4.1 or higher
-- [pyperclip](https://pypi.org/project/pyperclip/) 1.8.2 or higher
-- [nuitka](https://pypi.org/project/nuitka/) 2.0 or higher
-- [create-dmg](https://github.com/create-dmg/create-dmg) 1.1 or higher
-
-### Building
-1. Install Python:
-    
-    Download the installer: [here](https://www.python.org/ftp/python/3.11.6/python-3.11.6-macos11.pkg) or use
-
-    Homebrew: `brew install python@3.11`
-
-
-2. Clone the File Find repository: `git clone https://github.com/Pixel-Master/File-Find.git`
-
-
-3. cd into the repository: `cd File-Find`
-
-
-4. [Install python dependencies](#dependencies-for-building): `pip3 install -r requirements.txt`
-
-
-5. Build using:
-
-`python3 build.py` 

@@ -231,11 +231,6 @@ def welcome_popups(parent):
                      "File Find Website: pixel-master.github.io/file-find\n\n"
                      "I hope you find all of your files!",
                 parent=parent)
-            # Setting PopUp File
-            popup_dict["FF_welcome"] = False
-            settings["popup"] = popup_dict
-            with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "w") as settings_file:
-                dump(settings, settings_file)
 
     # Version Welcome PopUps
     elif popup_dict["FF_ver_welcome"]:
@@ -253,11 +248,13 @@ def welcome_popups(parent):
                  "File Find version: "
                  f"{FF_Files.VERSION_SHORT}[{FF_Files.VERSION}]",
             parent=parent)
-        # Setting PopUp File
-        popup_dict["FF_ver_welcome"] = False
-        settings["popup"] = popup_dict
-        with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "w") as settings_file:
-            dump(settings, settings_file)
+
+    # Setting PopUp File
+    popup_dict["FF_ver_welcome"] = False
+    popup_dict["FF_welcome"] = False
+    settings["popup"] = popup_dict
+    with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "w") as settings_file:
+        dump(settings, settings_file)
 
 
 # Debug

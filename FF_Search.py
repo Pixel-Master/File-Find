@@ -582,7 +582,7 @@ class Search:
                     if not (data_time["m_date_from"] <= file_m_time <= data_time["m_date_to"]):
                         copy_found_path_set.remove(m_date_file)
 
-                except FileNotFoundError:
+                except OSError:
                     copy_found_path_set.remove(m_date_file)
 
         # Making the copy and the original the same
