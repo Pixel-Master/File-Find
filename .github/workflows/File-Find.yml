@@ -67,7 +67,7 @@ jobs:
         # Install create-dmg 
         brew install create-dmg
     
-    - name: Build .app with py2app and creating dmg
+    - name: Build .app with nuitka and creating dmg
       run: |
         # Building File Find
         # Build arch is depending on system arch
@@ -92,4 +92,38 @@ jobs:
       with:
           if-no-files-found: warn
           name: File Find.dmg
-          path: dist/File Find.dmg     
+          path: dist/File Find.dmg  
+
+  build-windows:
+    name: "Building Windows exe"
+    runs-on: windows-latest
+
+    steps:
+    - name: Setup
+      uses: actions/checkout@v3
+      
+    - name: Install Python 3.11
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.11"
+        
+    - name: Install dependencies
+      run: |
+        # Installing python dependencies
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Build .exe with nuitka and creating dmg
+      run: |
+        # Building File Find
+        python3 build.py
+            
+    # Upload executable
+    - name: Upload File Find.exe
+      uses: actions/upload-artifact@v2
+      with:
+          if-no-files-found: warn
+          name: File Find.exe
+          path: dist\File Find.exe
+
+
