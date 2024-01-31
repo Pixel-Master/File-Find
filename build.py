@@ -89,7 +89,7 @@ def main():
         subprocess.run(["nuitka3",
                         "--standalone",
                         "--onefile",
-                        f"--linux-icon={os.getcwd()}/assets/icon.icns",
+                        f"--linux-icon={os.path.join(os.getcwd(), 'assets','icon.png')}",
                         "--enable-plugin=pyside6",
                         "--output-dir=dist"
                         "File-Find.py"])
@@ -100,7 +100,7 @@ def main():
         subprocess.run(["nuitka3",
                         "--standalone",
                         "--onefile",
-                        f"--windows-icon-from-ico={os.getcwd()}/assets/icon.ico",
+                        f"--windows-icon-from-ico={os.path.join(os.getcwd(), 'assets','icon.ico')}",
                         "--enable-plugin=pyside6",
                         "--output-dir=dist"
                         "File-Find.py"])
