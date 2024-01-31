@@ -38,7 +38,7 @@ def main():
                         "--enable-plugin=pyside6",
                         "--output-dir=dist",
                         "File-Find.py"])
-        # Renaming and moving the app
+        # Renaming the app
         subprocess.run(["mv", os.path.join("dist", "File-Find.app"), os.path.join("dist", "File Find.app")])
         # Setting the plist
         with open(os.path.join(os.getcwd(), "dist", "File Find.app", "Contents", "Info.plist"), "wb") as plist:
@@ -104,6 +104,8 @@ def main():
                         "--enable-plugin=pyside6",
                         "--output-dir=dist"
                         "File-Find.py"])
+        # Renaming the app
+        subprocess.run(["mv", os.path.join("dist", "File-Find.exe"), os.path.join("dist", "File Find.exe")])
 
 
 if __name__ == "__main__":
