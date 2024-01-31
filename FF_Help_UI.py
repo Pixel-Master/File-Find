@@ -226,7 +226,7 @@ class HelpWindow:
                 remove_button.setDisabled(True)
 
         def add_file():
-            selected_folder = QFileDialog.getExistingDirectory(directory=FF_Files.USER_FOLDER, parent=about_window)
+            selected_folder = QFileDialog.getExistingDirectory(dir=FF_Files.USER_FOLDER, parent=about_window)
             if selected_folder != "":
                 edit_excluded(selected_folder)
                 excluded_listbox.addItem(selected_folder)

@@ -36,9 +36,10 @@ def main():
                         "--macos-create-app-bundle",
                         f"--macos-app-icon={os.getcwd()}/assets/icon.icns",
                         "--enable-plugin=pyside6",
+                        "--output-dir=dist",
                         "File-Find.py"])
         # Renaming and moving the app
-        subprocess.run(["mv", "File-Find.app", os.path.join("dist", "File Find.app")])
+        subprocess.run(["mv", os.path.join("dist", "File-Find.app"), os.path.join("dist", "File Find.app")])
         # Setting the plist
         with open(os.path.join(os.getcwd(), "dist", "File Find.app", "Contents", "Info.plist"), "wb") as plist:
             plistlib.dump(
@@ -63,6 +64,9 @@ def main():
                        "CFBundleInfoDictionaryVersion": "6.0",
                        "NSHighResolutionCapable": True}, fp=plist)
 
+        # This is temporary, as long as I don't have an Apple Developer ID, just remove the signature
+        subprocess.run(["codesign", "--remove-signature", "Downloads/File Find.app"])
+
         # Building DMG
         print("\n\nBuilding DMG...")
 
@@ -78,6 +82,28 @@ def main():
              '--app-drop-link', '600', '190',
              'dist/File Find.dmg',
              'dist'])
+
+    # On Linux
+    elif sys.platform == "linux":
+        # Building App
+        subprocess.run(["nuitka3",
+                        "--standalone",
+                        "--onefile",
+                        f"--linux-icon={os.getcwd()}/assets/icon.icns",
+                        "--enable-plugin=pyside6",
+                        "--output-dir=dist"
+                        "File-Find.py"])
+
+    # On Windows
+    elif sys.platform == "win32" or sys.platform == 'cygwin':
+        # Building App
+        subprocess.run(["nuitka3",
+                        "--standalone",
+                        "--onefile",
+                        f"--windows-icon-from-ico={os.getcwd()}/assets/icon.ico",
+                        "--enable-plugin=pyside6",
+                        "--output-dir=dist"
+                        "File-Find.py"])
 
 
 if __name__ == "__main__":

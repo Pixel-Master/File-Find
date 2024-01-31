@@ -568,7 +568,7 @@ class MainWindow:
         # Search from Button
         # Opens the File dialogue and changes the current working dir into the returned value
         def open_dialog():
-            search_from = QFileDialog.getExistingDirectory(directory=os.getcwd())
+            search_from = QFileDialog.getExistingDirectory(dir=os.getcwd())
             try:
                 os.chdir(search_from)
                 self.edit_directory.setText(search_from)
@@ -1000,7 +1000,6 @@ class MainWindow:
         # Quit File Find
         quit_action = QAction("&Quit File Find", self.Root_Window)
         quit_action.triggered.connect(lambda: exit(0))
-        quit_action.setShortcut(QKeySequence.StandardKey.Quit)
 
         # Constructing menubar_icon_menu
         menubar_icon_menu.addAction(ff_title)
