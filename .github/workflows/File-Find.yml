@@ -113,7 +113,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
     
-    - name: Build .exe with nuitka and creating dmg
+    - name: Build .exe with nuitka
       run: |
         # Building File Find
         python3 build.py
@@ -126,4 +126,49 @@ jobs:
           name: File Find.exe
           path: dist\File Find.exe
 
+  build-linux:
+    name: "Building Linux App"
+    runs-on: debian-latest
+
+    steps:
+    - name: Setup
+      uses: actions/checkout@v3
+      
+    - name: Install Python 3.11
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.11"
+        
+    - name: Install dependencies
+      run: |
+        # Installing python dependencies
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Build app with nuitka
+      run: |
+        # Building File Find
+        python3 build.py
+        
+    - name: Zip .app
+      run: |
+        cd dist
+        ls
+        zip -r "File Find.app.zip" "File Find.app"
+        
+    # Upload app
+    - name: Upload File Find.app
+      uses: actions/upload-artifact@v2
+      with:
+          if-no-files-found: error
+          name: File Find.app.zip
+          path: dist/File Find.app.zip
+          
+    # Upload dmg
+    - name: Upload File Find.dmg
+      uses: actions/upload-artifact@v2
+      with:
+          if-no-files-found: warn
+          name: File Find.dmg
+          path: dist/File Find.dmg  
 
