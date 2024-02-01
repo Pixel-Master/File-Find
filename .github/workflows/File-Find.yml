@@ -128,7 +128,7 @@ jobs:
 
   build-linux:
     name: "Building Linux App"
-    runs-on: debian-latest
+    runs-on: ubuntu-latest
 
     steps:
     - name: Setup
