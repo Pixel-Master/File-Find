@@ -15,7 +15,7 @@ import sys
 import plistlib
 
 # Projects Libraries
-import FF_Files
+from FF_Files import VERSION, VERSION_SHORT
 
 
 def main():
@@ -56,8 +56,8 @@ def main():
                                                   "CFBundleTypeRole": "Viewer",
                                                   "LSIsAppleDefaultForType": True}],
                        "CFBundleIdentifier": "io.github.pixel-master.file-find",
-                       "CFBundleShortVersionString": FF_Files.VERSION_SHORT,
-                       "CFBundleVersion": FF_Files.VERSION,
+                       "CFBundleShortVersionString": VERSION_SHORT,
+                       "CFBundleVersion": VERSION,
                        "CFBundleName": "File-Find",
                        "CFBundlePackageType": "APPL",
                        "LSApplicationCategoryType": "public.app-category.utilities",
@@ -112,7 +112,7 @@ def main():
                         "--output-dir=dist",
                         "File-Find.py"])
         # Renaming the app
-        subprocess.run(["mv", os.path.join("dist", "File-Find.exe"), os.path.join("dist", "File Find.exe")])
+        subprocess.run(["move", os.path.join("dist", "File-Find.exe"), os.path.join("dist", "File Find.exe")])
 
 
 if __name__ == "__main__":
