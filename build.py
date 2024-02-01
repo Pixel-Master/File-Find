@@ -91,7 +91,7 @@ def main():
         # Building App
         subprocess.run(["python3",
                         "-m",
-                        "nuitka3",
+                        "nuitka",
                         "--standalone",
                         "--onefile",
                         f"--linux-icon={os.path.join(os.getcwd(), 'assets', 'icon.png')}",
@@ -104,7 +104,7 @@ def main():
         # Building App
         subprocess.run(["python3",
                         "-m"
-                        "nuitka"
+                        "nuitka",
                         "--standalone",
                         "--onefile",
                         f"--windows-icon-from-ico={os.path.join(os.getcwd(), 'assets', 'icon.ico')}",
