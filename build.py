@@ -96,20 +96,20 @@ def main():
                         "--onefile",
                         f"--linux-icon={os.path.join(os.getcwd(), 'assets', 'icon.png')}",
                         "--enable-plugin=pyside6",
-                        "--output-dir=dist"
+                        "--output-dir=dist",
                         "File-Find.py"])
 
     # On Windows
     elif sys.platform == "win32" or sys.platform == 'cygwin':
         # Building App
         subprocess.run(["python3",
-                        "-m"
+                        "-m",
                         "nuitka",
                         "--standalone",
                         "--onefile",
                         f"--windows-icon-from-ico={os.path.join(os.getcwd(), 'assets', 'icon.ico')}",
                         "--enable-plugin=pyside6",
-                        "--output-dir=dist"
+                        "--output-dir=dist",
                         "File-Find.py"])
         # Renaming the app
         subprocess.run(["mv", os.path.join("dist", "File-Find.exe"), os.path.join("dist", "File Find.exe")])
