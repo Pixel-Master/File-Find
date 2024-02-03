@@ -99,6 +99,9 @@ def main():
                         "--output-dir=dist",
                         "File-Find.py"])
 
+        # Renaming the app
+        subprocess.run(["mv", os.path.join("dist", "File-Find.app"), os.path.join("dist", "File Find.app")])
+
     # On Windows
     elif sys.platform == "win32" or sys.platform == 'cygwin':
         # Building App
