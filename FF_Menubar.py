@@ -1,0 +1,582 @@
+# This source file is a part of File Find made by Pixel-Master
+#
+# Copyright 2022-2024 Pixel-Master
+#
+# This software is licensed under the "GPLv3" License as described in the "LICENSE" file,
+# which should be included with this package. The terms are also available at
+# http://www.gnu.org/licenses/gpl-3.0.html
+
+# Imports
+import hashlib
+import gc
+import logging
+import os
+from json import dump, load
+from threading import Thread
+from time import perf_counter, ctime
+from pyperclip import copy
+
+# PySide6 Gui Imports
+from PySide6.QtGui import QIcon, QAction, QColor, QKeySequence
+from PySide6.QtWidgets import QFileDialog, \
+    QMenuBar, QListWidget, QTreeWidget
+
+# Projects Libraries
+import FF_Additional_UI
+import FF_Compare
+import FF_Duplicated
+import FF_Files
+import FF_Help_UI
+
+
+# This file contains the code for the menubar in the search-results window,
+# the compare window and the duplicated files window
+
+# Main class
+class MenuBar:
+
+    def __init__(
+            self, parent, window, listbox, matched_list=None, search_path=None, save_search=None, reload_files=None):
+        logging.debug("Setting up menubar...")
+
+        self.parent = parent
+        self.listbox: QListWidget | QTreeWidget = listbox
+        self.search_path = search_path
+        self.window = window
+
+        # Menubar
+        self.menu_bar = QMenuBar(self.parent)
+
+        # Menus
+        self.file_menu = self.menu_bar.addMenu("&File")
+        self.edit_menu = self.menu_bar.addMenu("&Edit")
+        self.tools_menu = self.menu_bar.addMenu("&Tools")
+        self.window_menu = self.menu_bar.addMenu("&Window")
+        self.help_menu = self.menu_bar.addMenu("&Help")
+
+        if window == "search":
+            # Save Search
+            save_search_action = QAction("&Save Search", self.parent)
+            save_search_action.triggered.connect(save_search)
+            save_search_action.setShortcut("Ctrl+S")
+            self.file_menu.addAction(save_search_action)
+
+            # Reload and Remove Deleted Files
+            reload_action = QAction("&Reload and Remove Deleted Files", self.parent)
+            reload_action.triggered.connect(reload_files)
+            reload_action.setShortcut("Ctrl+R")
+            self.tools_menu.addAction(reload_action)
+
+        # Clear Cache
+        cache_action = QAction("&Clear Cache", self.parent)
+        cache_action.triggered.connect(FF_Files.remove_cache)
+        cache_action.triggered.connect(
+            lambda: FF_Additional_UI.PopUps.show_info_messagebox("Cleared Cache",
+                                                                 "Cleared Cache successfully!",
+                                                                 self.parent))
+        cache_action.setShortcut("Ctrl+T")
+        self.tools_menu.addAction(cache_action)
+
+        # Separator
+        self.tools_menu.addSeparator()
+
+        if window == "search" or window == "compare" or window == "duplicated":
+            # Open File Action
+            open_action = QAction("&Open selected file", self.parent)
+            open_action.triggered.connect(self.open_file)
+            open_action.setShortcut(QKeySequence.StandardKey.Open)
+            self.tools_menu.addAction(open_action)
+
+            # Open File in Terminal Action
+            open_terminal_action = QAction("&Open selected file in Terminal", self.parent)
+            open_terminal_action.triggered.connect(self.open_in_terminal)
+            open_terminal_action.setShortcut("Ctrl+Alt+O")
+            self.tools_menu.addAction(open_terminal_action)
+
+            # Show File in Finder Action
+            show_action = QAction("&Open selected file in Finder", self.parent)
+            show_action.triggered.connect(self.open_in_finder)
+            show_action.setShortcut("Ctrl+Shift+O")
+            self.tools_menu.addAction(show_action)
+
+            # Select an app to open the selected file
+            open_in_app_action = QAction("&Select an app to open the selected file...", self.parent)
+            open_in_app_action.triggered.connect(self.open_in_app)
+            open_in_app_action.setShortcut("Alt+O")
+            self.tools_menu.addAction(open_in_app_action)
+
+            # Separator
+            self.tools_menu.addSeparator()
+
+            # Select an app to open the selected file
+            delete_file_action = QAction("&Move selected file to trash", self.parent)
+            delete_file_action.triggered.connect(self.delete_file)
+            delete_file_action.setShortcut("Ctrl+Delete")
+            self.tools_menu.addAction(delete_file_action)
+
+            # Prompt the user to select a new location for the selected file
+            move_file_action = QAction("&Move or Rename selected file", self.parent)
+            move_file_action.triggered.connect(self.move_file)
+            move_file_action.setShortcut("Ctrl+M")
+            self.tools_menu.addAction(move_file_action)
+
+            # Separator
+            self.tools_menu.addSeparator()
+
+            # File Info
+            info_action = QAction("&Info for selected file", self.parent)
+            info_action.triggered.connect(self.file_info)
+            info_action.setShortcut("Ctrl+I")
+            self.tools_menu.addAction(info_action)
+
+            # View File Hashes
+            hash_action = QAction("&Hashes for selected file", self.parent)
+            hash_action.triggered.connect(self.view_hashes)
+            hash_action.setShortcut("Ctrl+Shift+I")
+            self.tools_menu.addAction(hash_action)
+
+            # Separator
+            self.tools_menu.addSeparator()
+
+            # Copy file for terminal
+            copy_path_action = QAction("&Copy file path", self.parent)
+            copy_path_action.triggered.connect(self.copy_file)
+            copy_path_action.setShortcut("Ctrl+C")
+            self.tools_menu.addAction(copy_path_action)
+
+            # Copy file
+            copy_terminal_action = QAction("&Copy file path for terminal", self.parent)
+            copy_terminal_action.triggered.connect(self.copy_path_for_terminal)
+            copy_terminal_action.setShortcut("Ctrl+Alt+C")
+            self.tools_menu.addAction(copy_terminal_action)
+
+            # Copy file name
+            copy_name_action = QAction("&Copy file name", self.parent)
+            copy_name_action.triggered.connect(self.copy_name)
+            copy_name_action.setShortcut("Ctrl+Shift+C")
+            self.tools_menu.addAction(copy_name_action)
+
+        # About File Find
+        about_action = QAction("&About File Find", self.parent)
+        about_action.triggered.connect(lambda: FF_Help_UI.HelpWindow(self.parent))
+        self.help_menu.addAction(about_action)
+
+        # Close Window
+        close_action = QAction("&Close Window", self.parent)
+        close_action.triggered.connect(self.parent.destroy)
+        close_action.triggered.connect(gc.collect)
+        close_action.setShortcut("Ctrl+W")
+        self.window_menu.addAction(close_action)
+
+        # Help
+        help_action = QAction("&File Find Help And Settings", self.parent)
+        help_action.triggered.connect(lambda: FF_Help_UI.HelpWindow(self.parent))
+        self.help_menu.addAction(help_action)
+
+        if window == "search":
+            # Compare Search
+            compare_action = QAction("&Compare to other Search...", self.parent)
+            compare_action.triggered.connect(lambda: FF_Compare.CompareSearches(matched_list, search_path, self.parent))
+            compare_action.setShortcut("Ctrl+N")
+
+            # Find duplicated
+            duplicated_action = QAction("&Find duplicated files...", self.parent)
+            duplicated_action.triggered.connect(
+                lambda: FF_Duplicated.DuplicatedSettings(parent, search_path, matched_list))
+            duplicated_action.setShortcut("Ctrl+D")
+
+            # Separator for visual indent
+            self.tools_menu.addSeparator()
+            self.file_menu.addSeparator()
+
+            # Add actions
+            self.tools_menu.addAction(compare_action)
+            self.file_menu.addAction(compare_action)
+
+            self.tools_menu.addAction(duplicated_action)
+            self.file_menu.addAction(duplicated_action)
+
+    # Options for files and folders
+    # Prompts a user to select a new location for the file
+    def move_file(self):
+        # Debug
+        logging.info("Called Move file")
+
+        try:
+            # Selecting the highlighted item of the listbox
+            selected_file = self.get_current_item()
+
+            # Debug
+            logging.info(f"Selected file: {selected_file}, prompting for new location...")
+
+            # Prompting the user for a new location
+            new_location = QFileDialog.getSaveFileName(
+                self.parent,
+                caption=f"Rename / Move {os.path.basename(selected_file)}",
+                dir=selected_file
+            )[0]
+
+            logging.info(f"New file location: {new_location}")
+
+            # If no file was selected
+            if new_location == "":
+                logging.info("User pressed Cancel")
+
+            # If file was selected, moving the file
+            elif os.system(f"mv {FF_Files.convert_file_name_for_terminal(selected_file)} "
+                           f"{os.path.join(FF_Files.convert_file_name_for_terminal(new_location))}") != 0:
+                # Debug
+                logging.critical(f"File not Found: {selected_file}")
+
+                # If cmd wasn't successful display this error
+                FF_Additional_UI.PopUps.show_critical_messagebox(
+                    "Error!",
+                    f"File not found!\nTried to move:\n\n"
+                    f" {selected_file}\n\n"
+                    f"to:\n\n"
+                    f"{new_location}",
+                    self.parent
+                )
+
+            else:
+                # If everything ran successful
+
+                # Debug
+                logging.debug(f"Moved {selected_file} to {new_location}")
+
+                if self.window == "compare" or self.window == "search":
+                    # Set the icon
+                    self.get_listbox().item(
+                        self.get_listbox().currentRow()).setIcon(
+                        QIcon(os.path.join(FF_Files.ASSETS_FOLDER, "move_icon_small.png")))
+
+                    # Change the color to blue
+                    self.get_listbox().item(
+                        self.get_listbox().currentRow()).setBackground(QColor("#1ccaff"))
+
+                # QTreeWidget needs special treatment
+                elif self.window == "duplicated":
+                    # Icon
+                    self.get_listbox().currentItem().setIcon(
+                        0, QIcon(os.path.join(FF_Files.ASSETS_FOLDER, "move_icon_small.png")))
+                    # Color
+                    self.get_listbox().currentItem().setBackground(0, QColor("#1ccaff"))
+
+                # Removing file from cache
+                logging.info("Removing file from cache...")
+                self.remove_file_from_cache(selected_file)
+        except SystemExit:
+            # Triggered when no file is selected
+            FF_Additional_UI.PopUps.show_critical_messagebox("Error!", "Select a File!", self.parent)
+
+    # Moves a file to the trash
+    def delete_file(self):
+        try:
+            # Selecting the highlighted item of the listbox
+            selected_file = self.get_listbox().currentItem().text()
+
+            # Trash location
+            new_location = os.path.join(
+                FF_Files.convert_file_name_for_terminal(FF_Files.USER_FOLDER),
+                '.Trash',
+                FF_Files.convert_file_name_for_terminal(os.path.basename(selected_file)))
+            # Command to execute
+            delete_command = (
+                f"mv {FF_Files.convert_file_name_for_terminal(selected_file)} {new_location}")
+
+            # Moving the file to trash
+            if FF_Additional_UI.PopUps.show_delete_question(self.parent, selected_file):
+                if os.system(delete_command) != 0:
+
+                    #  Error message
+                    FF_Additional_UI.PopUps.show_critical_messagebox(
+                        "Error!", f"File not found: {selected_file}", self.parent)
+
+                    # Debug
+                    logging.error(f"File not found: {selected_file}")
+
+                else:
+                    # Debug
+                    logging.debug(f"Moved {selected_file} to trash")
+
+                    if self.window == "compare" or self.window == "search":
+
+                        # Set the icon
+                        self.get_listbox().item(
+                            self.get_listbox().currentRow()).setIcon(
+                            QIcon(os.path.join(FF_Files.ASSETS_FOLDER, "trash_icon_small.png")))
+
+                        # Change the color to blue
+                        self.get_listbox().item(
+                            self.get_listbox().currentRow()).setBackground(QColor("#ff0000"))
+
+                    # QTreeWidget needs special treatment
+                    elif self.window == "duplicated":
+                        # Icon
+                        self.get_listbox().currentItem().setIcon(0, QIcon(os.path.join(FF_Files.ASSETS_FOLDER,
+                                                                                       "trash_icon_small.png")))
+                        # Color
+                        self.get_listbox().currentItem().setBackground(0, QColor("#ff0000"))
+
+                    # Removing file from cache
+                    logging.info("Removing file from cache...")
+                    self.remove_file_from_cache(selected_file)
+
+        except AttributeError:
+            # If no file is selected
+            FF_Additional_UI.PopUps.show_critical_messagebox("Error!", "Select a File!", self.parent)
+
+    # Open a file with the standard app
+    def open_file(self):
+        try:
+            # Selecting the highlighted item of the focused listbox
+            selected_file = self.get_current_item()
+
+            if os.system(f"open {FF_Files.convert_file_name_for_terminal(selected_file)}") != 0:
+                FF_Additional_UI.PopUps.show_critical_messagebox("Error!", f"No Program found to open {selected_file}",
+                                                                 self.parent)
+            else:
+                logging.debug(f"Opened: {selected_file}")
+        except AttributeError:
+            FF_Additional_UI.PopUps.show_critical_messagebox("Error!", "Select a File!", self.parent)
+
+    # Opens a file with a user-defined app
+    def open_in_app(self):
+        try:
+            # Prompt for an app
+            selected_program = FF_Files.convert_file_name_for_terminal(
+                QFileDialog.getOpenFileName(
+                    parent=self.parent,
+                    dir="/Applications",
+                    filter="*.app;")[0])
+
+            # Tests if the user selected an app
+            if selected_program != "":
+                # Get the selected file
+                selected_file = FF_Files.convert_file_name_for_terminal(self.get_current_item())
+                # Open the selected file with the selected program and checking the return value
+                if os.system(f"open {selected_file} -a {selected_program}") != 0:
+                    # Error message
+                    FF_Additional_UI.PopUps.show_critical_messagebox("Error!", f"{selected_file} does not exist!",
+                                                                     self.parent)
+                    logging.error(f"Error with opening {selected_file} with {selected_program}")
+                else:
+                    logging.debug(f"Opened: {selected_file}")
+
+        # If no file is selected
+        except AttributeError:
+            FF_Additional_UI.PopUps.show_critical_messagebox("Error!", "Select a File!", self.parent)
+
+    # Open a file in the Terminal
+    def open_in_terminal(self):
+        try:
+            selected_file = self.get_current_item()
+
+            if os.system(f"open {FF_Files.convert_file_name_for_terminal(selected_file)}") != 0:
+                FF_Additional_UI.PopUps.show_critical_messagebox("Error!", f"Terminal could not open: {selected_file}",
+                                                                 self.parent)
+            else:
+                logging.debug(f"Opened: {selected_file}")
+        except AttributeError:
+            FF_Additional_UI.PopUps.show_critical_messagebox("Error!", "Select a File!", self.parent)
+
+    # Shows a file in finder
+    def open_in_finder(self):
+        try:
+            selected_file = self.get_current_item()
+
+            if os.system(f"open -R {FF_Files.convert_file_name_for_terminal(selected_file)}") != 0:
+                FF_Additional_UI.PopUps.show_critical_messagebox("Error!", f"File not Found {selected_file}",
+                                                                 self.parent)
+            else:
+                logging.debug(f"Opened in Finder: {selected_file}")
+        except AttributeError:
+            FF_Additional_UI.PopUps.show_critical_messagebox("Error!", "Select a File!", self.parent)
+
+    # Get basic information about a file
+    def file_info(self):
+        try:
+            file = self.get_current_item()
+
+            # Debug
+            logging.debug("Called File Info")
+            try:
+
+                # Getting File Type
+                if os.path.islink(file):
+                    filetype = "Alias / File Link"
+                elif os.path.isfile(file):
+                    filetype = "File"
+                elif os.path.isdir(file):
+                    filetype = "Folder"
+                else:
+                    filetype = "Unknown"
+
+                FF_Additional_UI.PopUps.show_info_messagebox(
+                    f"Information about: {FF_Files.display_path(file, 30)}",
+                    f"\n"
+                    f"Path: {file}\n"
+                    f"\n"
+                    f"Type: {filetype}\n"
+                    f"File Name: {os.path.basename(file)}\n"
+                    f"Size: "
+                    f"{FF_Files.conv_file_size(FF_Files.get_file_size(file))}\n"
+                    f"Date Created: {ctime(os.stat(file).st_birthtime)}\n"
+                    f"Date Modified: {ctime(os.path.getmtime(file))}\n",
+                    self.parent, large=True)
+
+            except (FileNotFoundError, PermissionError):
+                logging.error(f"{file} does not Exist!")
+                FF_Additional_UI.PopUps.show_critical_messagebox("File Not Found!", "File does not exist!\nReload!",
+                                                                 self.parent)
+        except AttributeError:
+            FF_Additional_UI.PopUps.show_critical_messagebox("Error!", "Select a File!", self.parent)
+
+    # View the hashes
+    def view_hashes(self):
+        try:
+            # Collecting Files
+            hash_file = self.get_current_item()
+        except AttributeError:
+            FF_Additional_UI.PopUps.show_critical_messagebox("Error!", "Select a File!", self.parent)
+            logging.error("Error! Select a File!")
+        else:
+            # Debug
+            logging.info(f"Collecting hashes of {hash_file}...")
+
+            # If the path leads to a file
+            if os.path.isfile(hash_file):
+
+                # Computing Hashes
+                logging.info(f"Computing Hashes of {hash_file}...")
+
+                # structure
+                hash_list = {"md5": "", "sha1": "", "sha256": ""}
+                # Buffer size for hashes
+                buffer_size = 65536
+                # Saving times
+                saved_time = perf_counter()
+
+                # Function for all hash types
+                def calc_hash(hash_str: str, hash_func: hashlib):
+                    with open(hash_file, "rb") as open_hash_file:
+                        # Initializing the hash method e.g. sha1
+                        computing_hash = hash_func(usedforsecurity=False)
+                        while True:
+                            # reading data = BUF_SIZE from the
+                            # file and saving it in a variable
+                            data = open_hash_file.read(buffer_size)
+
+                            # True if eof = 1
+                            if not data:
+                                break
+                            # Updating hash
+                            computing_hash.update(data)
+
+                        # Hashes all the input data passed
+                        hash_list[hash_str] = computing_hash.hexdigest()
+
+                # Defining threads
+
+                # sha1 Hash
+                logging.debug("Computing sha1 Hash...")
+                sha1_hash_thread = Thread(target=lambda: calc_hash("sha1", hashlib.sha1))
+                sha1_hash_thread.start()
+
+                # md5 Hash
+                logging.debug("Computing md5 Hash...")
+                md5_hash_thread = Thread(target=lambda: calc_hash("md5", hashlib.md5))
+                md5_hash_thread.start()
+
+                # sha256 Hash
+                logging.debug("Computing sha256 Hash...")
+                sha256_hash_thread = Thread(target=lambda: calc_hash("sha256", hashlib.sha256))
+                sha256_hash_thread.start()
+
+                # Waiting for hashes
+                logging.debug("Waiting for Hashes to complete...")
+
+                sha1_hash_thread.join()
+                sha1_hash = hash_list["sha1"]
+                logging.debug(f"{sha1_hash = }")
+
+                md5_hash_thread.join()
+                md5_hash = hash_list["md5"]
+                logging.debug(f"{md5_hash = }")
+
+                sha256_hash_thread.join()
+                sha256_hash = hash_list["sha256"]
+                logging.debug(f"{sha256_hash = }")
+
+                # Time Feedback
+                final_time = perf_counter() - saved_time
+                logging.debug(f"Took {final_time}")
+
+                # Give Feedback
+                FF_Additional_UI.PopUps.show_info_messagebox(f"Hashes of {hash_file}",
+                                                             "\n"
+                                                             f"MD5:\n {md5_hash}\n\n"
+                                                             f"SHA1:\n {sha1_hash}\n\n"
+                                                             f"SHA265:\n {sha256_hash}\n\n\n"
+                                                             f"Took: {round(final_time, 3)} sec.",
+                                                             self.parent, large=True)
+            else:
+                # If os.path.isfile() returns False
+                FF_Additional_UI.PopUps.show_critical_messagebox(
+                    title="Not a file!",
+                    text=f"{hash_file} does not exists or is a folder!\n\nYou can only view hashes of files",
+                    parent=self.parent)
+                # Debug
+                logging.error(f"{hash_file} does not exist or is a folder!")
+
+    # Copy file name to clipboard
+    def copy_file(self):
+        file = self.get_current_item()
+        copy(file)
+
+    # Copy file name to clipboard
+    def copy_name(self):
+        file = self.get_current_item()
+        copy(os.path.basename(file))
+
+    # Copy path for Terminal
+    def copy_path_for_terminal(self):
+        file = self.get_current_item()
+        copy(FF_Files.convert_file_name_for_terminal(file))
+
+    # Remove moved file from cache
+    def remove_file_from_cache(self, file):
+        with open(os.path.join(
+                FF_Files.CACHED_SEARCHES_FOLDER,
+                self.search_path.replace("/", "-") + ".FFCache")) as search_file:
+            cached_files = load(search_file)
+
+        cached_files["found_path_set"].remove(file)
+
+        with open(
+                os.path.join(
+                    FF_Files.CACHED_SEARCHES_FOLDER,
+                    self.search_path.replace("/", "-") + ".FFCache"), "w") as search_file:
+            dump(cached_files, search_file)
+
+        # Debug
+        logging.info("Removed file from cache")
+
+    # Getting the listbox because there are two in the compare window
+    def get_listbox(self):
+        if self.window == "compare":
+            return self.parent.focusWidget()
+        elif self.window == "duplicated":
+            return self.listbox
+        else:
+            return self.listbox
+
+    # Getting the listbox item because there are two in the compare window
+    def get_current_item(self):
+        if self.window == "compare":
+            return self.parent.focusWidget().currentItem().text()
+        elif self.window == "duplicated":
+            self.listbox: QTreeWidget
+            return self.listbox.currentItem().text(0)
+        else:
+            return self.listbox.currentItem().text()
