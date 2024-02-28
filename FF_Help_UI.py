@@ -113,14 +113,15 @@ class HelpWindow:
         # The Author Label
         author_label = QLabel(about_window)
         # Font and Text
-        author_label.setText("Created by Pixel Master, Copyright © 2022–2024 Pixel Master.")
+        author_label.setText(
+            "Created by Pixel Master, Copyright © 2022–2024 Pixel Master.\nLicensed under the GNU GPLv3")
         author_label.setFont(QFont("Arial", 15))
         # The command and tooltip
         author_label.setToolTip(f"Version: {FF_Files.VERSION_SHORT} Extended Version: {FF_Files.VERSION}")
         # Display the Label
         author_label.adjustSize()
         author_label.show()
-        author_label.move(120, 240)
+        author_label.move(120, 230)
 
         # Links using QPushButton
         def generate_link_button(displayed_text, domain, color):

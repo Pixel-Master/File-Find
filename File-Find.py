@@ -11,6 +11,7 @@
 # Imports
 import logging
 import gc
+from sys import platform
 
 # PySide6 Gui Imports
 from PySide6.QtCore import QEvent
@@ -28,6 +29,7 @@ if __name__ == "__main__":
                         force=True)
 
     logging.info(f"Launching File Find with Version {FF_Files.VERSION_SHORT}[{FF_Files.VERSION}]...\n")
+    logging.info(f"Launching on \"{platform}\"...\n")
 
     # Creating QApplication
     class CreateApp(QApplication):
@@ -59,7 +61,7 @@ if __name__ == "__main__":
     FF_Files.cache_test(is_launching=True)
 
     # Launches the Main Window
-    FF_Main_UI.MainWindow()
+    FF_Main_UI.MainWindow(app)
 
     app.setQuitOnLastWindowClosed(False)
 

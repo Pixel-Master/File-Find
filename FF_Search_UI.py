@@ -9,30 +9,29 @@
 # This file contains the code for the search-results window
 
 # Imports
-import hashlib
 import logging
 import os
 from json import dump, load
-from threading import Thread
+from sys import platform
 from time import perf_counter, ctime, time
-import gc
 
 # PySide6 Gui Imports
 from PySide6.QtCore import QSize, Qt
-from PySide6.QtGui import QFont, QIcon, QAction, QColor, QKeySequence
+from PySide6.QtGui import QFont, QIcon
 from PySide6.QtWidgets import QMainWindow, QLabel, QPushButton, QFileDialog, \
-    QListWidget, QMenuBar, QMenu, QWidget, QGridLayout, QHBoxLayout
+    QListWidget, QMenu, QWidget, QGridLayout, QHBoxLayout
 
 # Projects Libraries
 import FF_Additional_UI
 import FF_Compare
+import FF_Duplicated
 import FF_Files
-import FF_Help_UI
 import FF_Main_UI
+import FF_Menubar
 
 
 class SearchWindow:
-    def __init__(self, time_total, time_searching, time_indexing, time_sorting, matched_list, search_path, parent):
+    def __init__(self, time_dict, matched_list, search_path, parent):
         # Debug
         logging.info("Setting up Search UI...")
 
@@ -40,7 +39,7 @@ class SearchWindow:
         self.search_path = search_path
 
         # Saves Time
-        time_before_building = perf_counter()
+        time_dict["time_before_building"] = perf_counter()
 
         # Window setup
         # Define the window
@@ -103,10 +102,27 @@ class SearchWindow:
             logging.debug("Displaying time stats.")
 
             # Getting the creation time of the cache file
-            cache_created_time = ctime(
-                os.stat(
-                    os.path.join(FF_Files.CACHED_SEARCHES_FOLDER,
-                                 search_path.replace("/", "-") + ".FFCache")).st_birthtime)
+            # On Windows and Linux
+            # (On Linux this currently returns the modification date,
+            # because it's impossible to access with pure python)
+            if platform == "win32" or platform == 'cygwin' or platform == "linux":
+                cache_created_time = ctime(
+                    os.path.getctime(
+                        os.path.join(FF_Files.CACHED_SEARCHES_FOLDER, search_path.replace("/", "-") + ".FFCache")))
+
+            # On Mac
+            elif platform == "darwin":
+                cache_created_time = ctime(
+                    os.stat(
+                        os.path.join(FF_Files.CACHED_SEARCHES_FOLDER,
+                                     search_path.replace("/", "-") + ".FFCache")).st_birthtime)
+            # If platform is unknown
+            else:
+                cache_created_time = f"Unrecognised platform: {platform}"
+                # Debug
+                logging.error(f"Unrecognised platform: {platform}")
+
+            # Modified time
             cache_modified_time = ctime(
                 os.path.getmtime(
                     os.path.join(FF_Files.CACHED_SEARCHES_FOLDER, search_path.replace("/", "-") + ".FFCache")))
@@ -115,11 +131,13 @@ class SearchWindow:
             # Displaying infobox with time info
             FF_Additional_UI.PopUps.show_info_messagebox(
                 "Time Stats",
-                f"Time needed:\nScanning: {round(time_searching, 3)}\nIndexing:"
-                f" {round(time_indexing, 3)}\nSorting:"
-                f" {round(time_sorting, 3)}\nCreating UI: "
-                f"{round(time_building, 3)}\n---------\nTotal: "
-                f"{round(time_total + time_building, 3)}\n\n\n"
+                f"Time needed:\n"
+                f"Scanning: {round(time_dict['time_searching'], 3)}\n"
+                f"Indexing: {round(time_dict['time_indexing'], 3)}\n"
+                f"Sorting: {round(time_dict['time_sorting'], 3)}\n"
+                f"Creating UI: {round(time_dict['time_building'], 3)}\n"
+                f"---------\n"
+                f"Total: {round(time_dict['time_total'] + time_dict['time_building'], 3)}\n\n\n"
                 f""
                 f"Timestamps:\n"
                 f"Cache created: {cache_created_time}\n"
@@ -196,6 +214,19 @@ class SearchWindow:
                 with open(save_file, "w") as export_file:
                     dump(matched_list, export_file)
 
+        # Building Menubar
+        menu_bar = FF_Menubar.MenuBar(
+            parent=self.Search_Results_Window,
+            listbox=self.result_listbox,
+            window="search",
+            matched_list=matched_list,
+            search_path=search_path,
+            reload_files=reload_files,
+            save_search=save_search)
+
+        # Debug
+        logging.info("Finished Setting up menubar")
+
         # Buttons
         # Functions to automate Button
         def generate_button(text, command, icon=None):
@@ -213,22 +244,22 @@ class SearchWindow:
             return button
 
         # Button to open the File in Finder
-        move_file = generate_button("Move / Rename", self.move_file,
+        move_file = generate_button("Move / Rename", menu_bar.move_file,
                                     icon=os.path.join(FF_Files.ASSETS_FOLDER, "Move_icon_small.png"))
         self.Bottom_Layout.addWidget(move_file)
 
         # Button to move the file to trash
-        delete_file = generate_button("Move to Trash", self.delete_file,
+        delete_file = generate_button("Move to Trash", menu_bar.delete_file,
                                       icon=os.path.join(FF_Files.ASSETS_FOLDER, "Trash_icon_small.png"))
         self.Bottom_Layout.addWidget(delete_file)
 
         # Button to open the file
-        open_file = generate_button("Open", self.open_file,
+        open_file = generate_button("Open", menu_bar.open_file,
                                     icon=os.path.join(FF_Files.ASSETS_FOLDER, "Open_icon_small.png"))
         self.Bottom_Layout.addWidget(open_file)
 
         # Button to show info about the file
-        file_info_button = generate_button("Info", self.file_info,
+        file_info_button = generate_button("Info", menu_bar.file_info,
                                            icon=os.path.join(FF_Files.ASSETS_FOLDER, "Info_button_img_small.png"))
         self.Bottom_Layout.addWidget(file_info_button)
 
@@ -250,11 +281,20 @@ class SearchWindow:
         # Save Action
         options_menu_save_action = options_menu.addAction("&Save Search")
         options_menu_save_action.triggered.connect(save_search)
+        # Seperator
+        options_menu.addSeparator()
         # Compare Action
         options_menu_compare_action = options_menu.addAction(
-            "&Select a .FFSearch file and compare it to the opened Search...")
+            "&Compare to other Search...")
         options_menu_compare_action.triggered.connect(
             lambda: FF_Compare.CompareSearches(matched_list, search_path, self.Search_Results_Window))
+        # Seperator
+        options_menu.addSeparator()
+        # Duplicated Action
+        options_menu_duplicated_action = options_menu.addAction(
+            "&Find duplicated...")
+        options_menu_duplicated_action.triggered.connect(
+            lambda: FF_Duplicated.DuplicatedSettings(self.Search_Results_Window, search_path, matched_list))
 
         # More Options Button
         options_button = generate_button(
@@ -276,22 +316,24 @@ class SearchWindow:
         self.result_listbox.setCurrentRow(0)
 
         # On double-click
-        self.result_listbox.itemDoubleClicked.connect(self.open_in_finder)
+        self.result_listbox.itemDoubleClicked.connect(menu_bar.open_in_finder)
 
         # Update Seconds needed Label
-        seconds_text.setText(f"Time needed: {round(time_total + (perf_counter() - time_before_building), 3)}")
+        seconds_text.setText(
+            f"Time needed: {round(time_dict['time_total'] + (perf_counter() - time_dict['time_before_building']), 3)}")
         seconds_text.adjustSize()
 
-        # Building Menubar
-        self.menubar(save_search, reload_files, matched_list, search_path, parent)
-
-        # Debug
-        logging.info("Finished Setting up menubar")
-
         # Time building UI
-        time_building = perf_counter() - time_before_building
-        logging.info(f"\nSeconds needed:\nScanning: {time_searching}\nIndexing: {time_indexing}\nSorting: "
-                     f"{time_sorting}\nBuilding UI: {time_building}\nTotal: {time_total + time_building}")
+        time_dict["time_building"] = perf_counter() - time_dict['time_before_building']
+
+        time_dict["time_total"] = time_dict["time_total"] + time_dict["time_building"]
+
+        logging.info(f"\nSeconds needed:\n"
+                     f"Scanning: {time_dict['time_searching']}\n"
+                     f"Indexing: {time_dict['time_indexing']}\n"
+                     f"Sorting: {time_dict['time_sorting']}\n"
+                     f"Building UI: {time_dict['time_building']}\n"
+                     f"Total: {time_dict['time_total']}")
 
         # Push Notification
         FF_Main_UI.menubar_icon.showMessage("File Find - Search finished!", f"Your Search finished!\nin {search_path}",
@@ -301,436 +343,3 @@ class SearchWindow:
         FF_Main_UI.MainWindow.update_search_status_label()
 
         logging.info("Finished Building Search-Results-UI!\n")
-
-    def menubar(self, save_search, reload_files, matched_list, search_path, parent):
-        logging.debug("Setting up menubar...", )
-
-        # Menubar
-        menu_bar = QMenuBar(self.Search_Results_Window)
-
-        # Menus
-        menu_bar.addMenu("&Edit")
-        file_menu = menu_bar.addMenu("&File")
-        tools_menu = menu_bar.addMenu("&Tools")
-        window_menu = menu_bar.addMenu("&Window")
-        help_menu = menu_bar.addMenu("&Help")
-
-        # Save Search
-        save_search_action = QAction("&Save Search", self.Search_Results_Window)
-        save_search_action.triggered.connect(save_search)
-        save_search_action.setShortcut("Ctrl+S")
-        file_menu.addAction(save_search_action)
-
-        # Clear Cache
-        cache_action = QAction("&Clear Cache", self.Search_Results_Window)
-        cache_action.triggered.connect(lambda: FF_Files.remove_cache(True, self.Search_Results_Window))
-        cache_action.setShortcut("Ctrl+T")
-        tools_menu.addAction(cache_action)
-
-        # Reload and Remove Deleted Files
-        reload_action = QAction("&Reload and Remove Deleted Files", self.Search_Results_Window)
-        reload_action.triggered.connect(reload_files)
-        reload_action.setShortcut("Ctrl+R")
-        tools_menu.addAction(reload_action)
-
-        # Separator
-        tools_menu.addSeparator()
-
-        # Open File Action
-        open_action = QAction("&Open selected file", self.Search_Results_Window)
-        open_action.triggered.connect(self.open_file)
-        open_action.setShortcut(QKeySequence.StandardKey.Open)
-        tools_menu.addAction(open_action)
-
-        # Open File in Terminal Action
-        open_terminal_action = QAction("&Open selected file in Terminal", self.Search_Results_Window)
-        open_terminal_action.triggered.connect(self.open_in_terminal)
-        open_terminal_action.setShortcut("Ctrl+Alt+O")
-        tools_menu.addAction(open_terminal_action)
-
-        # Show File in Finder Action
-        show_action = QAction("&Open selected file in Finder", self.Search_Results_Window)
-        show_action.triggered.connect(self.open_in_finder)
-        show_action.setShortcut("Ctrl+Shift+O")
-        tools_menu.addAction(show_action)
-
-        # Select an app to open the selected file
-        open_in_app_action = QAction("&Select an app to open the selected file...", self.Search_Results_Window)
-        open_in_app_action.triggered.connect(self.open_in_app)
-        open_in_app_action.setShortcut("Alt+O")
-        tools_menu.addAction(open_in_app_action)
-
-        # Separator
-        tools_menu.addSeparator()
-
-        # Select an app to open the selected file
-        delete_file_action = QAction("&Move selected file to trash", self.Search_Results_Window)
-        delete_file_action.triggered.connect(self.delete_file)
-        delete_file_action.setShortcut("Ctrl+Delete")
-        tools_menu.addAction(delete_file_action)
-
-        # Prompt the user to select a new location for the selected file
-        move_file_action = QAction("&Move or Rename selected file", self.Search_Results_Window)
-        move_file_action.triggered.connect(self.move_file)
-        move_file_action.setShortcut("Ctrl+M")
-        tools_menu.addAction(move_file_action)
-
-        # Separator
-        tools_menu.addSeparator()
-
-        # File Info
-        info_action = QAction("&Info for selected file", self.Search_Results_Window)
-        info_action.triggered.connect(self.file_info)
-        info_action.setShortcut("Ctrl+I")
-        tools_menu.addAction(info_action)
-
-        # View File Hashes
-        hash_action = QAction("&Hashes for selected file", self.Search_Results_Window)
-        hash_action.triggered.connect(self.view_hashes)
-        hash_action.setShortcut("Ctrl+Shift+I")
-        tools_menu.addAction(hash_action)
-
-        # About File Find
-        about_action = QAction("&About File Find", self.Search_Results_Window)
-        about_action.triggered.connect(lambda: FF_Help_UI.HelpWindow(self.Search_Results_Window))
-        help_menu.addAction(about_action)
-
-        # Close Window
-        close_action = QAction("&Close Window", self.Search_Results_Window)
-        close_action.triggered.connect(self.Search_Results_Window.destroy)
-        close_action.triggered.connect(gc.collect)
-        close_action.setShortcut("Ctrl+W")
-        window_menu.addAction(close_action)
-
-        # Help
-        help_action = QAction("&File Find Help And Settings", self.Search_Results_Window)
-        help_action.triggered.connect(lambda: FF_Help_UI.HelpWindow(self.Search_Results_Window))
-        help_menu.addAction(help_action)
-
-        # Compare Search
-        compare_action = QAction(
-            "&Select a .FFSearch file and compare it to the opened Search...", self.Search_Results_Window)
-        compare_action.triggered.connect(lambda: FF_Compare.CompareSearches(matched_list, search_path, parent))
-        compare_action.setShortcut("Ctrl+N")
-        # Separator for visual indent
-        tools_menu.addSeparator()
-        file_menu.addSeparator()
-
-        tools_menu.addAction(compare_action)
-        file_menu.addAction(compare_action)
-
-    # Options for files and folders
-    # Prompts a user to select a new location for the file
-    def move_file(self):
-        # Debug
-        logging.info("Called Move file")
-
-        try:
-            # Selecting the highlighted item of the listbox
-            selected_file = self.result_listbox.currentItem().text()
-
-            # Debug
-            logging.info(f"Selected file: {selected_file}, prompting for new location...")
-
-            # Prompting the user for a new location
-            new_location = QFileDialog.getSaveFileName(
-                self.Search_Results_Window,
-                caption=f"Rename / Move {os.path.basename(selected_file)}",
-                directory=selected_file
-            )[0]
-
-            logging.info(f"New file location: {new_location}")
-
-            # If no file was selected
-            if new_location == "":
-                logging.info("User pressed Cancel")
-
-            # If file was selected, moving the file
-            elif os.system(f"mv {FF_Files.convert_file_name_for_terminal(selected_file)} "
-                           f"{os.path.join(FF_Files.convert_file_name_for_terminal(new_location))}") != 0:
-                # Debug
-                logging.critical(f"File not Found: {selected_file}")
-
-                # If cmd wasn't successful display this error
-                FF_Additional_UI.PopUps.show_critical_messagebox(
-                    "Error!",
-                    f"File not found!\nTried to move:\n\n"
-                    f" {selected_file}\n\n"
-                    f"to:\n\n"
-                    f"{new_location}",
-                    self.Search_Results_Window
-                )
-
-            else:
-                # If everything ran successful
-
-                # Debug
-                logging.debug(f"Moved {selected_file} to {new_location}")
-
-                # Set the icon
-                self.result_listbox.item(
-                    self.result_listbox.currentRow()).setIcon(
-                    QIcon(os.path.join(FF_Files.ASSETS_FOLDER, "move_icon_small.png")))
-
-                # Change the color to blue
-                self.result_listbox.item(
-                    self.result_listbox.currentRow()).setBackground(QColor("#1ccaff"))
-
-                # Removing file from cache
-                logging.info("Removing file from cache...")
-                self.remove_file_from_cache(selected_file)
-        except AttributeError:
-            # Triggered when no file is selected
-            FF_Additional_UI.PopUps.show_critical_messagebox("Error!", "Select a File!", self.Search_Results_Window)
-
-    # Moves a file to the trash
-    def delete_file(self):
-        try:
-            # Selecting the highlighted item of the listbox
-            selected_file = self.result_listbox.currentItem().text()
-
-            # Trash location
-            new_location = os.path.join(
-                FF_Files.convert_file_name_for_terminal(FF_Files.USER_FOLDER),
-                '.Trash',
-                FF_Files.convert_file_name_for_terminal(os.path.basename(selected_file)))
-            # Command to execute
-            delete_command = (
-                f"mv {FF_Files.convert_file_name_for_terminal(selected_file)} {new_location}")
-
-            # Moving the file to trash
-            if FF_Additional_UI.PopUps.show_delete_question(self.Search_Results_Window, selected_file):
-                if os.system(delete_command) != 0:
-
-                    #  Error message
-                    FF_Additional_UI.PopUps.show_critical_messagebox(
-                        "Error!", f"File not found: {selected_file}", self.Search_Results_Window)
-
-                    # Debug
-                    logging.error(f"File not found: {selected_file}")
-
-                else:
-                    # Debug
-                    logging.debug(f"Moved {selected_file} to trash")
-
-                    # Set the icon
-                    self.result_listbox.item(
-                        self.result_listbox.currentRow()).setIcon(
-                        QIcon(os.path.join(FF_Files.ASSETS_FOLDER, "trash_icon_small.png")))
-
-                    # Change the color to blue
-                    self.result_listbox.item(
-                        self.result_listbox.currentRow()).setBackground(QColor("#ff0000"))
-
-                    # Removing file from cache
-                    logging.info("Removing file from cache...")
-                    self.remove_file_from_cache(selected_file)
-
-        except AttributeError:
-            # If no file is selected
-            FF_Additional_UI.PopUps.show_critical_messagebox("Error!", "Select a File!", self.Search_Results_Window)
-
-    # Open a file with the standard app
-    def open_file(self):
-        try:
-            # Selecting the highlighted item of the focused listbox
-            selected_file = self.result_listbox.currentItem().text()
-
-            if os.system(f"open {FF_Files.convert_file_name_for_terminal(selected_file)}") != 0:
-                FF_Additional_UI.PopUps.show_critical_messagebox("Error!", f"No Program found to open {selected_file}",
-                                                                 self.Search_Results_Window)
-            else:
-                logging.debug(f"Opened: {selected_file}")
-        except AttributeError:
-            FF_Additional_UI.PopUps.show_critical_messagebox("Error!", "Select a File!", self.Search_Results_Window)
-
-    # Opens a file with a user-defined app
-    def open_in_app(self):
-        try:
-            # Prompt for an app
-            selected_program = FF_Files.convert_file_name_for_terminal(
-                QFileDialog.getOpenFileName(
-                    parent=self.Search_Results_Window,
-                    directory="/Applications",
-                    filter="*.app;")[0])
-
-            # Tests if the user selected an app
-            if selected_program != "":
-                # Get the selected file
-                selected_file = FF_Files.convert_file_name_for_terminal(self.result_listbox.currentItem().text())
-                # Open the selected file with the selected program and checking the return value
-                if os.system(f"open {selected_file} -a {selected_program}") != 0:
-                    # Error message
-                    FF_Additional_UI.PopUps.show_critical_messagebox("Error!", f"{selected_file} does not exist!",
-                                                                     self.Search_Results_Window)
-                    logging.error(f"Error with opening {selected_file} with {selected_program}")
-                else:
-                    logging.debug(f"Opened: {selected_file}")
-
-        # If no file is selected
-        except AttributeError:
-            FF_Additional_UI.PopUps.show_critical_messagebox("Error!", "Select a File!", self.Search_Results_Window)
-
-    # Open a file in the Terminal
-    def open_in_terminal(self):
-        try:
-            selected_file = self.result_listbox.currentItem().text()
-
-            if os.system(f"open {FF_Files.convert_file_name_for_terminal(selected_file)}") != 0:
-                FF_Additional_UI.PopUps.show_critical_messagebox("Error!", f"Terminal could not open: {selected_file}",
-                                                                 self.Search_Results_Window)
-            else:
-                logging.debug(f"Opened: {selected_file}")
-        except AttributeError:
-            FF_Additional_UI.PopUps.show_critical_messagebox("Error!", "Select a File!", self.Search_Results_Window)
-
-    # Shows a file in finder
-    def open_in_finder(self):
-        try:
-            selected_file = self.result_listbox.currentItem().text()
-
-            if os.system(f"open -R {FF_Files.convert_file_name_for_terminal(selected_file)}") != 0:
-                FF_Additional_UI.PopUps.show_critical_messagebox("Error!", f"File not Found {selected_file}",
-                                                                 self.Search_Results_Window)
-            else:
-                logging.debug(f"Opened in Finder: {selected_file}")
-        except AttributeError:
-            FF_Additional_UI.PopUps.show_critical_messagebox("Error!", "Select a File!", self.Search_Results_Window)
-
-    # Get basic information about a file
-    def file_info(self):
-        try:
-            file = self.result_listbox.currentItem().text()
-
-            # Debug
-            logging.debug("Called File Info")
-            try:
-
-                # Getting File Type
-                if os.path.islink(file):
-                    filetype = "Alias / File Link"
-                elif os.path.isfile(file):
-                    filetype = "File"
-                elif os.path.isdir(file):
-                    filetype = "Folder"
-                else:
-                    filetype = "Unknown"
-
-                FF_Additional_UI.PopUps.show_info_messagebox(
-                    f"Information about: {file}",
-                    f"File Info:\n"
-                    f"\n\n"
-                    f"Path: {file}\n"
-                    f"\n"
-                    f"Type: {filetype}\n"
-                    f"File Name: {os.path.basename(file)}\n"
-                    f"Size: "
-                    f"{FF_Files.conv_file_size(FF_Files.get_file_size(file))}\n"
-                    f"Date Created: {ctime(os.stat(file).st_birthtime)}\n"
-                    f"Date Modified: {ctime(os.path.getmtime(file))}\n",
-                    self.Search_Results_Window)
-
-            except (FileNotFoundError, PermissionError):
-                logging.error(f"{file} does not Exist!")
-                FF_Additional_UI.PopUps.show_critical_messagebox("File Not Found!", "File does not exist!\nReload!",
-                                                                 self.Search_Results_Window)
-        except AttributeError:
-            FF_Additional_UI.PopUps.show_critical_messagebox("Error!", "Select a File!", self.Search_Results_Window)
-
-    # View the hashes
-    def view_hashes(self):
-        try:
-            # Collecting Files
-            hash_file = self.result_listbox.currentItem().text()
-            logging.info(f"Collecting {hash_file}...")
-            if os.path.isdir(hash_file):
-                file_content = b""
-                for root, _dirs, files in os.walk(hash_file):
-                    for i in files:
-                        try:
-                            with open(os.path.join(root, i)) as hash_file:
-                                file_content = hash_file.read() + file_content
-                        except FileNotFoundError:
-                            logging.error(f"{hash_file} does not exist!")
-
-            else:
-                try:
-                    with open(hash_file) as hash_file:
-                        file_content = hash_file.read()
-                except FileNotFoundError:
-                    logging.error(f"{hash_file} does not exist!")
-                    FF_Additional_UI.PopUps.show_critical_messagebox("File not found! ", f"{hash_file} does not exist!",
-                                                                     self.Search_Results_Window)
-                    file_content = 0
-
-            # Computing Hashes
-            logging.info(f"Computing Hashes of {hash_file}...")
-            hash_list = []
-            saved_time = perf_counter()
-
-            # sha1 Hash
-            logging.debug("Computing sha1 Hash...")
-            sha1_hash_thread = Thread(target=lambda: hash_list.insert(0, hashlib.sha1(file_content).hexdigest()))
-            sha1_hash_thread.start()
-
-            # md5 Hash
-            logging.debug("Computing md5 Hash...")
-            md5_hash_thread = Thread(target=lambda: hash_list.insert(1, hashlib.md5(file_content).hexdigest()))
-            md5_hash_thread.start()
-
-            # sha256 Hash
-            logging.debug("Computing sha256 Hash...")
-            sha256_hash_thread = Thread(
-                target=lambda: hash_list.insert(2, hashlib.sha256(file_content).hexdigest()))
-            sha256_hash_thread.start()
-
-            # Waiting for hashes
-            logging.debug("Waiting for Hashes to complete...")
-
-            sha1_hash_thread.join()
-            sha1_hash = hash_list[0]
-            logging.debug(f"{sha1_hash = }")
-
-            md5_hash_thread.join()
-            md5_hash = hash_list[1]
-            logging.debug(f"{md5_hash = }")
-
-            sha256_hash_thread.join()
-            sha256_hash = hash_list[2]
-            logging.debug(f"{sha256_hash = }")
-
-            # Time Feedback
-            final_time = perf_counter() - saved_time
-            logging.debug(f"Took {final_time}")
-
-            # Give Feedback
-            FF_Additional_UI.PopUps.show_info_messagebox(f"Hashes of {hash_file}",
-                                                         f"Hashes of {hash_file}:\n\n"
-                                                         f"MD5:\n {md5_hash}\n\n"
-                                                         f"SHA1:\n {sha1_hash}\n\n"
-                                                         f"SHA265:\n {sha256_hash}\n\n\n"
-                                                         f"Took: {round(final_time, 3)} sec.",
-                                                         self.Search_Results_Window)
-
-        except AttributeError:
-            FF_Additional_UI.PopUps.show_critical_messagebox("Error!", "Select a File!", self.Search_Results_Window)
-            logging.error("Error! Select a File!")
-
-    # Remove moved file from cache
-    def remove_file_from_cache(self, file):
-        with open(os.path.join(
-                FF_Files.CACHED_SEARCHES_FOLDER,
-                self.search_path.replace("/", "-") + ".FFCache")) as search_file:
-
-            cached_files = load(search_file)
-
-        cached_files["found_path_set"].remove(file)
-
-        with open(
-                os.path.join(
-                    FF_Files.CACHED_SEARCHES_FOLDER,
-                    self.search_path.replace("/", "-") + ".FFCache"), "w") as search_file:
-            dump(cached_files, search_file)
-
-        # Debug
-        logging.info("Removed file from cache")

@@ -11,14 +11,13 @@
 # Imports
 import logging
 import os
-from sys import exit
 
 # PySide6 Gui Imports
 from PySide6.QtCore import QSize, Qt, QDate
 from PySide6.QtGui import QFont, QDoubleValidator, QIcon, QAction, QKeySequence
 from PySide6.QtWidgets import QWidget, QLabel, QPushButton, QRadioButton, QFileDialog, \
     QLineEdit, QButtonGroup, QDateEdit, QComboBox, QMenuBar, QSystemTrayIcon, QMenu, QCompleter, QTabWidget, \
-    QMainWindow, QGridLayout, QSpacerItem, QSizePolicy
+    QMainWindow, QGridLayout, QSpacerItem, QSizePolicy, QApplication
 from pyperclip import copy
 
 # Projects Libraries
@@ -30,7 +29,7 @@ import FF_Search
 
 # The class for the main window where filters can be selected
 class MainWindow:
-    def __init__(self):
+    def __init__(self, app: QApplication):
         # Debug
         logging.info("Launching UI...")
         logging.debug("Setting up self.Root_Window...")
@@ -512,7 +511,7 @@ class MainWindow:
                 logging.debug("Enabled file ending edit")
                 # Enable the file ending edit
                 edit_file_extension.setDisabled(False)
-                edit_file_extension.setToolTip(None)
+                edit_file_extension.setToolTip("")
                 edit_file_extension.setStyleSheet(";")
 
             # Block/ Unblock FIle groups combobox
@@ -720,7 +719,7 @@ class MainWindow:
             # Disconnect the button set a new click event
             try:
                 button_command_copy.clicked.disconnect()
-            except TypeError:
+            except (TypeError, RuntimeError):
                 pass
             button_command_copy.clicked.connect(copy_command)
             # Display the Button at the correct position
@@ -737,7 +736,7 @@ class MainWindow:
         action_search_without_cache.triggered.connect(self.delete_cache_and_search)
         context_menu.addAction(action_search_without_cache)
 
-        # Separator
+        # Separatorx
         context_menu.addSeparator()
 
         # Load Search Action
@@ -782,7 +781,7 @@ class MainWindow:
 
         # Set up the menu bar
         logging.info("Setting up Menu Bar...")
-        self.menu_bar(generate_terminal_command)
+        self.menu_bar(generate_terminal_command, app)
 
         # Showing PopUps
         FF_Additional_UI.welcome_popups(parent=self.Root_Window)
@@ -880,7 +879,7 @@ class MainWindow:
         return button
 
     # Setting up the menu bar
-    def menu_bar(self, shell_cmd):
+    def menu_bar(self, shell_cmd, app: QApplication):
 
         # Menu Bar
         menu_bar = QMenuBar(self.Root_Window)
@@ -899,7 +898,11 @@ class MainWindow:
 
         # Clear Cache
         cache_action = QAction("&Clear Cache", self.Root_Window)
-        cache_action.triggered.connect(lambda: FF_Files.remove_cache(True, self.Root_Window))
+        cache_action.triggered.connect(FF_Files.remove_cache)
+        cache_action.triggered.connect(
+            lambda: FF_Additional_UI.PopUps.show_info_messagebox("Cleared Cache",
+                                                                 "Cleared Cache successfully!",
+                                                                 self.Root_Window))
         cache_action.setShortcut("Ctrl+T")
         tools_menu.addAction(cache_action)
 
@@ -999,7 +1002,7 @@ class MainWindow:
 
         # Quit File Find
         quit_action = QAction("&Quit File Find", self.Root_Window)
-        quit_action.triggered.connect(lambda: exit(0))
+        quit_action.triggered.connect(app.quit)
 
         # Constructing menubar_icon_menu
         menubar_icon_menu.addAction(ff_title)
