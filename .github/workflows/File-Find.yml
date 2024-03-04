@@ -149,26 +149,15 @@ jobs:
       run: |
         # Building File Find
         python3 build.py
-        
-    - name: Zip .app
-      run: |
-        cd dist
-        ls
-        zip -r "File Find.app.zip" "File Find.app"
+  
         
     # Upload app
     - name: Upload File Find.app
       uses: actions/upload-artifact@v2
       with:
           if-no-files-found: error
-          name: File Find.app.zip
-          path: dist/File Find.app.zip
+          name: File Find.bin
+          path: dist/File Find.bin
           
-    # Upload dmg
-    - name: Upload File Find.dmg
-      uses: actions/upload-artifact@v2
-      with:
-          if-no-files-found: warn
-          name: File Find.dmg
-          path: dist/File Find.dmg  
+
 
