@@ -17,7 +17,7 @@ from time import time
 import hashlib
 
 # Versions
-VERSION: str = "rc_19-feb-24"
+VERSION: str = "rc_4-mar-24"
 VERSION_SHORT: str = "0.0"
 
 # Defining folder variables

@@ -127,7 +127,7 @@ def main():
                         "--disable-cache=all",
                         "File-Find.py"])
         # Renaming the app
-        subprocess.run(["move", os.path.join("dist", "File-Find.exe"), os.path.join("dist", "File Find.exe")])
+        subprocess.run(["ren", os.path.join("dist", "File-Find.exe"), os.path.join("dist", "File Find.exe")])
 
 
 if __name__ == "__main__":
