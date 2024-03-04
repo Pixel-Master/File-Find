@@ -99,7 +99,7 @@ class GenerateTerminalCommand:
 class LoadSearch:
     def __init__(self, parent):
         load_dialog = QFileDialog.getOpenFileName(parent,
-                                                  "Export File Find Search",
+                                                  "Import File Find Search",
                                                   FF_Files.SAVED_SEARCHES_FOLDER,
                                                   "*.FFSearch;")
         self.load_file = load_dialog[0]
@@ -110,7 +110,7 @@ class LoadSearch:
     # Opening the user-interface and creating a cache file for the reload button
     @staticmethod
     def open_file(load_file, parent):
-        # A file was elected
+        # A file was selected
         if load_file != "":
 
             # Debug
@@ -150,8 +150,9 @@ class LoadSearch:
                 FF_Search_UI.SearchWindow(*[{"time_searching": 0,
                                              "time_indexing": 0,
                                              "time_sorting": 0,
-                                             "time_building": 0},
-                                          saved_file_content, load_file, parent])
+                                             "time_building": 0,
+                                             "time_total": 0},
+                                            saved_file_content, load_file, parent])
 
 
 # The Search Engine
@@ -173,7 +174,6 @@ class Search:
         Yes it would be easier if Qt had a function to get the unix time
         """
         unix_time_list = {}
-
         self.DEFAULT_TIME_INPUT = {"c_date_from": 946681200.0,
                                    "c_date_to": self.conv_qdate_to_unix_time(QDate.currentDate()),
                                    "m_date_from": 946681200.0,

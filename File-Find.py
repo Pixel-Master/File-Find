@@ -22,6 +22,7 @@ from PySide6.QtWidgets import QApplication
 import FF_Files
 import FF_Main_UI
 import FF_Search
+
 if __name__ == "__main__":
     # Setup Logging
     logging.basicConfig(level=logging.DEBUG,
@@ -49,7 +50,14 @@ if __name__ == "__main__":
                     logging.info(f"Opening {path}...")
                     FF_Search.LoadSearch.open_file(path, None)
 
+                # Filter preset
+                elif path.endswith("FFFilter"):
+                    # Debug
+                    logging.info(f"Opening {path}...")
+                    main_window.import_filters(path)
+
             return super().event(event)
+
 
     app = CreateApp([])
 
@@ -61,7 +69,7 @@ if __name__ == "__main__":
     FF_Files.cache_test(is_launching=True)
 
     # Launches the Main Window
-    FF_Main_UI.MainWindow(app)
+    main_window = FF_Main_UI.MainWindow(app)
 
     app.setQuitOnLastWindowClosed(False)
 

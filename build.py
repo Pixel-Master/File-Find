@@ -39,6 +39,8 @@ def main():
                         "--macos-create-app-bundle",
                         f"--macos-app-icon={os.getcwd()}/assets/icon.icns",
                         "--enable-plugin=pyside6",
+                        "--assume-yes-for-downloads",
+                        "--disable-cache=all",
                         "--output-dir=dist",
                         "File-Find.py"])
         # Renaming the app
@@ -46,7 +48,7 @@ def main():
         # Setting the plist
         with open(os.path.join(os.getcwd(), "dist", "File Find.app", "Contents", "Info.plist"), "wb") as plist:
             plistlib.dump(
-                value={'CFBundleDisplayName': 'File Find',
+                value={"CFBundleDisplayName": "File Find",
                        "CFBundleExecutable": "File-Find",
                        "CFBundleIconFile": "icon.icns",
                        "CFBundleDocumentTypes": [{"CFBundleTypeExtensions": ["FFSearch"],
@@ -54,6 +56,13 @@ def main():
                                                   "CFBundleTypeName": "File Find Search",
                                                   "CFBundleTypeOSTypes": ["FFSEARCH"],
                                                   "CFBundleTypeRole": "Viewer",
+                                                  "LSIsAppleDefaultForType": True},
+
+                                                 {"CFBundleTypeExtensions": ["FFFilter"],
+                                                  "CFBundleTypeIconSystemGenerated": True,
+                                                  "CFBundleTypeName": "File Find Filter Settings Preset",
+                                                  "CFBundleTypeOSTypes": ["FFFILTER"],
+                                                  "CFBundleTypeRole": "Editor",
                                                   "LSIsAppleDefaultForType": True}],
                        "CFBundleIdentifier": "io.github.pixel-master.file-find",
                        "CFBundleShortVersionString": VERSION_SHORT,
@@ -100,12 +109,12 @@ def main():
                         "File-Find.py"])
 
         # Renaming the app
-        subprocess.run(["mv", os.path.join("dist", "File-Find.app"), os.path.join("dist", "File Find.app")])
+        subprocess.run(["mv", os.path.join("dist", "File-Find.bin"), os.path.join("dist", "File Find.bin")])
 
     # On Windows
     elif sys.platform == "win32" or sys.platform == 'cygwin':
         # Building App
-        subprocess.run(["python3",
+        subprocess.run(["python",
                         "-m",
                         "nuitka",
                         "--standalone",
@@ -113,6 +122,9 @@ def main():
                         f"--windows-icon-from-ico={os.path.join(os.getcwd(), 'assets', 'icon.ico')}",
                         "--enable-plugin=pyside6",
                         "--output-dir=dist",
+                        "--disable-console",
+                        "--assume-yes-for-downloads",
+                        "--disable-cache=all",
                         "File-Find.py"])
         # Renaming the app
         subprocess.run(["move", os.path.join("dist", "File-Find.exe"), os.path.join("dist", "File Find.exe")])

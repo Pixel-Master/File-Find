@@ -328,6 +328,7 @@ class SearchWindow:
 
         time_dict["time_total"] = time_dict["time_total"] + time_dict["time_building"]
 
+        # Debug
         logging.info(f"\nSeconds needed:\n"
                      f"Scanning: {time_dict['time_searching']}\n"
                      f"Indexing: {time_dict['time_indexing']}\n"

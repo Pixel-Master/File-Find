@@ -16,21 +16,23 @@ from threading import Thread
 import difflib
 import hashlib
 import gc
-from time import perf_counter
+from time import perf_counter, time, ctime
 
 # PySide6 Gui Imports
 from PySide6.QtWidgets import (QMainWindow, QWidget, QGridLayout, QHBoxLayout, QVBoxLayout, QLabel, QButtonGroup,
                                QRadioButton, QSlider, QSpinBox, QDialogButtonBox, QSpacerItem, QSizePolicy, QPushButton,
-                               QTreeWidget, QTreeWidgetItem)
+                               QTreeWidget, QTreeWidgetItem, QMenuBar)
 from PySide6.QtCore import Qt, QSize, Signal, QObject
-from PySide6.QtGui import QIcon, QFont
+from PySide6.QtGui import QIcon, QFont, QAction
 
+import FF_Help_UI
 # Projects Libraries
 import FF_Menubar
 import FF_Files
+import FF_Additional_UI
 
 # Global variables
-global duplicated_dict, time_dict
+global duplicated_dict, time_dict, duplicated_display_dict
 
 
 class DuplicatedSettings:
@@ -270,7 +272,8 @@ class DuplicatedSettings:
                     finished_signal=finished_event_class)).start()
 
             # Connect UI to finished signal
-            finished_event_class.finished.connect(lambda: DuplicatedUI(parent, search_path, duplicated_dict, time_dict))
+            finished_event_class.finished.connect(
+                lambda: DuplicatedUI(parent, search_path, duplicated_dict, duplicated_display_dict, time_dict))
 
         # Launch search algorithm
         self.button_box.button(
@@ -280,20 +283,49 @@ class DuplicatedSettings:
             QDialogButtonBox.StandardButton.Cancel).clicked.connect(
             self.Duplicated_Settings.close)
 
+        self.button_box.button(
+            QDialogButtonBox.StandardButton.Ok).clicked.connect(
+            self.Duplicated_Settings.close)
+
         self.Duplicated_Settings_Layout.addWidget(self.button_box)
 
         self.Duplicated_Settings.show()
 
-    logging.info("Finished duplicated question setup!\n\n")
+        # Menubar
+        menu_bar = QMenuBar(self.Duplicated_Settings)
+
+        # Menus
+        window_menu = menu_bar.addMenu("&Window")
+        help_menu = menu_bar.addMenu("&Help")
+
+        # Close Window
+        close_action = QAction("&Close Window", self.Duplicated_Settings)
+        close_action.triggered.connect(self.Duplicated_Settings.close)
+        close_action.setShortcut("Ctrl+W")
+        window_menu.addAction(close_action)
+
+        # About File Find
+        about_action = QAction("&About File Find", self.Duplicated_Settings)
+        about_action.triggered.connect(lambda: FF_Help_UI.HelpWindow(parent))
+        help_menu.addAction(about_action)
+
+        # Help
+        help_action = QAction("&File Find Help and Settings", self.Duplicated_Settings)
+        help_action.triggered.connect(lambda: FF_Help_UI.HelpWindow(parent))
+        help_menu.addAction(help_action)
+
+        # Debug
+        logging.info("Finished Setting up Help UI\n")
+        logging.info("Finished duplicated question setup!\n\n")
 
 
 # User interface
 class DuplicatedUI:
-    def __init__(self, parent, match_path, matched_dict: dict, time_needed: dict):
+    def __init__(self, parent, match_path, matched_dict: dict, matched_display_dict: dict, time_needed_dict: dict):
         # Debug
         logging.info("Setting up Duplicated UI...")
         # Saving time
-        time_needed["time_before_building_ui"] = perf_counter()
+        time_needed_dict["time_before_building_ui"] = perf_counter()
 
         # Window setup
         # Define the window
@@ -348,7 +380,7 @@ class DuplicatedUI:
                 sub_index += 1
 
             # Set the text
-            self.Duplicated_Tree.topLevelItem(main_index).setText(0, str(main_item))
+            self.Duplicated_Tree.topLevelItem(main_index).setText(0, matched_display_dict[main_item])
 
             # Increase main index by one
             main_index += 1
@@ -414,7 +446,7 @@ class DuplicatedUI:
         objects_text.setFont(small_text_font)
 
         # Displaying
-        self.Duplicated_Layout.addWidget(objects_text, 0, 2)
+        self.Duplicated_Layout.addWidget(objects_text, 0, 4, Qt.AlignmentFlag.AlignRight)
 
         # Time needed
         time_text = QLabel(self.Duplicated_Window)
@@ -424,10 +456,45 @@ class DuplicatedUI:
         self.Duplicated_Layout.addWidget(time_text, 0, 0)
 
         # Saving time
-        time_needed["time_after_building_ui"] = perf_counter()
+        # Time stat Button
+        show_time = generate_button(None, lambda: show_time_stats(),
+                                    icon=os.path.join(FF_Files.ASSETS_FOLDER, "Time_button_img_small.png"))
+        # Resize
+        show_time.setMaximumSize(50, 50)
+        # Add to Layout
+        self.Duplicated_Layout.addWidget(show_time, 0, 1, alignment=Qt.AlignmentFlag.AlignLeft)
+
+        time_needed_dict["time_after_building_ui"] = perf_counter()
+
+        logging.info(f"\nSeconds needed:\n"
+                     f"Indexing: {time_needed_dict['time_before_building_ui'] - time_needed_dict['start_time']}\n"
+                     f"Building UI: "
+                     f"{time_needed_dict['time_after_building_ui']- time_needed_dict['time_before_building_ui']}\n"
+                     f"Total: {time_needed_dict['time_after_building_ui'] - time_needed_dict['start_time']}")
+
+        time_stamp = time()
+
+        # Show more time info's
+        def show_time_stats():
+            # Debug
+            logging.debug("Displaying time stats.")
+
+            # Displaying infobox with time info
+            FF_Additional_UI.PopUps.show_info_messagebox(
+                "Time Stats",
+                f"Time needed:\n"
+                f"Indexing: {round(time_needed_dict['time_before_building_ui'] - time_needed_dict['start_time'], 3)}\n"
+                f"Creating UI: "
+                f"{round(time_needed_dict['time_after_building_ui'] - time_needed_dict['time_before_building_ui'], 3)}"
+                f"\n---------\n"
+                f"Total: {round(time_needed_dict['time_after_building_ui'] - time_needed_dict['start_time'], 3)}\n\n\n"
+                ""
+                f"Timestamps:\n"
+                f"Search opened: {ctime(time_stamp)}",
+                self.Duplicated_Window)
 
         # Optimize label
-        total_time = time_dict["time_after_building_ui"] - time_dict["start_time"]
+        total_time = time_needed_dict["time_after_building_ui"] - time_needed_dict["start_time"]
         time_text.setText(f"Time needed: {round(total_time, 3)}")
 
         # Collect garbage
@@ -442,7 +509,7 @@ class FindDuplicated:
         logging.info(f"{criteria = }")
 
         # Global variables
-        global duplicated_dict, time_dict
+        global duplicated_dict, time_dict, duplicated_display_dict
 
         # Saving time
         time_dict = {"start_time": perf_counter()}
@@ -471,6 +538,8 @@ class FindDuplicated:
 
             exists_already = set()
             duplicated_name_dict = {}
+            # Dict for storing names to be displayed
+            duplicated_name_display_dict = {}
             # Group by name1
             if criteria["name"]["match_percentage"] == 100:
 
@@ -479,9 +548,10 @@ class FindDuplicated:
                     low_basename = low_basename_dict[file]
 
                     if low_basename not in exists_already:
-                        # Add the file to the dictionary
+                        # Add the file to the dictionaries
                         exists_already.add(low_basename)
-                        duplicated_name_dict[low_basename] = {file}
+                        duplicated_name_dict[low_basename] = set()
+                        duplicated_name_display_dict[low_basename] = file
 
                     else:
                         # Add the file to the duplicated dict
@@ -501,7 +571,8 @@ class FindDuplicated:
                         # If this is the first file being iterated
                         if exists_already == set():
                             exists_already.add(low_basename)
-                            duplicated_name_dict[low_basename] = {file}
+                            duplicated_name_dict[low_basename] = set()
+                            duplicated_name_display_dict[low_basename] = file
                             continue
 
                         # Get the closest match, over the match factor. Function returns a list
@@ -511,7 +582,8 @@ class FindDuplicated:
                         # There is no match (empty list) with the file, add it to exists_already
                         if not closest_match:
                             exists_already.add(low_basename)
-                            duplicated_name_dict[low_basename] = {file}
+                            duplicated_name_dict[low_basename] = set()
+                            duplicated_name_display_dict[low_basename] = file
 
                         # Add it to the closest match
                         else:
@@ -528,6 +600,7 @@ class FindDuplicated:
                     duplicated_name_dict.pop(duplicated_file)
 
             # Finalize
+            duplicated_display_dict = duplicated_name_display_dict
             duplicated_dict = duplicated_name_dict
 
         # Group by size
@@ -537,17 +610,21 @@ class FindDuplicated:
 
             exists_already = set()
             duplicated_size_dict = {}
+            duplicated_size_display_dict = {}
 
             # If the percentage of
             if criteria["size"]["match_percentage"] == 100:
                 for file in found_path_set:
-
-                    size = os.path.getsize(file)
+                    try:
+                        size = os.path.getsize(file)
+                    except FileNotFoundError:
+                        continue
 
                     if size not in exists_already:
                         # Add the file to the dictionary
                         exists_already.add(size)
-                        duplicated_size_dict[size] = {file}
+                        duplicated_size_dict[size] = set()
+                        duplicated_size_display_dict[size] = file
 
                     else:
                         # Add the file to the duplicated dict
@@ -590,7 +667,8 @@ class FindDuplicated:
                         else:
                             # Add the file to the exists_already
                             exists_already.add(size)
-                            duplicated_size_dict[size] = {file}
+                            duplicated_size_dict[size] = set()
+                            duplicated_size_display_dict[size] = file
 
                     # If there is an exact duplicate
                     else:
@@ -615,6 +693,7 @@ class FindDuplicated:
                         duplicated_files.add(duplicated_file)
 
                 duplicated_content_dict = {}
+                duplicated_content_display_dict = {}
                 exists_already = set()
 
                 # If files must match exactly
@@ -653,13 +732,14 @@ class FindDuplicated:
                             # If hash doesn't already exist
                             if file_hash not in exists_already:
                                 exists_already.add(file_hash)
-                                duplicated_content_dict[file_hash] = {file}
+                                duplicated_content_dict[file_hash] = set()
+                                duplicated_content_display_dict[file_hash] = file
 
                             # If hash exists
                             else:
                                 duplicated_content_dict[file_hash].add(file)
 
-                # If match percentage is not 100% use pHash
+                # TODO: If match percentage is not 100% use pHash
                 else:
                     pass
 
@@ -673,11 +753,13 @@ class FindDuplicated:
                         duplicated_content_dict.pop(duplicated_file)
 
                 # Finalize
+                duplicated_display_dict = duplicated_content_display_dict
                 duplicated_dict = duplicated_content_dict
 
             # If content is not activated
             else:
                 # Finalize
+                duplicated_display_dict = duplicated_size_display_dict
                 duplicated_dict = duplicated_size_dict
 
         # Launch UI
