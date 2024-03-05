@@ -126,11 +126,11 @@ def main():
                         "--assume-yes-for-downloads",
                         "--disable-cache=all",
                         "File-Find.py"])
-        print("Built exe, renaming..")
+
         # Renaming the app
-        os.system("tree")
-        print("".join(["ren", os.path.join("dist", "File-Find.exe"), os.path.join("dist", "File Find.exe")]))
-        os.system(f"ren {os.path.join('dist', 'File-Find.exe')} {os.path.join('dist', 'File Find.exe')}")
+        print("Built exe, renaming..")
+        print("ren \"{os.path.join('dist', 'File-Find.exe')}\" \"{os.path.join('dist', 'File Find.exe')}\"")
+        os.system(f"ren \"{os.path.join('dist', 'File-Find.exe')}\" \"{os.path.join('dist', 'File Find.exe')}\"")
 
 
 if __name__ == "__main__":
