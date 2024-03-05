@@ -129,7 +129,8 @@ def main():
         print("Built exe, renaming..")
         # Renaming the app
         os.system("tree")
-        subprocess.run(["ren", os.path.join("dist", "File-Find.exe"), os.path.join("dist", "File Find.exe")])
+        print("".join(["ren", os.path.join("dist", "File-Find.exe"), os.path.join("dist", "File Find.exe")]))
+        os.system(f"ren {os.path.join('dist', 'File-Find.exe')} {os.path.join('dist', 'File Find.exe')}")
 
 
 if __name__ == "__main__":
