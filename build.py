@@ -129,8 +129,8 @@ def main():
 
         # Renaming the app
         print("Built exe, renaming..")
-        print("ren \"{os.path.join('dist', 'File-Find.exe')}\" \"{os.path.join('dist', 'File Find.exe')}\"")
-        os.system(f"ren \"{os.path.join('dist', 'File-Find.exe')}\" \"{os.path.join('dist', 'File Find.exe')}\"")
+        print(f"ren \"{os.path.join('dist', 'File-Find.exe')}\" \"{os.path.join('dist', 'File Find.exe')}\"")
+        os.system(f"ren.exe \"{os.path.join('dist', 'File-Find.exe')}\" \"{os.path.join('dist', 'File Find.exe')}\"")
 
 
 if __name__ == "__main__":
