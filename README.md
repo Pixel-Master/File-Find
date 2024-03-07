@@ -158,7 +158,13 @@ A: **File Find does not connect to the Internet**, everything stays on your mach
 
 ## File Structure
 
+### Important files
+
 - `File-Find.py` - Main file, execute this for running File Find
+
+- `build.py` - Build script, requires nuitka to be installed. See [here](#building-from-source)
+
+### UI-Files 
 
 - `FF_Main_UI.py` - This file contains the code for the main window
 
@@ -168,13 +174,19 @@ A: **File Find does not connect to the Internet**, everything stays on your mach
 
 - `FF_Help_UI.py` - This file contains the code for the About window
 
+- `FF_Menubar.py` - Menubar for the search results, compare and duplicated window
+
+### Mixed files and algorithms
+
 - `FF_Search.py` - This file contains the code for the search engine
 
 - `FF_Files.py` - This file contains File operations and global variables
 
-- `FF_Compare.py` - This file contains the code for the 'Compare Search' feature
+- `FF_Duplicated.py` - This file contains the code for the 'Find duplicated' feature and it's UI
 
-- `build.py` - Build script, requires nuitka to be installed. See [here](#building-file-findapp)
+- `FF_Compare.py` - This file contains the code for the 'Compare Search' feature and it's UI
+
+### Other
 
 - `assets/` - Directory contains image assets for File Find
 

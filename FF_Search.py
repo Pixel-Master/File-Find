@@ -13,7 +13,7 @@ import logging
 import os
 from fnmatch import fnmatch
 from json import dump, load
-from sys import exit
+from sys import exit, platform
 from time import perf_counter, mktime
 
 # PySide6 Gui Imports
@@ -51,12 +51,20 @@ class Sort:
         except FileNotFoundError:
             return -1
 
-    # Sort by Date Created
+    # Sort by Date Created on macOS
     @staticmethod
-    def c_date(file):
+    def c_date_mac(file):
         try:
             # Using os.stat because os.path.getctime returns a wrong date
             return os.stat(file).st_birthtime
+        except FileNotFoundError:
+            return -1
+
+    # Sort by Date Created on Windows
+    @staticmethod
+    def c_date_win(file):
+        try:
+            return os.path.getctime(file)
         except FileNotFoundError:
             return -1
 
@@ -91,7 +99,7 @@ class GenerateTerminalCommand:
 class LoadSearch:
     def __init__(self, parent):
         load_dialog = QFileDialog.getOpenFileName(parent,
-                                                  "Export File Find Search",
+                                                  "Import File Find Search",
                                                   FF_Files.SAVED_SEARCHES_FOLDER,
                                                   "*.FFSearch;")
         self.load_file = load_dialog[0]
@@ -102,23 +110,49 @@ class LoadSearch:
     # Opening the user-interface and creating a cache file for the reload button
     @staticmethod
     def open_file(load_file, parent):
+        # A file was selected
         if load_file != "":
+
+            # Debug
+            logging.info(f"Loading {load_file}")
+            # Opening the file
             with open(load_file) as opened_file:
                 saved_file_content = load(opened_file)
+
                 # If the cache doesn't exist
                 if not os.path.exists(
                         os.path.join(FF_Files.CACHED_SEARCHES_FOLDER,
                                      f"{load_file}.FFCache".replace("/", "-"))):
+
+                    # Dictionary which is going to be dumped into the cache file
+                    dump_dict = {"found_path_set": saved_file_content,
+                                 "type_dict": {},
+                                 "low_basename_dict": {}}
+
+                    # Calculating basename and types
+                    for cache_file in saved_file_content:
+                        dump_dict["low_basename_dict"][cache_file] = os.path.basename(cache_file)
+
+                        if os.path.isdir(cache_file):
+                            dump_dict["type_dict"][cache_file] = "folder"
+                        else:
+                            dump_dict["type_dict"][cache_file] = "file"
+
                     # Create a new cache file
                     with open(
                             os.path.join(
                                 FF_Files.CACHED_SEARCHES_FOLDER, f"{load_file}.FFCache".replace(
                                     "/", "-")), "w") as cached_search:
                         # Dump the content of the save into the cache with JSON into the file
-                        dump({"found_path_set": saved_file_content}, cached_search)
+                        dump(dump_dict, cached_search)
 
                 # Open the UI
-                FF_Search_UI.SearchWindow(*[0, 0, 0, 0, saved_file_content, load_file, parent])
+                FF_Search_UI.SearchWindow(*[{"time_searching": 0,
+                                             "time_indexing": 0,
+                                             "time_sorting": 0,
+                                             "time_building": 0,
+                                             "time_total": 0},
+                                            saved_file_content, load_file, parent])
 
 
 # The Search Engine
@@ -140,7 +174,6 @@ class Search:
         Yes it would be easier if Qt had a function to get the unix time
         """
         unix_time_list = {}
-
         self.DEFAULT_TIME_INPUT = {"c_date_from": 946681200.0,
                                    "c_date_to": self.conv_qdate_to_unix_time(QDate.currentDate()),
                                    "m_date_from": 946681200.0,
@@ -420,7 +453,7 @@ class Search:
         # Update the menubar status
         self.ui_logger.update("Indexing...")
 
-        # Creating a copy because items can't be removed while iterating over a set ad for caching
+        # Creating a copy because items can't be removed while iterating over a set
         copy_found_path_set = found_path_set.copy()
         original_found_path_set = found_path_set.copy()
 
@@ -551,18 +584,43 @@ class Search:
         self.ui_logger.update("Indexing Date created...")
         if data_c_time_needed:
 
-            # Looping through every file
-            for c_date_file in found_path_set:
-                # Using os.stat because os.path.getctime returns a wrong date
-                try:
-                    file_c_time = os.stat(c_date_file).st_birthtime
+            # On Windows and Linux
+            # (On Linux this currently returns the modification date,
+            # because it's impossible to access with pure python)
+            if platform == "win32" or platform == 'cygwin' or platform == "linux":
 
-                    # Checking for file time and which values in data_time are modified
-                    if not (data_time["c_date_from"] <= file_c_time <= data_time["c_date_to"]):
+                # Looping through every file
+                for c_date_file in found_path_set:
+                    # Using os.stat because os.path.getctime returns a wrong date
+                    try:
+                        file_c_time = os.path.getctime(c_date_file)
+
+                        # Checking for file time and which values in data_time are modified
+                        if not (data_time["c_date_from"] <= file_c_time <= data_time["c_date_to"]):
+                            copy_found_path_set.remove(c_date_file)
+
+                    except FileNotFoundError:
+                        copy_found_path_set.remove(c_date_file)
+            # On Mac
+            elif platform == "darwin":
+
+                # Looping through every file
+                for c_date_file in found_path_set:
+                    # Using os.stat because os.path.getctime returns a wrong date
+                    try:
+                        file_c_time = os.stat(c_date_file).st_birthtime
+
+                        # Checking for file time and which values in data_time are modified
+                        if not (data_time["c_date_from"] <= file_c_time <= data_time["c_date_to"]):
+                            copy_found_path_set.remove(c_date_file)
+
+                    except FileNotFoundError:
                         copy_found_path_set.remove(c_date_file)
 
-                except FileNotFoundError:
-                    copy_found_path_set.remove(c_date_file)
+            # If platform is unknown
+            else:
+                # Debug
+                logging.error(f"While trying to test cache, unrecognised platform: {platform}")
 
         # Making the copy and the original the same
         found_path_set = copy_found_path_set.copy()
@@ -652,9 +710,18 @@ class Search:
             found_path_list.sort(key=Sort.size, reverse=not data_reverse_sort)
 
         elif data_sort_by == "Date Created":
-            logging.info("Sorting list by creation date...")
+            logging.info(f"Sorting list by creation date on {platform}...")
             self.ui_logger.update("Sorting list by creation date...")
-            found_path_list.sort(key=Sort.c_date, reverse=not data_reverse_sort)
+
+            # On Windows and Linux
+            # (On Linux this currently returns the modification date,
+            # because it's impossible to access with pure python)
+            if platform == "win32" or platform == 'cygwin' or platform == "linux":
+                found_path_list.sort(key=Sort.c_date_win, reverse=not data_reverse_sort)
+
+            # On Mac
+            if platform == "darwin":
+                found_path_list.sort(key=Sort.c_date_mac, reverse=not data_reverse_sort)
 
         elif data_sort_by == "Date Modified":
             logging.info("Sorting list by modification date...")
@@ -664,7 +731,7 @@ class Search:
         elif data_sort_by == "Path":
             logging.info("Sorting list by path...")
             self.ui_logger.update("Sorting list by path...")
-            found_path_list.sort(reverse=data_reverse_sort)
+            found_path_list.sort(key=lambda sort_file: sort_file.lower(), reverse=data_reverse_sort)
 
         else:
             logging.info("Skipping Sorting")
@@ -706,8 +773,11 @@ class Search:
 
         # The parameter passed on to the UI builder
         global SEARCH_OUTPUT
-        SEARCH_OUTPUT = [time_total, time_after_searching, time_after_indexing, time_after_sorting, found_path_list,
-                         data_search_from, parent]
+        SEARCH_OUTPUT = [{"time_total": time_total,
+                          "time_searching": time_after_searching,
+                          "time_indexing": time_after_indexing,
+                          "time_sorting": time_after_sorting},
+                         found_path_list, data_search_from, parent]
 
         # Updating Thread count
         global ACTIVE_SEARCH_THREADS
@@ -726,6 +796,7 @@ class Search:
 
     Yes it would be easier if Qt had a function to get the unix time
     """
+
     @staticmethod
     def conv_qdate_to_unix_time(input_edit: QDate, expand_days_num: int = 1):
         # Expand days on the second date of the range because if input is 1.Jan.2024 - 1.Jan-2024 there will be no files
@@ -738,6 +809,6 @@ class Search:
 
 
 # Global Variables for Search Threads
-SEARCH_OUTPUT: [float, float, float, float, list, str, QWidget] = []
+SEARCH_OUTPUT: [{str: float}, list, str, QWidget] = []
 
 ACTIVE_SEARCH_THREADS: int = 0

@@ -11,15 +11,15 @@
 # Imports
 import logging
 import os
-from sys import exit
+from json import dump, load
+from pyperclip import copy
 
 # PySide6 Gui Imports
 from PySide6.QtCore import QSize, Qt, QDate
 from PySide6.QtGui import QFont, QDoubleValidator, QIcon, QAction, QKeySequence
 from PySide6.QtWidgets import QWidget, QLabel, QPushButton, QRadioButton, QFileDialog, \
     QLineEdit, QButtonGroup, QDateEdit, QComboBox, QMenuBar, QSystemTrayIcon, QMenu, QCompleter, QTabWidget, \
-    QMainWindow, QGridLayout, QSpacerItem, QSizePolicy
-from pyperclip import copy
+    QMainWindow, QGridLayout, QSpacerItem, QSizePolicy, QApplication
 
 # Projects Libraries
 import FF_Additional_UI
@@ -30,7 +30,7 @@ import FF_Search
 
 # The class for the main window where filters can be selected
 class MainWindow:
-    def __init__(self):
+    def __init__(self, app: QApplication):
         # Debug
         logging.info("Launching UI...")
         logging.debug("Setting up self.Root_Window...")
@@ -327,119 +327,62 @@ class MainWindow:
 
         # Create an Entry for every Filter with the function self.generate_filter_entry()
 
-        # Auto complete paths
-        def complete_path(path, check=True):
-
-            # Adds all folders in path into paths
-            def add_paths():
-                paths = []
-                for list_folder in os.listdir(path):
-                    if os.path.isdir(list_folder):
-                        paths.append(os.path.join(os.getcwd(), list_folder))
-
-                # Set the saved list as Completer
-                self.directory_line_edit_completer = QCompleter(paths, parent=self.Root_Window)
-                self.edit_directory.setCompleter(self.directory_line_edit_completer)
-
-                # Returns the list
-                return paths
-
-            # check
-            if check:
-                # Going through all paths to look if auto-completion should be loaded
-                if path.endswith("/"):
-                    self.auto_complete_paths = add_paths()
-                    logging.debug("Changed QCompleter")
-                    return
-            # Skip check
-            if not check:
-                self.auto_complete_paths = add_paths()
-                logging.debug("Changed QCompleter")
-                return
-
-        # Validate Paths in the directory box
-        def validate_dir():
-            # Debug
-            logging.debug(f"Directory Path changed to: {self.edit_directory.text()}")
-
-            # Changing Tool-Tip
-            self.edit_directory.setToolTip(self.edit_directory.text())
-
-            # Testing if path is folder
-            if os.path.isdir(check_path := self.edit_directory.text()):
-                # Changing Path
-                logging.debug(f"Path: {check_path} valid")
-                os.chdir(check_path)
-
-                # Change color
-                self.edit_directory.setStyleSheet("")
-
-                # Updating Completions
-                complete_path(check_path)
-
-            else:
-                # Debug
-                logging.debug(f"Path: {check_path} invalid")
-
-                # Change color
-                self.edit_directory.setStyleSheet("color: red;")
-
         # Name
-        edit_name = self.generate_filter_entry(self.basic_search_widget)
+        self.edit_name = self.generate_filter_entry(self.basic_search_widget)
         # Place
-        self.basic_search_widget_layout.addWidget(edit_name, 0, 2)
+        self.basic_search_widget_layout.addWidget(self.edit_name, 0, 2)
 
         # Name contains
-        edit_name_contains = self.generate_filter_entry(self.basic_search_widget)
+        self.edit_name_contains = self.generate_filter_entry(self.basic_search_widget)
         # Place
-        self.basic_search_widget_layout.addWidget(edit_name_contains, 1, 2)
+        self.basic_search_widget_layout.addWidget(self.edit_name_contains, 1, 2)
 
         # File extension
-        edit_file_extension = self.generate_filter_entry(self.advanced_search_widget)
+        self.edit_file_extension = self.generate_filter_entry(self.advanced_search_widget)
         # Place
-        self.advanced_search_widget_layout.addWidget(edit_file_extension, 0, 2, 1, 5)
+        self.advanced_search_widget_layout.addWidget(self.edit_file_extension, 0, 2, 1, 5)
 
         # Edit for displaying the Path
         self.edit_directory = self.generate_filter_entry(self.basic_search_widget)
         # Set text and tooltip to display the directory
         self.edit_directory.setText(os.getcwd())
-        # Execute the validate_dir function if
-        self.edit_directory.textChanged.connect(validate_dir)
+        # Execute the validate_dir function if text is changed
+        self.edit_directory.textChanged.connect(self.validate_dir)
         # Loading Completions
-        complete_path(os.getcwd(), check=False)
+        self.complete_path(os.getcwd(), check=False)
         # Resize and place on screen
         self.basic_search_widget_layout.addWidget(self.edit_directory, 3, 2)
 
         # File contains
-        edit_file_contains = self.generate_filter_entry(self.advanced_search_widget)
-        edit_file_contains.resize(230, 25)
-        self.content_search_widget_layout.addWidget(edit_file_contains, 0, 2, 1, 4)
+        self.edit_file_contains = self.generate_filter_entry(self.advanced_search_widget)
+        self.edit_file_contains.resize(230, 25)
+        self.content_search_widget_layout.addWidget(self.edit_file_contains, 0, 2, 1, 4)
 
         # File size min
-        edit_size_min = self.generate_filter_entry(self.advanced_search_widget, True)
-        edit_size_min.setFixedWidth(60)
-        self.content_search_widget_layout.addWidget(edit_size_min, 3, 2)
+        self.edit_size_min = self.generate_filter_entry(self.advanced_search_widget, True)
+        self.edit_size_min.setFixedWidth(60)
+        self.content_search_widget_layout.addWidget(self.edit_size_min, 3, 2)
 
         # File size max
-        edit_size_max = self.generate_filter_entry(self.advanced_search_widget, True)
-        edit_size_max.setFixedWidth(60)
-        self.content_search_widget_layout.addWidget(edit_size_max, 3, 4)
+        self.edit_size_max = self.generate_filter_entry(self.advanced_search_widget, True)
+        self.edit_size_max.setFixedWidth(60)
+        self.content_search_widget_layout.addWidget(self.edit_size_max, 3, 4)
 
         # Radio Button
         logging.debug("Setting up Radio Buttons...")
         # Search for Library Files
         # Group for Radio Buttons
-        library_group = QButtonGroup(self.Root_Window)
+        self.library_group = QButtonGroup(self.Root_Window)
         # Radio Button 1
-        rb_library_yes = self.create_radio_button(library_group, "Yes", self.advanced_search_widget)
+        self.rb_library_yes = self.create_radio_button(self.library_group, "Yes", self.advanced_search_widget)
         # Add the button to the layout
-        self.advanced_search_widget_layout.addWidget(rb_library_yes, 1, 2)
+        self.advanced_search_widget_layout.addWidget(self.rb_library_yes, 1, 2)
         # Radio Button 2
-        rb_library_no = self.create_radio_button(library_group, "No", self.advanced_search_widget)
+        self.rb_library_no = self.create_radio_button(self.library_group, "No", self.advanced_search_widget)
         # Add the button to the layout
-        self.advanced_search_widget_layout.addWidget(rb_library_no, 1, 2, 1, 4, Qt.AlignmentFlag.AlignCenter)
+        self.advanced_search_widget_layout.addWidget(self.rb_library_no, 1, 2, 1, 4, Qt.AlignmentFlag.AlignCenter)
         # Select the Button 2
-        rb_library_no.setChecked(True)
+        self.rb_library_no.setChecked(True)
 
         # Reverse Sort
         # Group for Radio Buttons
@@ -460,9 +403,9 @@ class MainWindow:
 
         # Sorting Menu
         # Defining
-        combobox_sorting = QComboBox(self.sorting_widget)
+        self.combobox_sorting = QComboBox(self.sorting_widget)
         # Adding Options
-        combobox_sorting.addItems(
+        self.combobox_sorting.addItems(
             ["None (fastest)",
              "File Size",
              "File Name",
@@ -470,62 +413,62 @@ class MainWindow:
              "Date Created",
              "Path"])
         # Set a fixed width
-        combobox_sorting.setFixedWidth(150)
+        self.combobox_sorting.setFixedWidth(150)
         # Display
-        combobox_sorting.show()
-        self.sorting_widget_layout.addWidget(combobox_sorting, 0, 2, 1, 4)
+        self.combobox_sorting.show()
+        self.sorting_widget_layout.addWidget(self.combobox_sorting, 0, 2, 1, 4)
 
         # Search for Files or Folders Menu
         # Defining
-        combobox_search_for = QComboBox(self.advanced_search_widget)
+        self.combobox_search_for = QComboBox(self.advanced_search_widget)
         # Adding Options
-        combobox_search_for.addItems(
+        self.combobox_search_for.addItems(
             ["Files and Folders",
              "only Files",
              "only Folders"])
         # Display
-        combobox_search_for.setFixedWidth(200)
-        self.advanced_search_widget_layout.addWidget(combobox_search_for, 2, 2)
+        self.combobox_search_for.setFixedWidth(200)
+        self.advanced_search_widget_layout.addWidget(self.combobox_search_for, 2, 2)
 
         # Search for file types: all, images, movies, music, etc...
-        combobox_file_types = FF_Additional_UI.CheckableComboBox(self.advanced_search_widget)
-        combobox_file_types.addItems(FF_Files.FILE_FORMATS.keys())
-        combobox_file_types.setFixedWidth(230)
+        self.combobox_file_types = FF_Additional_UI.CheckableComboBox(self.advanced_search_widget)
+        self.combobox_file_types.addItems(FF_Files.FILE_FORMATS.keys())
+        self.combobox_file_types.setFixedWidth(230)
         # Display
-        combobox_file_types.show()
-        self.basic_search_widget_layout.addWidget(combobox_file_types, 2, 2)
+        self.combobox_file_types.show()
+        self.basic_search_widget_layout.addWidget(self.combobox_file_types, 2, 2)
 
         # The combobox for file types and the file ending line edit can not be used together,
         # as there will be no files found
         def block_file_types():
             # Block / Unblock File ending edit
-            if combobox_file_types.all_checked_items() != list(FF_Files.FILE_FORMATS.keys()):
+            if self.combobox_file_types.all_checked_items() != list(FF_Files.FILE_FORMATS.keys()):
                 # Disable File ending edit
                 # Debug
                 logging.debug("Disabled file ending edit")
                 # Block the file ending edit
-                edit_file_extension.setDisabled(True)
-                edit_file_extension.setToolTip("File types can't be used together with file extension")
-                edit_file_extension.setStyleSheet("background-color: #7f7f7f;")
+                self.edit_file_extension.setDisabled(True)
+                self.edit_file_extension.setToolTip("File types can't be used together with file extension")
+                self.edit_file_extension.setStyleSheet("background-color: #7f7f7f;")
             else:
                 # Debug
                 logging.debug("Enabled file ending edit")
                 # Enable the file ending edit
-                edit_file_extension.setDisabled(False)
-                edit_file_extension.setToolTip(None)
-                edit_file_extension.setStyleSheet(";")
+                self.edit_file_extension.setDisabled(False)
+                self.edit_file_extension.setToolTip("")
+                self.edit_file_extension.setStyleSheet(";")
 
             # Block/ Unblock FIle groups combobox
-            if edit_file_extension.text() == "":
+            if self.edit_file_extension.text() == "":
                 # Debug
                 logging.debug("Enabled combobox file groups")
                 # Enable Combobox
                 # Set the displayed text to the original
-                combobox_file_types.setPlaceholderText(combobox_file_types.determine_text())
-                combobox_file_types.setDisabled(False)
-                combobox_file_types.setToolTip("")
+                self.combobox_file_types.setPlaceholderText(self.combobox_file_types.determine_text())
+                self.combobox_file_types.setDisabled(False)
+                self.combobox_file_types.setToolTip("")
                 # Enabling "select all" and "Deselect all" buttons
-                combobox_file_types.data_changed()
+                self.combobox_file_types.data_changed()
 
             # If something is written in the file ending edit
             else:
@@ -533,32 +476,32 @@ class MainWindow:
                 # Debug
                 logging.debug("Disabled combobox file groups")
                 # Set the displayed text to the text of the line edit
-                combobox_file_types.setPlaceholderText(edit_file_extension.text())
-                combobox_file_types.setDisabled(True)
-                combobox_file_types.setToolTip("File types can't be used together with file extension")
+                self.combobox_file_types.setPlaceholderText(self.edit_file_extension.text())
+                self.combobox_file_types.setDisabled(True)
+                self.combobox_file_types.setToolTip("File types can't be used together with file extension")
                 # Disabling "select all" and "Deselect all" buttons
                 deselect_all_button.setDisabled(True)
                 select_all_button.setDisabled(True)
 
         # Connecting change signals to the function defined above
-        edit_file_extension.textChanged.connect(block_file_types)
-        combobox_file_types.model().dataChanged.connect(block_file_types)
+        self.edit_file_extension.textChanged.connect(block_file_types)
+        self.combobox_file_types.model().dataChanged.connect(block_file_types)
 
         # Date-Time Entries
         logging.debug("Setting up Day Entries...")
         # Date Created
-        c_date_from_drop_down = self.generate_day_entry(self.advanced_search_widget)
-        self.content_search_widget_layout.addWidget(c_date_from_drop_down, 1, 2)
-        c_date_to_drop_down = self.generate_day_entry(self.advanced_search_widget)
-        c_date_to_drop_down.setDate(QDate.currentDate())
-        self.content_search_widget_layout.addWidget(c_date_to_drop_down, 1, 4)
+        self.c_date_from_drop_down = self.generate_day_entry(self.advanced_search_widget)
+        self.content_search_widget_layout.addWidget(self.c_date_from_drop_down, 1, 2)
+        self.c_date_to_drop_down = self.generate_day_entry(self.advanced_search_widget)
+        self.c_date_to_drop_down.setDate(QDate.currentDate())
+        self.content_search_widget_layout.addWidget(self.c_date_to_drop_down, 1, 4)
 
         # Date Modified
-        m_date_from_drop_down = self.generate_day_entry(self.advanced_search_widget)
-        self.content_search_widget_layout.addWidget(m_date_from_drop_down, 2, 2)
-        m_date_to_drop_down = self.generate_day_entry(self.advanced_search_widget)
-        m_date_to_drop_down.setDate(QDate.currentDate())
-        self.content_search_widget_layout.addWidget(m_date_to_drop_down, 2, 4)
+        self.m_date_from_drop_down = self.generate_day_entry(self.advanced_search_widget)
+        self.content_search_widget_layout.addWidget(self.m_date_from_drop_down, 2, 2)
+        self.m_date_to_drop_down = self.generate_day_entry(self.advanced_search_widget)
+        self.m_date_to_drop_down.setDate(QDate.currentDate())
+        self.content_search_widget_layout.addWidget(self.m_date_to_drop_down, 2, 4)
 
         # Push Buttons
         logging.debug("Setting up Push Buttons...")
@@ -581,43 +524,43 @@ class MainWindow:
 
         # Select and deselect all options in the check able file group combobox
         select_all_button = self.generate_edit_button(
-            combobox_file_types.select_all, self.basic_search_widget, text="Select all")
+            self.combobox_file_types.select_all, self.basic_search_widget, text="Select all")
         select_all_button.setFixedWidth(80)
         self.basic_search_widget_layout.addWidget(select_all_button, 2, 3)
         select_all_button.setEnabled(False)
 
         deselect_all_button = self.generate_edit_button(
-            combobox_file_types.deselected_all, self.basic_search_widget, text="Deselect all")
+            self.combobox_file_types.deselected_all, self.basic_search_widget, text="Deselect all")
         # Place on the layout
         deselect_all_button.setFixedWidth(90)
         self.basic_search_widget_layout.addWidget(deselect_all_button, 2, 4)
 
         # Activate/Deactivate buttons if necessary
-        combobox_file_types.button_signals.all_selected.connect(lambda: deselect_all_button.setDisabled(False))
-        combobox_file_types.button_signals.all_selected.connect(lambda: select_all_button.setDisabled(True))
+        self.combobox_file_types.button_signals.all_selected.connect(lambda: deselect_all_button.setDisabled(False))
+        self.combobox_file_types.button_signals.all_selected.connect(lambda: select_all_button.setDisabled(True))
         # If only some options are enabled
-        combobox_file_types.button_signals.some_selected.connect(lambda: deselect_all_button.setDisabled(False))
-        combobox_file_types.button_signals.some_selected.connect(lambda: select_all_button.setDisabled(False))
+        self.combobox_file_types.button_signals.some_selected.connect(lambda: deselect_all_button.setDisabled(False))
+        self.combobox_file_types.button_signals.some_selected.connect(lambda: select_all_button.setDisabled(False))
         # If all files are deselected
-        combobox_file_types.button_signals.all_deselected.connect(lambda: deselect_all_button.setDisabled(True))
-        combobox_file_types.button_signals.all_deselected.connect(lambda: select_all_button.setDisabled(False))
+        self.combobox_file_types.button_signals.all_deselected.connect(lambda: deselect_all_button.setDisabled(True))
+        self.combobox_file_types.button_signals.all_deselected.connect(lambda: select_all_button.setDisabled(False))
 
         # Print the given data
         def print_data():
             logging.info(
                 f"\nFilters:\n"
-                f"Name: {edit_name.text()}\n"
-                f"Name contains: {edit_name_contains.text()}\n"
-                f"File Ending: {edit_file_extension.text()}\n"
+                f"Name: {self.edit_name.text()}\n"
+                f"Name contains: {self.edit_name_contains.text()}\n"
+                f"File Ending: {self.edit_file_extension.text()}\n"
                 f"Search from: {os.getcwd()}\n\n"
-                f"File size(MB): min:{edit_size_min.text()} max: {edit_size_max.text()}\n"
-                f"Date modified from: {m_date_from_drop_down.text()} to: {m_date_to_drop_down.text()}\n"
-                f"Date created from: {c_date_from_drop_down.text()} to: {c_date_to_drop_down.text()}\n"
-                f"Content: {edit_file_contains.text()}\n\n"
-                f"Search for system files: {rb_library_yes.isChecked()}\n"
-                f"Search for: {combobox_search_for.currentText()}\n"
-                f"File Groups: {combobox_file_types.all_checked_items()}\n\n"
-                f"Sort results by: {combobox_sorting.currentText()}\n"
+                f"File size(MB): min:{self.edit_size_min.text()} max: {self.edit_size_max.text()}\n"
+                f"Date modified from: {self.m_date_from_drop_down.text()} to: {self.m_date_to_drop_down.text()}\n"
+                f"Date created from: {self.c_date_from_drop_down.text()} to: {self.c_date_to_drop_down.text()}\n"
+                f"Content: {self.edit_file_contains.text()}\n\n"
+                f"Search for system files: {self.rb_library_yes.isChecked()}\n"
+                f"Search for: {self.combobox_search_for.currentText()}\n"
+                f"File Groups: {self.combobox_file_types.all_checked_items()}\n\n"
+                f"Sort results by: {self.combobox_sorting.currentText()}\n"
                 f"Reverse results: {rb_reverse_sort_yes.isChecked()}\n")
 
         # Start Search with args locally
@@ -629,61 +572,26 @@ class MainWindow:
             print_data()
             # Start Searching
             FF_Search.Search(
-                data_name=edit_name.text(),
-                data_in_name=edit_name_contains.text(),
-                data_filetype=edit_file_extension.text(),
-                data_file_size_min=edit_size_min.text(), data_file_size_max=edit_size_max.text(),
-                data_library=rb_library_yes.isChecked(),
+                data_name=self.edit_name.text(),
+                data_in_name=self.edit_name_contains.text(),
+                data_filetype=self.edit_file_extension.text(),
+                data_file_size_min=self.edit_size_min.text(), data_file_size_max=self.edit_size_max.text(),
+                data_library=self.rb_library_yes.isChecked(),
                 data_search_from_valid=os.getcwd(),
                 data_search_from_unchecked=self.edit_directory.text(),
-                data_content=edit_file_contains.text(),
-                data_search_for=combobox_search_for.currentText(),
-                data_date_edits={"c_date_from": c_date_from_drop_down,
-                                 "c_date_to": c_date_to_drop_down,
-                                 "m_date_from": m_date_from_drop_down,
-                                 "m_date_to": m_date_to_drop_down},
-                data_sort_by=combobox_sorting.currentText(),
+                data_content=self.edit_file_contains.text(),
+                data_search_for=self.combobox_search_for.currentText(),
+                data_date_edits={"c_date_from": self.c_date_from_drop_down,
+                                 "c_date_to": self.c_date_to_drop_down,
+                                 "m_date_from": self.m_date_from_drop_down,
+                                 "m_date_to": self.m_date_to_drop_down},
+                data_sort_by=self.combobox_sorting.currentText(),
                 data_reverse_sort=rb_reverse_sort_yes.isChecked(),
-                data_file_group=combobox_file_types.all_checked_items(),
+                data_file_group=self.combobox_file_types.all_checked_items(),
                 parent=self.Root_Window)
 
         # Saves the function in a different var
         self.search_entry = search_entry
-
-        # Resetting all filters
-        def reset_filters():
-            # Debug
-            logging.info("Resetting all filters...")
-
-            # Resetting basic window
-            edit_name.setText("")
-            edit_name_contains.setText("")
-            combobox_file_types.select_all()
-            self.edit_directory.setText(FF_Files.USER_FOLDER)
-
-            # Resetting Properties
-            edit_file_contains.setText("")
-            m_date_from_drop_down.setDate(QDate(2000, 1, 1))
-            c_date_from_drop_down.setDate(QDate(2000, 1, 1))
-            m_date_to_drop_down.setDate(QDate.currentDate())
-            c_date_to_drop_down.setDate(QDate.currentDate())
-            edit_size_max.setText("")
-            edit_size_min.setText("")
-
-            # Resetting Advanced
-            edit_file_extension.setText("")
-            rb_library_yes.setChecked(False)
-            combobox_search_for.setCurrentIndex(0)
-
-            # Resetting Sorting
-            combobox_sorting.setCurrentIndex(0)
-            rb_reverse_sort_no.setChecked(True)
-
-            # Debug
-            logging.info("Resetted all filters")
-
-        # Make the function available for the menubar
-        self.reset_filters = reset_filters
 
         # Generate a shell command, that displays in the UI
         def generate_terminal_command():
@@ -705,8 +613,8 @@ class MainWindow:
 
             # Calling the function, which generate a shell command
             shell_command = str(
-                FF_Search.GenerateTerminalCommand(edit_name.text(), edit_name_contains.text(),
-                                                  edit_file_extension.text(), edit_size_max.text()))
+                FF_Search.GenerateTerminalCommand(self.edit_name.text(), self.edit_name_contains.text(),
+                                                  self.edit_file_extension.text(), self.edit_size_max.text()))
 
             # Showing the label that says "Command:"
             label_command_title.show()
@@ -720,7 +628,7 @@ class MainWindow:
             # Disconnect the button set a new click event
             try:
                 button_command_copy.clicked.disconnect()
-            except TypeError:
+            except (TypeError, RuntimeError):
                 pass
             button_command_copy.clicked.connect(copy_command)
             # Display the Button at the correct position
@@ -741,8 +649,8 @@ class MainWindow:
         context_menu.addSeparator()
 
         # Load Search Action
-        action_open_search = QAction("Load Search", self.Root_Window)
-        action_open_search.triggered.connect(lambda: FF_Search.LoadSearch(self.Root_Window))
+        action_open_search = QAction("&Open Search / Filter Preset", self.Root_Window)
+        action_open_search.triggered.connect(lambda: self.import_filters())
         context_menu.addAction(action_open_search)
 
         # Shell Command Action
@@ -755,7 +663,7 @@ class MainWindow:
 
         # Reset Action
         reset_action = QAction("Reset filters", self.Root_Window)
-        reset_action.triggered.connect(reset_filters)
+        reset_action.triggered.connect(self.reset_filters)
         context_menu.addAction(reset_action)
 
         # Defining Button
@@ -782,7 +690,7 @@ class MainWindow:
 
         # Set up the menu bar
         logging.info("Setting up Menu Bar...")
-        self.menu_bar(generate_terminal_command)
+        self.menu_bar(generate_terminal_command, app)
 
         # Showing PopUps
         FF_Additional_UI.welcome_popups(parent=self.Root_Window)
@@ -879,27 +787,239 @@ class MainWindow:
         # Return the Button
         return button
 
+    # Auto complete paths
+    def complete_path(self, path, check=True):
+
+        # Adds all folders in path into paths
+        def get_paths():
+            paths = []
+            for list_folder in os.listdir(path):
+                if os.path.isdir(list_folder):
+                    paths.append(os.path.join(os.getcwd(), list_folder))
+
+            # Returns the list
+            return paths
+
+        # Check if "/" is at end of inputted path
+        if check:
+            # Going through all paths to look if auto-completion should be loaded
+            if path.endswith("/"):
+                completer_paths = get_paths()
+                logging.debug("Changed QCompleter")
+            else:
+                return
+
+        # If executed at launch skip check because home path doesn't end with a "/"
+        else:
+            completer_paths = get_paths()
+            logging.debug("Changed QCompleter")
+
+        # Set the saved list as Completer
+        directory_line_edit_completer = QCompleter(completer_paths, parent=self.Root_Window)
+        self.edit_directory.setCompleter(directory_line_edit_completer)
+
+    # Validate Paths in the directory box
+    def validate_dir(self):
+        # Debug
+        logging.debug(f"Directory Path changed to: {self.edit_directory.text()}")
+
+        # Get the text
+        check_path = self.edit_directory.text()
+
+        # Changing Tool-Tip
+        self.edit_directory.setToolTip(self.edit_directory.text())
+
+        # Testing if path is folder
+        if os.path.isdir(check_path):
+            # Changing Path
+            logging.debug(f"Path: {check_path} valid")
+            os.chdir(check_path)
+
+            # Change color
+            self.edit_directory.setStyleSheet("")
+
+            # Updating Completions
+            self.complete_path(check_path)
+
+        else:
+            # Debug
+            logging.debug(f"Path: {check_path} invalid")
+
+            # Change color
+            self.edit_directory.setStyleSheet("color: red;")
+
+            # Resetting all filters
+
+    def reset_filters(self):
+        # Debug
+        logging.info("Resetting all filters...")
+
+        # Resetting basic window
+        self.edit_name.setText("")
+        self.edit_name_contains.setText("")
+        self.combobox_file_types.select_all()
+        self.edit_directory.setText(FF_Files.USER_FOLDER)
+
+        # Resetting Properties
+        self.edit_file_contains.setText("")
+
+        self.m_date_from_drop_down.setDate(QDate(2000, 1, 1))
+        self.c_date_from_drop_down.setDate(QDate(2000, 1, 1))
+
+        self.m_date_to_drop_down.setDate(QDate.currentDate())
+        self.c_date_to_drop_down.setDate(QDate.currentDate())
+
+        self.edit_size_max.setText("")
+        self.edit_size_min.setText("")
+
+        # Resetting Advanced
+        self.edit_file_extension.setText("")
+        self.rb_library_yes.setChecked(False)
+        self.combobox_search_for.setCurrentIndex(0)
+
+        # Resetting Sorting
+        self.combobox_sorting.setCurrentIndex(0)
+        self.rb_library_yes.setChecked(False)
+
+        # Debug
+        logging.info("Resetted all filters")
+
+    # Importing all fiter from a FFFilter file
+    def import_filters(self, import_path=None):
+        if import_path is None:
+            # Debug
+            logging.info("Asking for location for export")
+            import_path = QFileDialog.getOpenFileName(parent=self.Root_Window,
+                                                      dir=FF_Files.USER_FOLDER,
+                                                      caption="Export File Find Search",
+                                                      filter="*.FFFilter;*.FFSearch")[0]
+
+            # If opened file is a search
+            if import_path.endswith(".FFSearch"):
+
+                FF_Search.LoadSearch.open_file(import_path, self.Root_Window)
+                # Quit function
+                return
+
+        # Opening file, throws error if no files was selected
+        try:
+            with open(import_path, "rb") as export_file:
+                filters = load(fp=export_file)
+
+        except FileNotFoundError:
+            logging.warning(f"File not found: {import_path}")
+            return
+
+        # Debug
+        logging.info("setting all filters to import...")
+
+        # Basic
+        self.edit_name.setText(filters["name"])
+        self.edit_name_contains.setText(filters["name_contains"])
+        self.combobox_file_types.check_items(filters["file_types"])
+        self.edit_directory.setText(filters["directory"])
+
+        # Properties
+        self.edit_file_contains.setText(filters["file_contains"])
+
+        self.m_date_from_drop_down.setDate(QDate.fromString(filters["dates"]["m_date_from"], Qt.DateFormat.ISODate))
+        self.c_date_from_drop_down.setDate(QDate.fromString(filters["dates"]["c_date_from"], Qt.DateFormat.ISODate))
+        self.m_date_to_drop_down.setDate(QDate.fromString(filters["dates"]["m_date_to"], Qt.DateFormat.ISODate))
+        self.c_date_to_drop_down.setDate(QDate.fromString(filters["dates"]["c_date_to"], Qt.DateFormat.ISODate))
+
+        self.edit_size_min.setText(filters["size"]["min"])
+        self.edit_size_max.setText(filters["size"]["max"])
+
+        # Advanced
+        self.edit_file_extension.setText(filters["file_extension"])
+        self.rb_library_yes.setChecked(filters["hidden_files"])
+        self.combobox_search_for.setCurrentIndex(filters["files_folders"])
+
+        # Sorting
+        self.combobox_sorting.setCurrentIndex(filters["sorting"])
+        self.rb_library_yes.setChecked(filters["reverse_sorting"])
+
+        # Debug
+        logging.info("Imported all filters\n")
+
+    # Exporting all fiter in to a FFFilter file
+    def export_filters(self):
+        # Debug
+        logging.info("Request location for export")
+        export_path = QFileDialog.getSaveFileName(parent=self.Root_Window,
+                                                  dir=FF_Files.USER_FOLDER,
+                                                  caption="Export File Find Search",
+                                                  filter="File Find Filter Preset (*.FFFilter);;"
+                                                         "JSON (JavaScript Object Notation) (*.json)")[0]
+
+        # Debug
+        logging.info(f"Exporting all filters to {export_path}...")
+
+        # Directory to save filter settings
+        filters = {"name": self.edit_name.text(),
+                   "name_contains": self.edit_name_contains.text(),
+                   "file_types": self.combobox_file_types.all_checked_items(),
+                   "directory": self.edit_directory.text(),
+
+                   "file_contains": self.edit_file_contains.text(),
+                   "dates": {"m_date_from": self.m_date_from_drop_down.date().toString(Qt.DateFormat.ISODate),
+                             "c_date_from": self.c_date_from_drop_down.date().toString(Qt.DateFormat.ISODate),
+                             "m_date_to": self.m_date_to_drop_down.date().toString(Qt.DateFormat.ISODate),
+                             "c_date_to": self.c_date_to_drop_down.date().toString(Qt.DateFormat.ISODate)},
+                   "size": {"min": self.edit_size_min.text(),
+                            "max": self.edit_size_max.text()},
+
+                   "file_extension": self.edit_file_extension.text(),
+                   "hidden_files": self.rb_library_yes.isChecked(),
+                   "files_folders": self.combobox_search_for.currentIndex(),
+
+                   "sorting": self.combobox_sorting.currentIndex(),
+                   "reverse_sorting": self.rb_library_yes.isChecked()}
+
+        # Try opening the file, crashes if user pressed "Cancel"
+        try:
+            with open(export_path, "w") as export_file:
+                dump(obj=filters, fp=export_file)
+        except FileNotFoundError:
+            logging.warning(f"File not found: {export_path}")
+        else:
+            # Debug
+            logging.info("Exported all filters\n")
+
     # Setting up the menu bar
-    def menu_bar(self, shell_cmd):
+    def menu_bar(self, shell_cmd, app: QApplication):
 
         # Menu Bar
         menu_bar = QMenuBar(self.Root_Window)
-        edit_menu = menu_bar.addMenu("&Edit")
         file_menu = menu_bar.addMenu("&File")
+        edit_menu = menu_bar.addMenu("&Edit")
         tools_menu = menu_bar.addMenu("&Tools")
         tabs_menu = menu_bar.addMenu("&Tabs")
         window_menu = menu_bar.addMenu("&Window")
         help_menu = menu_bar.addMenu("&Help")
 
-        # Load Saved Search
-        load_search_action = QAction("&Open Search", self.Root_Window)
-        load_search_action.triggered.connect(lambda: FF_Search.LoadSearch(self.Root_Window))
-        load_search_action.setShortcut("Ctrl+O")
-        file_menu.addAction(load_search_action)
+        # Import filter preset
+        load_filter_action = QAction("&Open Search / Filter Preset", self.Root_Window)
+        load_filter_action.triggered.connect(lambda: self.import_filters())
+        load_filter_action.setShortcut("Ctrl+O")
+        file_menu.addAction(load_filter_action)
+
+        # Export filter preset
+        export_filter_action = QAction("&Save Filter as Filter Preset", self.Root_Window)
+        export_filter_action.triggered.connect(self.export_filters)
+        export_filter_action.setShortcut("Ctrl+S")
+        file_menu.addAction(export_filter_action)
+
+        # Seperator
+        file_menu.addSeparator()
 
         # Clear Cache
         cache_action = QAction("&Clear Cache", self.Root_Window)
-        cache_action.triggered.connect(lambda: FF_Files.remove_cache(True, self.Root_Window))
+        cache_action.triggered.connect(FF_Files.remove_cache)
+        cache_action.triggered.connect(
+            lambda: FF_Additional_UI.PopUps.show_info_messagebox("Cleared Cache",
+                                                                 "Cleared Cache successfully!",
+                                                                 self.Root_Window))
         cache_action.setShortcut("Ctrl+T")
         tools_menu.addAction(cache_action)
 
@@ -999,7 +1119,7 @@ class MainWindow:
 
         # Quit File Find
         quit_action = QAction("&Quit File Find", self.Root_Window)
-        quit_action.triggered.connect(lambda: exit(0))
+        quit_action.triggered.connect(app.quit)
 
         # Constructing menubar_icon_menu
         menubar_icon_menu.addAction(ff_title)

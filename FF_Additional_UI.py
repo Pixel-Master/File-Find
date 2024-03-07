@@ -14,12 +14,12 @@ import os
 from json import load, dump
 
 # PySide6 Gui Imports
-from PySide6.QtWidgets import QMessageBox, QComboBox
 from PySide6.QtCore import Qt, Signal, QObject
+from PySide6.QtGui import QFont
+from PySide6.QtWidgets import QMessageBox, QComboBox, QDialog, QLabel, QVBoxLayout
 
 # Projects Libraries
 import FF_Files
-import FF_Main_UI
 
 
 # A custom checkbox
@@ -71,24 +71,39 @@ class CheckableComboBox(QComboBox):
         item = self.model().item(index, 0)
         return item.checkState() == Qt.CheckState.Checked
 
+    # Return a lists with the index of all items
     def all_items(self):
         all_items = []
         for item in range(self.count()):
             all_items.append(item)
         return all_items
 
+    # Return a lists with the content of all items
     def all_items_text(self):
         all_items = []
         for item in range(self.count()):
             all_items.append(self.itemText(item))
         return all_items
 
+    # Return a list with all checked items
     def all_checked_items(self):
         checked_items = []
         for item in self.all_items():
             if self.item_checked(item):
                 checked_items.append(self.itemText(item))
         return checked_items
+
+    # Set all items check that are in the list
+    def check_items(self, checked_items: list | set | tuple):
+        # Iterating through a list of all item's indexes and get the text. If the text is in the list of items
+        # that should be checked set the check state to Qt.CheckState.Checked else set it to Qt.CheckState.Unchecked
+        for checked_item_index in self.all_items():
+            item = self.model().item(checked_item_index, 0)
+            if item.text() in checked_items:
+                item.setCheckState(Qt.CheckState.Checked)
+            # If item should not be checked
+            else:
+                item.setCheckState(Qt.CheckState.Unchecked)
 
     # determining the text for the QComboBox
     def determine_text(self):
@@ -151,17 +166,49 @@ class PopUps:
 
     # Info PopUp
     @staticmethod
-    def show_info_messagebox(title, text, parent):
-        # Information
-        msg_info = QMessageBox(parent)
-        msg_info.setIcon(QMessageBox.Icon.NoIcon)
-        msg_info.setText(text)
-        msg_info.setWindowTitle(title)
+    def show_info_messagebox(title, text, parent, large=False):
+        # Information such as file info's require more space
+        if not large:
+            # Information
+            msg_info = QMessageBox(parent)
+            msg_info.setIcon(QMessageBox.Icon.NoIcon)
+            msg_info.setText(text)
+            msg_info.setWindowTitle(title)
 
-        msg_info.exec()
+            msg_info.exec()
 
-        # Return the Value of the Message Box
-        return msg_info
+            # Return the Value of the Message Box
+            return msg_info
+
+        else:
+            # Information
+            msg_info = QDialog(parent)
+            layout = QVBoxLayout(msg_info)
+            msg_info.setLayout(layout)
+
+            # Title
+            title_label = QLabel(msg_info)
+            title_label.setText(title)
+            # Set font size
+            font = QFont("Arial", 15)
+            font.setBold(True)
+            title_label.setFont(font)
+            # Display
+            layout.addWidget(title_label)
+
+            # Label
+            label = QLabel(msg_info)
+            label.setText(text)
+            # Make label selectable
+            label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+            # Display
+            layout.addWidget(label)
+
+            msg_info.setWindowTitle(title)
+            msg_info.show()
+
+            # Return the Value of the Message Box
+            return msg_info
 
     # Ask to search MessageBoy
     @staticmethod

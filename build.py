@@ -15,7 +15,7 @@ import sys
 import plistlib
 
 # Projects Libraries
-import FF_Files
+from FF_Files import VERSION, VERSION_SHORT
 
 
 def main():
@@ -24,18 +24,23 @@ def main():
     # Creating a distribution dir
     os.mkdir(os.path.join(os.getcwd(), "dist"))
 
-    # Finding and Setting architecture
-    arch = subprocess.run(["uname", "-m"], capture_output=True, text=True, check=True).stdout.replace("\n", "")
-    print("On:", arch)
-
     # On macOS
     if sys.platform == "darwin":
+
+        # Finding and Setting architecture
+        arch = subprocess.run(["uname", "-m"], capture_output=True, text=True, check=True).stdout.replace("\n", "")
+        print("On:", arch)
+
         # Building App
-        subprocess.run(["nuitka3",
+        subprocess.run(["python3",
+                        "-m",
+                        "nuitka",
                         "--standalone",
                         "--macos-create-app-bundle",
                         f"--macos-app-icon={os.getcwd()}/assets/icon.icns",
                         "--enable-plugin=pyside6",
+                        "--assume-yes-for-downloads",
+                        "--disable-cache=all",
                         "--output-dir=dist",
                         "File-Find.py"])
         # Renaming the app
@@ -43,7 +48,7 @@ def main():
         # Setting the plist
         with open(os.path.join(os.getcwd(), "dist", "File Find.app", "Contents", "Info.plist"), "wb") as plist:
             plistlib.dump(
-                value={'CFBundleDisplayName': 'File Find',
+                value={"CFBundleDisplayName": "File Find",
                        "CFBundleExecutable": "File-Find",
                        "CFBundleIconFile": "icon.icns",
                        "CFBundleDocumentTypes": [{"CFBundleTypeExtensions": ["FFSearch"],
@@ -51,10 +56,17 @@ def main():
                                                   "CFBundleTypeName": "File Find Search",
                                                   "CFBundleTypeOSTypes": ["FFSEARCH"],
                                                   "CFBundleTypeRole": "Viewer",
+                                                  "LSIsAppleDefaultForType": True},
+
+                                                 {"CFBundleTypeExtensions": ["FFFilter"],
+                                                  "CFBundleTypeIconSystemGenerated": True,
+                                                  "CFBundleTypeName": "File Find Filter Settings Preset",
+                                                  "CFBundleTypeOSTypes": ["FFFILTER"],
+                                                  "CFBundleTypeRole": "Editor",
                                                   "LSIsAppleDefaultForType": True}],
                        "CFBundleIdentifier": "io.github.pixel-master.file-find",
-                       "CFBundleShortVersionString": FF_Files.VERSION_SHORT,
-                       "CFBundleVersion": FF_Files.VERSION,
+                       "CFBundleShortVersionString": VERSION_SHORT,
+                       "CFBundleVersion": VERSION,
                        "CFBundleName": "File-Find",
                        "CFBundlePackageType": "APPL",
                        "LSApplicationCategoryType": "public.app-category.utilities",
@@ -86,26 +98,38 @@ def main():
     # On Linux
     elif sys.platform == "linux":
         # Building App
-        subprocess.run(["nuitka3",
+        subprocess.run(["python3",
+                        "-m",
+                        "nuitka",
                         "--standalone",
                         "--onefile",
-                        f"--linux-icon={os.getcwd()}/assets/icon.icns",
+                        f"--linux-icon={os.path.join(os.getcwd(), 'assets', 'icon.png')}",
                         "--enable-plugin=pyside6",
-                        "--output-dir=dist"
+                        "--output-dir=dist",
                         "File-Find.py"])
+
+        # Renaming the app
+        subprocess.run(["mv", os.path.join("dist", "File-Find.bin"), os.path.join("dist", "File Find.bin")])
 
     # On Windows
     elif sys.platform == "win32" or sys.platform == 'cygwin':
         # Building App
-        subprocess.run(["nuitka3",
+        subprocess.run(["python",
+                        "-m",
+                        "nuitka",
                         "--standalone",
                         "--onefile",
-                        f"--windows-icon-from-ico={os.getcwd()}/assets/icon.ico",
+                        f"--windows-icon-from-ico={os.path.join(os.getcwd(), 'assets', 'icon.ico')}",
                         "--enable-plugin=pyside6",
-                        "--output-dir=dist"
+                        "--output-dir=dist",
+                        "--disable-console",
+                        "--assume-yes-for-downloads",
+                        "--disable-cache=all",
+                        "--output-filename=File Find.exe",
                         "File-Find.py"])
+
         # Renaming the app
-        subprocess.run(["mv", os.path.join("dist", "File-Find.exe"), os.path.join("dist", "File Find.exe")])
+        print("Built exe, renaming..")
 
 
 if __name__ == "__main__":
