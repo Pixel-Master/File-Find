@@ -125,7 +125,7 @@ def main():
                         "--disable-console",
                         "--assume-yes-for-downloads",
                         "--disable-cache=all",
-                        "--output-filename=File Find.exe"
+                        "--output-filename=File Find.exe",
                         "File-Find.py"])
 
         # Renaming the app
