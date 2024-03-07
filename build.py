@@ -125,12 +125,11 @@ def main():
                         "--disable-console",
                         "--assume-yes-for-downloads",
                         "--disable-cache=all",
+                        "--output-filename=File Find.exe"
                         "File-Find.py"])
 
         # Renaming the app
         print("Built exe, renaming..")
-        print(f"ren \"{os.path.join('dist', 'File-Find.exe')}\" \"{os.path.join('dist', 'File Find.exe')}\"")
-        os.system(f"ren.exe \"{os.path.join('dist', 'File-Find.exe')}\" \"{os.path.join('dist', 'File Find.exe')}\"")
 
 
 if __name__ == "__main__":
