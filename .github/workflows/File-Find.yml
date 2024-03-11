@@ -122,7 +122,7 @@ jobs:
     - name: Upload File Find.exe
       uses: actions/upload-artifact@v2
       with:
-          if-no-files-found: warn
+          if-no-files-found: error
           name: File Find.exe
           path: dist\File Find.exe
 
