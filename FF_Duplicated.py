@@ -21,7 +21,7 @@ from time import perf_counter, time, ctime
 # PySide6 Gui Imports
 from PySide6.QtWidgets import (QMainWindow, QWidget, QGridLayout, QHBoxLayout, QVBoxLayout, QLabel, QButtonGroup,
                                QRadioButton, QSlider, QSpinBox, QDialogButtonBox, QSpacerItem, QSizePolicy, QPushButton,
-                               QTreeWidget, QTreeWidgetItem, QMenuBar)
+                               QTreeWidget, QTreeWidgetItem)
 from PySide6.QtCore import Qt, QSize, Signal, QObject
 from PySide6.QtGui import QIcon, QFont, QAction
 
@@ -292,7 +292,7 @@ class DuplicatedSettings:
         self.Duplicated_Settings.show()
 
         # Menubar
-        menu_bar = QMenuBar(self.Duplicated_Settings)
+        menu_bar = self.Duplicated_Settings.menuBar()
 
         # Menus
         window_menu = menu_bar.addMenu("&Window")
@@ -310,7 +310,7 @@ class DuplicatedSettings:
         help_menu.addAction(about_action)
 
         # Help
-        help_action = QAction("&File Find Help and Settings", self.Duplicated_Settings)
+        help_action = QAction("&File Find Settings", self.Duplicated_Settings)
         help_action.triggered.connect(lambda: FF_Help_UI.HelpWindow(parent))
         help_menu.addAction(help_action)
 

@@ -18,7 +18,7 @@ from pyperclip import copy
 from PySide6.QtCore import QSize, Qt, QDate
 from PySide6.QtGui import QFont, QDoubleValidator, QIcon, QAction, QKeySequence
 from PySide6.QtWidgets import QWidget, QLabel, QPushButton, QRadioButton, QFileDialog, \
-    QLineEdit, QButtonGroup, QDateEdit, QComboBox, QMenuBar, QSystemTrayIcon, QMenu, QCompleter, QTabWidget, \
+    QLineEdit, QButtonGroup, QDateEdit, QComboBox, QSystemTrayIcon, QMenu, QCompleter, QTabWidget, \
     QMainWindow, QGridLayout, QSpacerItem, QSizePolicy, QApplication
 
 # Projects Libraries
@@ -26,6 +26,7 @@ import FF_Additional_UI
 import FF_Files
 import FF_Help_UI
 import FF_Search
+import FF_Settings
 
 
 # The class for the main window where filters can be selected
@@ -692,6 +693,9 @@ class MainWindow:
         logging.info("Setting up Menu Bar...")
         self.menu_bar(generate_terminal_command, app)
 
+        # Setting filters to default
+        self.reset_filters()
+
         # Showing PopUps
         FF_Additional_UI.welcome_popups(parent=self.Root_Window)
 
@@ -851,38 +855,46 @@ class MainWindow:
             # Resetting all filters
 
     def reset_filters(self):
+        if os.path.exists(os.path.join(FF_Files.FF_LIB_FOLDER, "Default.FFFilter")):
+            # Debug
+            logging.info("Resetting all filters to user set default...")
+
+            self.import_filters(os.path.join(FF_Files.FF_LIB_FOLDER, "Default.FFFilter"))
+
+        else:
+
+            # Debug
+            logging.info("Resetting all filters to standard default...")
+
+            # Resetting basic window
+            self.edit_name.setText("")
+            self.edit_name_contains.setText("")
+            self.combobox_file_types.select_all()
+            self.edit_directory.setText(FF_Files.USER_FOLDER)
+
+            # Resetting Properties
+            self.edit_file_contains.setText("")
+
+            self.m_date_from_drop_down.setDate(QDate(2000, 1, 1))
+            self.c_date_from_drop_down.setDate(QDate(2000, 1, 1))
+
+            self.m_date_to_drop_down.setDate(QDate.currentDate())
+            self.c_date_to_drop_down.setDate(QDate.currentDate())
+
+            self.edit_size_max.setText("")
+            self.edit_size_min.setText("")
+
+            # Resetting Advanced
+            self.edit_file_extension.setText("")
+            self.rb_library_yes.setChecked(False)
+            self.combobox_search_for.setCurrentIndex(0)
+
+            # Resetting Sorting
+            self.combobox_sorting.setCurrentIndex(0)
+            self.rb_library_yes.setChecked(False)
+
         # Debug
-        logging.info("Resetting all filters...")
-
-        # Resetting basic window
-        self.edit_name.setText("")
-        self.edit_name_contains.setText("")
-        self.combobox_file_types.select_all()
-        self.edit_directory.setText(FF_Files.USER_FOLDER)
-
-        # Resetting Properties
-        self.edit_file_contains.setText("")
-
-        self.m_date_from_drop_down.setDate(QDate(2000, 1, 1))
-        self.c_date_from_drop_down.setDate(QDate(2000, 1, 1))
-
-        self.m_date_to_drop_down.setDate(QDate.currentDate())
-        self.c_date_to_drop_down.setDate(QDate.currentDate())
-
-        self.edit_size_max.setText("")
-        self.edit_size_min.setText("")
-
-        # Resetting Advanced
-        self.edit_file_extension.setText("")
-        self.rb_library_yes.setChecked(False)
-        self.combobox_search_for.setCurrentIndex(0)
-
-        # Resetting Sorting
-        self.combobox_sorting.setCurrentIndex(0)
-        self.rb_library_yes.setChecked(False)
-
-        # Debug
-        logging.info("Resetted all filters")
+        logging.info("Set all filters to default")
 
     # Importing all fiter from a FFFilter file
     def import_filters(self, import_path=None):
@@ -990,7 +1002,7 @@ class MainWindow:
     def menu_bar(self, shell_cmd, app: QApplication):
 
         # Menu Bar
-        menu_bar = QMenuBar(self.Root_Window)
+        menu_bar = self.Root_Window.menuBar()
         file_menu = menu_bar.addMenu("&File")
         edit_menu = menu_bar.addMenu("&Edit")
         tools_menu = menu_bar.addMenu("&Tools")
@@ -1042,19 +1054,19 @@ class MainWindow:
 
         # Settings
         settings_action = QAction("&Settings", self.Root_Window)
-        settings_action.triggered.connect(lambda: FF_Help_UI.HelpWindow(self.Root_Window))
+        settings_action.triggered.connect(lambda: FF_Settings.SettingsWindow(self.Root_Window))
         settings_action.setShortcut("Ctrl+,")
         help_menu.addAction(settings_action)
 
         # Help
-        help_action = QAction("&File Find Help and Settings", self.Root_Window)
+        help_action = QAction("&File Find Settings", self.Root_Window)
         help_action.triggered.connect(lambda: FF_Help_UI.HelpWindow(self.Root_Window))
         help_action.setShortcut(QKeySequence.StandardKey.HelpContents)
         help_menu.addAction(help_action)
 
         # Show File Find window
         reopen_action = QAction("&Show File Find Window", self.Root_Window)
-        reopen_action.setShortcut("Ctrl+S")
+        reopen_action.setShortcut("Ctrl+D")
         reopen_action.triggered.connect(self.Root_Window.show)
         window_menu.addAction(reopen_action)
 

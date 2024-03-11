@@ -67,7 +67,7 @@ class SearchWindow:
         self.Bottom_Layout = QHBoxLayout(self.Search_Results_Window)
         self.Bottom_Layout.setContentsMargins(0, 0, 0, 0)
         # Add to main Layout
-        self.Search_Results_Layout.addLayout(self.Bottom_Layout, 10, 0, 1, 4)
+        self.Search_Results_Layout.addLayout(self.Bottom_Layout, 10, 0, 1, 6)
         # DON'T TRY TO USE LAYOUTS! YOU ARE JUST GOING TO END UP WASTING YOUR TIME!
         # If used File Find crashes with a 'Memory Error' and no further information.
         # I wasted several hours, trying to fix this.
@@ -92,7 +92,7 @@ class SearchWindow:
         # Listbox
         self.result_listbox = QListWidget(self.Search_Results_Window)
         # Place
-        self.Search_Results_Layout.addWidget(self.result_listbox, 1, 0, 9, 4)
+        self.Search_Results_Layout.addWidget(self.result_listbox, 1, 0, 9, 6)
         # Display the Listbox
         self.result_listbox.show()
 
@@ -268,6 +268,8 @@ class SearchWindow:
                                     icon=os.path.join(FF_Files.ASSETS_FOLDER, "Time_button_img_small.png"))
         # Resize
         show_time.setMaximumSize(50, 50)
+        # Tooltip
+        show_time.setToolTip("Show time stats and time stamps..")
         # Add to Layout
         self.Search_Results_Layout.addWidget(show_time, 0, 1, alignment=Qt.AlignmentFlag.AlignLeft)
 
@@ -306,8 +308,38 @@ class SearchWindow:
         options_button.setIconSize(QSize(50, 50))
         # Resize
         options_button.setMaximumSize(50, 50)
+        # Tooltip
+        options_button.setToolTip("More options..")
         # Add to Layout
-        self.Search_Results_Layout.addWidget(options_button, 0, 3)
+        self.Search_Results_Layout.addWidget(options_button, 0, 5)
+
+        # Compare Button
+        compare_button = generate_button(
+            None,
+            lambda: FF_Compare.CompareSearches(matched_list, search_path, self.Search_Results_Window),
+            icon=os.path.join(FF_Files.ASSETS_FOLDER, "Compare_files_img_small.png"))
+        # Icon size
+        compare_button.setIconSize(QSize(50, 50))
+        # Resize
+        compare_button.setMaximumSize(50, 50)
+        # Tooltip
+        compare_button.setToolTip("Compare this search to an other search..")
+        # Add to Layout
+        self.Search_Results_Layout.addWidget(compare_button, 0, 3)
+
+        # Duplicated Button
+        duplicated_button = generate_button(
+            None,
+            lambda: FF_Duplicated.DuplicatedSettings(self.Search_Results_Window, search_path, matched_list),
+            icon=os.path.join(FF_Files.ASSETS_FOLDER, "Duplicated_files_img_small.png"))
+        # Icon size
+        duplicated_button.setIconSize(QSize(50, 50))
+        # Resize
+        duplicated_button.setMaximumSize(50, 50)
+        # Tooltip
+        duplicated_button.setToolTip("Find duplicated files...")
+        # Add to Layout
+        self.Search_Results_Layout.addWidget(duplicated_button, 0, 4)
 
         # Adding every object from matched_list to self.result_listbox
         logging.debug("Adding Files to Listbox...")

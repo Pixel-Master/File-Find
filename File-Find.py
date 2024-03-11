@@ -58,7 +58,6 @@ if __name__ == "__main__":
 
             return super().event(event)
 
-
     app = CreateApp([])
 
     # Turning of automatic garbage collection because

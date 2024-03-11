@@ -176,6 +176,8 @@ A: **File Find does not connect to the Internet**, everything stays on your mach
 
 - `FF_Menubar.py` - Menubar for the search results, compare and duplicated window
 
+- `FF_Settings.py` - Settings menu
+
 ### Mixed files and algorithms
 
 - `FF_Search.py` - This file contains the code for the search engine

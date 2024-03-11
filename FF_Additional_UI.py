@@ -15,11 +15,12 @@ from json import load, dump
 
 # PySide6 Gui Imports
 from PySide6.QtCore import Qt, Signal, QObject
-from PySide6.QtGui import QFont
+from PySide6.QtGui import QFont, QAction
 from PySide6.QtWidgets import QMessageBox, QComboBox, QDialog, QLabel, QVBoxLayout
 
 # Projects Libraries
 import FF_Files
+import FF_Help_UI
 
 
 # A custom checkbox
@@ -206,6 +207,11 @@ class PopUps:
 
             msg_info.setWindowTitle(title)
             msg_info.show()
+
+            # Close Window
+            close_action = QAction("&Close Window", msg_info)
+            close_action.triggered.connect(msg_info.hide)
+            close_action.setShortcut("Ctrl+W")
 
             # Return the Value of the Message Box
             return msg_info

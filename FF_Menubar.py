@@ -6,20 +6,19 @@
 # which should be included with this package. The terms are also available at
 # http://www.gnu.org/licenses/gpl-3.0.html
 
+import gc
 # Imports
 import hashlib
-import gc
 import logging
 import os
 from json import dump, load
 from threading import Thread
 from time import perf_counter, ctime
-from pyperclip import copy
 
 # PySide6 Gui Imports
 from PySide6.QtGui import QIcon, QAction, QColor, QKeySequence
-from PySide6.QtWidgets import QFileDialog, \
-    QMenuBar, QListWidget, QTreeWidget
+from PySide6.QtWidgets import QFileDialog, QListWidget, QTreeWidget
+from pyperclip import copy
 
 # Projects Libraries
 import FF_Additional_UI
@@ -27,6 +26,7 @@ import FF_Compare
 import FF_Duplicated
 import FF_Files
 import FF_Help_UI
+import FF_Settings
 
 
 # This file contains the code for the menubar in the search-results window,
@@ -45,7 +45,7 @@ class MenuBar:
         self.window = window
 
         # Menubar
-        self.menu_bar = QMenuBar(self.parent)
+        self.menu_bar = self.parent.menuBar()
 
         # Menus
         self.file_menu = self.menu_bar.addMenu("&File")
@@ -161,6 +161,12 @@ class MenuBar:
         about_action.triggered.connect(lambda: FF_Help_UI.HelpWindow(self.parent))
         self.help_menu.addAction(about_action)
 
+        # Settings
+        settings_action = QAction("&Settings", self.parent)
+        settings_action.triggered.connect(lambda: FF_Settings.SettingsWindow(self.parent))
+        settings_action.setShortcut("Ctrl+,")
+        self.help_menu.addAction(settings_action)
+
         # Close Window
         close_action = QAction("&Close Window", self.parent)
         close_action.triggered.connect(self.parent.destroy)
@@ -169,7 +175,7 @@ class MenuBar:
         self.window_menu.addAction(close_action)
 
         # Help
-        help_action = QAction("&File Find Help And Settings", self.parent)
+        help_action = QAction("&File Find Settings", self.parent)
         help_action.triggered.connect(lambda: FF_Help_UI.HelpWindow(self.parent))
         self.help_menu.addAction(help_action)
 
@@ -412,10 +418,21 @@ class MenuBar:
                 else:
                     filetype = "Unknown"
 
+                # Display file path nicely
+                if not len(file) < 105:
+                    file_path = ""
+                    last_step = 0
+                    for part in range(0, len(file), 100):
+                        file_path = file_path + "\n" + file[last_step: part]
+                        last_step = part
+                else:
+                    file_path = file
+
+
                 FF_Additional_UI.PopUps.show_info_messagebox(
                     f"Information about: {FF_Files.display_path(file, 30)}",
                     f"\n"
-                    f"Path: {file}\n"
+                    f"Path: {file_path}\n"
                     f"\n"
                     f"Type: {filetype}\n"
                     f"File Name: {os.path.basename(file)}\n"
