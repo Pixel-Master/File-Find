@@ -25,10 +25,10 @@ from PySide6.QtWidgets import (QMainWindow, QWidget, QGridLayout, QHBoxLayout, Q
 from PySide6.QtCore import Qt, QSize, Signal, QObject
 from PySide6.QtGui import QIcon, QFont, QAction
 
-import FF_Help_UI
 # Projects Libraries
 import FF_Menubar
 import FF_Files
+import FF_Help_UI
 import FF_Additional_UI
 
 # Global variables
@@ -503,7 +503,7 @@ class DuplicatedUI:
 
 # Algorithms to find duplicated files
 class FindDuplicated:
-    def __init__(self, criteria: dict, search_path, matched_list, finished_signal: QObject):
+    def __init__(self, criteria: dict, search_path, matched_list, finished_signal):
         # Debug
         logging.info("Searching for duplicated files...")
         logging.info(f"{criteria = }")

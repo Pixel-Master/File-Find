@@ -12,6 +12,9 @@
 import logging
 import os
 from json import load, dump
+import shutil
+from subprocess import run
+from sys import platform
 
 # PySide6 Gui Imports
 from PySide6.QtGui import QFont, QAction, Qt
@@ -338,7 +341,16 @@ class SettingsWindow:
             logging.debug(f"Open File Find Folder: {FF_Files.FF_LIB_FOLDER}")
 
             # Opening folder with the macOS open command
-            os.system(f"open -R {FF_Files.convert_file_name_for_terminal(FF_Files.FF_LIB_FOLDER)}")
+            # Opening the file, the specific command depends on the platform
+            if platform == "darwin":
+                # on macOS
+                run(["open", "-R", FF_Files.FF_LIB_FOLDER])
+            elif platform == "win32" or platform == "cygwin":
+                # on Windows
+                run(["start", FF_Files.FF_LIB_FOLDER], shell=True)
+            elif platform == "linux":
+                # on different GNU/Linux distros
+                run(["xdg-open", FF_Files.FF_LIB_FOLDER])
 
         open_ff_folder_button.clicked.connect(open_lib_folder)
         # Display
@@ -377,14 +389,15 @@ class SettingsWindow:
                 logging.warning("Resetting File Find...")
 
                 # Display a Messagebox
-                FF_Additional_UI.PopUps.show_info_messagebox("Resetted!", "Resetted File Find\n\nRestarting now...",
-                                                             self.Settings_Window)
+                FF_Additional_UI.PopUps.show_info_messagebox(
+                    "Reset!", "Press \"OK\" to finish reset.\n Manual restart is required.",
+                    self.Settings_Window)
 
                 # Deleting the File Find Folder with the rm command
-                os.system(f"rm -rf {FF_Files.convert_file_name_for_terminal(FF_Files.FF_LIB_FOLDER)}")
+                shutil.rmtree(FF_Files.FF_LIB_FOLDER)
 
                 # Exiting
-                logging.fatal("Resetted, Exiting...")
+                logging.fatal("Reset, Exiting...")
                 exit(0)
 
         reset_button.clicked.connect(reset_settings)
@@ -449,7 +462,7 @@ class SettingsWindow:
 
         # About File Find
         about_action = QAction("&About File Find", self.Settings_Window)
-        about_action.triggered.connect(FF_Help_UI.HelpWindow(self.Settings_Window))
+        about_action.triggered.connect(lambda: FF_Help_UI.HelpWindow(self.Settings_Window))
         help_menu.addAction(about_action)
 
         # Help

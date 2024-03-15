@@ -6,14 +6,17 @@
 # which should be included with this package. The terms are also available at
 # http://www.gnu.org/licenses/gpl-3.0.html
 
-import gc
 # Imports
 import hashlib
 import logging
 import os
 from json import dump, load
+import gc
+import shutil
+from subprocess import run
 from threading import Thread
 from time import perf_counter, ctime
+from sys import platform
 
 # PySide6 Gui Imports
 from PySide6.QtGui import QIcon, QAction, QColor, QKeySequence
@@ -227,10 +230,10 @@ class MenuBar:
             # If no file was selected
             if new_location == "":
                 logging.info("User pressed Cancel")
-
-            # If file was selected, moving the file
-            elif os.system(f"mv {FF_Files.convert_file_name_for_terminal(selected_file)} "
-                           f"{os.path.join(FF_Files.convert_file_name_for_terminal(new_location))}") != 0:
+                return
+            try:
+                shutil.move(selected_file, new_location)
+            except FileNotFoundError:
                 # Debug
                 logging.critical(f"File not Found: {selected_file}")
 
@@ -282,17 +285,16 @@ class MenuBar:
             selected_file = self.get_listbox().currentItem().text()
 
             # Trash location
-            new_location = os.path.join(
-                FF_Files.convert_file_name_for_terminal(FF_Files.USER_FOLDER),
-                '.Trash',
-                FF_Files.convert_file_name_for_terminal(os.path.basename(selected_file)))
-            # Command to execute
-            delete_command = (
-                f"mv {FF_Files.convert_file_name_for_terminal(selected_file)} {new_location}")
+            new_location = os.path.join(FF_Files.USER_FOLDER, ".Trash", os.path.basename(selected_file))[0]
 
             # Moving the file to trash
             if FF_Additional_UI.PopUps.show_delete_question(self.parent, selected_file):
-                if os.system(delete_command) != 0:
+
+                try:
+                    # Try to move the file to trash
+                    shutil.move(selected_file, new_location)
+
+                except FileNotFoundError:
 
                     #  Error message
                     FF_Additional_UI.PopUps.show_critical_messagebox(
@@ -301,6 +303,7 @@ class MenuBar:
                     # Debug
                     logging.error(f"File not found: {selected_file}")
 
+                # If everything ran successful
                 else:
                     # Debug
                     logging.debug(f"Moved {selected_file} to trash")
@@ -338,7 +341,21 @@ class MenuBar:
             # Selecting the highlighted item of the focused listbox
             selected_file = self.get_current_item()
 
-            if os.system(f"open {FF_Files.convert_file_name_for_terminal(selected_file)}") != 0:
+            return_code = -1
+
+            # Opening the file, the specific command depends on the platform
+            if platform == "darwin":
+                # Collecting the return code
+                return_code = run(["open", selected_file]).returncode
+            elif platform == "win32" or platform == "cygwin":
+                return_code = run(["start", selected_file], shell=True).returncode
+            elif platform == "linux":
+                return_code = run(["xdg-open", selected_file]).returncode
+
+            if return_code != 0:
+                # Debug
+                logging.error(f"No Program found to open {selected_file}")
+
                 FF_Additional_UI.PopUps.show_critical_messagebox("Error!", f"No Program found to open {selected_file}",
                                                                  self.parent)
             else:
@@ -350,23 +367,36 @@ class MenuBar:
     def open_in_app(self):
         try:
             # Prompt for an app
-            selected_program = FF_Files.convert_file_name_for_terminal(
-                QFileDialog.getOpenFileName(
-                    parent=self.parent,
-                    dir="/Applications",
-                    filter="*.app;")[0])
+            selected_program = QFileDialog.getOpenFileName(
+                parent=self.parent,
+                dir="/Applications",
+                filter="*.app;")[0]
 
             # Tests if the user selected an app
             if selected_program != "":
                 # Get the selected file
-                selected_file = FF_Files.convert_file_name_for_terminal(self.get_current_item())
+                selected_file = self.get_current_item()
+
                 # Open the selected file with the selected program and checking the return value
-                if os.system(f"open {selected_file} -a {selected_program}") != 0:
+                return_code = -1
+
+                # Opening the file, the specific command depends on the platform
+                if platform == "darwin":
+                    # Collecting the return code
+                    return_code = run(["open", selected_file, "-a", selected_program]).returncode
+                elif platform == "win32" or platform == "cygwin":
+                    return_code = run(["start", selected_file], shell=True).returncode
+                elif platform == "linux":
+                    return_code = run(["xdg-open", selected_file]).returncode
+
+                if return_code != 0:
                     # Error message
                     FF_Additional_UI.PopUps.show_critical_messagebox("Error!", f"{selected_file} does not exist!",
                                                                      self.parent)
                     logging.error(f"Error with opening {selected_file} with {selected_program}")
+
                 else:
+                    # Debug
                     logging.debug(f"Opened: {selected_file}")
 
         # If no file is selected
@@ -375,10 +405,34 @@ class MenuBar:
 
     # Open a file in the Terminal
     def open_in_terminal(self):
+        # Only works for folders
         try:
             selected_file = self.get_current_item()
 
-            if os.system(f"open {FF_Files.convert_file_name_for_terminal(selected_file)}") != 0:
+            if os.path.isfile(selected_file):
+                # Can't open files in Terminal
+                logging.error("Can't open files in Terminal")
+                (FF_Additional_UI.PopUps.show_critical_messagebox
+                 ("Error!", f"Terminal could not open file (only folders): {selected_file}", self.parent))
+                return
+
+            # Open the selected file with the selected program and checking the return value
+            return_code = -1
+
+            # Opening the file, the specific command depends on the platform
+            if platform == "darwin":
+                # Collecting the return code
+                return_code = run(["open",
+                                   selected_file,
+                                   "-a",
+                                   os.path.join("/System", "Applications", "Utilities", "Terminal.app")]).returncode
+            elif platform == "win32" or platform == "cygwin":
+                return_code = run(["start", "/max", "cd", selected_file], shell=True).returncode
+            elif platform == "linux":
+                return_code = run(["xdg-open", selected_file]).returncode
+
+            if return_code != 0:
+                # Error message
                 FF_Additional_UI.PopUps.show_critical_messagebox("Error!", f"Terminal could not open: {selected_file}",
                                                                  self.parent)
             else:
@@ -391,7 +445,22 @@ class MenuBar:
         try:
             selected_file = self.get_current_item()
 
-            if os.system(f"open -R {FF_Files.convert_file_name_for_terminal(selected_file)}") != 0:
+            # Open the selected file with the selected program and checking the return value
+            return_code = -1
+
+            # Opening the file, the specific command depends on the platform
+            if platform == "darwin":
+                # Collecting the return code
+                return_code = run(["open",
+                                   "-R",
+                                   selected_file]).returncode
+            elif platform == "win32" or platform == "cygwin":
+                return_code = run(["start", os.path.dirname(selected_file)], shell=True).returncode
+            elif platform == "linux":
+                return_code = run(["xdg-open", os.path.dirname(selected_file)]).returncode
+
+            # If the command failed
+            if return_code != 0:
                 FF_Additional_UI.PopUps.show_critical_messagebox("Error!", f"File not Found {selected_file}",
                                                                  self.parent)
             else:
@@ -428,7 +497,21 @@ class MenuBar:
                 else:
                     file_path = file
 
+                # Get dates
+                # Date modified
+                m_date = ctime(os.path.getmtime(file))
+                # Date created
+                # On macOS
+                if platform == "darwin":
+                    c_date = ctime(os.stat(file).st_birthtime)
+                # On Linux
+                elif platform == "linux":
+                    c_date = "Can't fetch date created on linux"
+                # On Windows
+                else:
+                    c_date = ctime(os.path.getctime(file))
 
+                # Show Info window
                 FF_Additional_UI.PopUps.show_info_messagebox(
                     f"Information about: {FF_Files.display_path(file, 30)}",
                     f"\n"
@@ -438,8 +521,8 @@ class MenuBar:
                     f"File Name: {os.path.basename(file)}\n"
                     f"Size: "
                     f"{FF_Files.conv_file_size(FF_Files.get_file_size(file))}\n"
-                    f"Date Created: {ctime(os.stat(file).st_birthtime)}\n"
-                    f"Date Modified: {ctime(os.path.getmtime(file))}\n",
+                    f"Date Created: {c_date}\n"
+                    f"Date Modified: {m_date}\n",
                     self.parent, large=True)
 
             except (FileNotFoundError, PermissionError):
@@ -530,7 +613,7 @@ class MenuBar:
                 logging.debug(f"Took {final_time}")
 
                 # Give Feedback
-                FF_Additional_UI.PopUps.show_info_messagebox(f"Hashes of {hash_file}",
+                FF_Additional_UI.PopUps.show_info_messagebox(f"Hashes of {FF_Files.display_path(hash_file, 90)}",
                                                              "\n"
                                                              f"MD5:\n {md5_hash}\n\n"
                                                              f"SHA1:\n {sha1_hash}\n\n"

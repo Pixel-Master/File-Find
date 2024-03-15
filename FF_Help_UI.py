@@ -11,6 +11,8 @@
 # Imports
 import logging
 import os
+from sys import platform
+from subprocess import run
 
 # PySide6 Gui Imports
 from PySide6.QtCore import QRect
@@ -91,10 +93,10 @@ class HelpWindow:
         ff_logo.show()
 
         # The Frame
-        fflogo_frame = QFrame(about_window)
-        fflogo_frame.setGeometry(QRect(100, 40, 500, 270))
-        fflogo_frame.setFrameShape(QFrame.Shape.StyledPanel)
-        fflogo_frame.show()
+        logo_frame = QFrame(about_window)
+        logo_frame.setGeometry(QRect(100, 40, 500, 270))
+        logo_frame.setFrameShape(QFrame.Shape.StyledPanel)
+        logo_frame.show()
 
         # The Version Label
         version_label = QLabel(about_window)
@@ -129,7 +131,15 @@ class HelpWindow:
             link.setFont(QFont("Arial", 20))
             # The command and tooltip
             link.setToolTip(domain)
-            link.clicked.connect(lambda: os.system(f"open {domain}"))
+            # Depends on the os
+
+            if platform == "darwin":
+                link.clicked.connect(lambda: run(["open", domain]))
+            elif platform == "win32" or platform == "cygwin":
+                link.clicked.connect(lambda: run(["start", domain], shell=True))
+            elif platform == "linux":
+                link.clicked.connect(lambda: run(["xdg-open", domain]))
+
             # Set the color to blue
             link.setStyleSheet(f"color: {color};")
             # Display the Label

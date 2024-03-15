@@ -11,11 +11,12 @@
 # Imports
 import logging
 import gc
+import os
 from sys import platform
 
 # PySide6 Gui Imports
 from PySide6.QtCore import QEvent
-from PySide6.QtGui import QFileOpenEvent
+from PySide6.QtGui import QFileOpenEvent, QIcon
 from PySide6.QtWidgets import QApplication
 
 # Projects Library
@@ -26,7 +27,7 @@ import FF_Search
 if __name__ == "__main__":
     # Setup Logging
     logging.basicConfig(level=logging.DEBUG,
-                        format='File Find [%(pathname)s] at %(asctime)s, %(levelname)s: %(message)s',
+                        format="File Find [%(pathname)s] at %(asctime)s, %(levelname)s: %(message)s",
                         force=True)
 
     logging.info(f"Launching File Find with Version {FF_Files.VERSION_SHORT}[{FF_Files.VERSION}]...\n")
@@ -71,6 +72,10 @@ if __name__ == "__main__":
     main_window = FF_Main_UI.MainWindow(app)
 
     app.setQuitOnLastWindowClosed(False)
+
+    # Only on non Mac systems
+    if not platform == "darwin":
+        app.setWindowIcon(QIcon(os.path.join(FF_Files.ASSETS_FOLDER, "FFlogo_small.png")))
 
     # Main loop for User-Interface
     app.exec()

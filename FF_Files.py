@@ -17,7 +17,7 @@ from time import time
 import hashlib
 
 # Versions
-VERSION: str = "rc_11-mar-24"
+VERSION: str = "rc_14-mar-24"
 VERSION_SHORT: str = "0.0"
 
 # Defining folder variables
@@ -28,7 +28,7 @@ SAVED_SEARCHES_FOLDER = os.path.join(FF_LIB_FOLDER, "Saved Searches")
 ASSETS_FOLDER = os.path.join(FF_LIB_FOLDER, "assets")
 
 # Hash for the assets folder in the library dir
-TARGET_ASSETS_FOLDER_HASH = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+TARGET_ASSETS_FOLDER_HASH = "72eb562e3b8db77196be227fe62b6a90a62a21afba8f4f2e7a2d482df0034dad"
 # Time
 SECONDS_OF_A_DAY = 86400
 SECONDS_OF_A_WEEK = 604800
@@ -275,6 +275,8 @@ def setup():
         with open(os.path.join(ASSETS_FOLDER, file), "rb") as hash_file:
             file_content = hash_file.read() + file_content
     assets_folder_hash = hashlib.sha256(file_content).hexdigest()
+
+    logging.debug(f"{assets_folder_hash = }")
 
     # Check if calculated hash and target hash are equal
     if assets_folder_hash != TARGET_ASSETS_FOLDER_HASH:

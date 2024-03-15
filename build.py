@@ -9,7 +9,7 @@
 # This is a script used to build File Find with nuitka and is not meant to be imported
 
 # Imports
-import subprocess
+from subprocess import run
 import os
 import sys
 import plistlib
@@ -20,7 +20,7 @@ from FF_Files import VERSION, VERSION_SHORT
 
 def main():
     # Cleaning
-    os.system("rm -rf dist build File-Find.build File-Find.dist")
+    run(["rm", "-rf", "dist", "build", "File-Find.build", "File-Find.dist"])
     # Creating a distribution dir
     os.mkdir(os.path.join(os.getcwd(), "dist"))
 
@@ -28,23 +28,23 @@ def main():
     if sys.platform == "darwin":
 
         # Finding and Setting architecture
-        arch = subprocess.run(["uname", "-m"], capture_output=True, text=True, check=True).stdout.replace("\n", "")
+        arch = run(["uname", "-m"], capture_output=True, text=True, check=True).stdout.replace("\n", "")
         print("On:", arch)
 
         # Building App
-        subprocess.run(["python3",
-                        "-m",
-                        "nuitka",
-                        "--standalone",
-                        "--macos-create-app-bundle",
-                        f"--macos-app-icon={os.getcwd()}/assets/icon.icns",
-                        "--enable-plugin=pyside6",
-                        "--assume-yes-for-downloads",
-                        "--disable-cache=all",
-                        "--output-dir=dist",
-                        "File-Find.py"])
+        run(["python3",
+             "-m",
+             "nuitka",
+             "--standalone",
+             "--macos-create-app-bundle",
+             f"--macos-app-icon={os.getcwd()}/assets/icon.icns",
+             "--enable-plugin=pyside6",
+             "--assume-yes-for-downloads",
+             "--disable-cache=all",
+             "--output-dir=dist",
+             "File-Find.py"])
         # Renaming the app
-        subprocess.run(["mv", os.path.join("dist", "File-Find.app"), os.path.join("dist", "File Find.app")])
+        run(["mv", os.path.join("dist", "File-Find.app"), os.path.join("dist", "File Find.app")])
         # Setting the plist
         with open(os.path.join(os.getcwd(), "dist", "File Find.app", "Contents", "Info.plist"), "wb") as plist:
             plistlib.dump(
@@ -77,59 +77,59 @@ def main():
                        "NSHighResolutionCapable": True}, fp=plist)
 
         # This is temporary, as long as I don't have an Apple Developer ID, just remove the signature
-        subprocess.run(["codesign", "--remove-signature", "Downloads/File Find.app"])
+        run(["codesign", "--remove-signature", "Downloads/File Find.app"])
 
         # Building DMG
         print("\n\nBuilding DMG...")
 
-        subprocess.run(
-            ['create-dmg',
-             '--volname', 'File Find',
-             '--volicon', 'assets/icon.icns',
-             '--background', 'assets/background.png',
-             '--window-pos', '200', '120',
-             '--window-size', '800', '400',
-             '--icon-size', '100',
-             '--icon', 'dist/File Find.app', '200', '190',
-             '--app-drop-link', '600', '190',
-             'dist/File Find.dmg',
-             'dist'])
+        run(
+            ["create-dmg",
+             "--volname", "File Find",
+             "--volicon", "assets/icon.icns",
+             "--background", "assets/background.png",
+             "--window-pos", "200", "120",
+             "--window-size", "800", "400",
+             "--icon-size", "100",
+             "--icon", "dist/File Find.app", "200", "190",
+             "--app-drop-link", "600", "190",
+             "dist/File Find.dmg",
+             "dist"])
 
     # On Linux
     elif sys.platform == "linux":
         # Building App
-        subprocess.run(["python3",
-                        "-m",
-                        "nuitka",
-                        "--standalone",
-                        "--onefile",
-                        f"--linux-icon={os.path.join(os.getcwd(), 'assets', 'icon.png')}",
-                        "--enable-plugin=pyside6",
-                        "--output-dir=dist",
-                        "File-Find.py"])
+        run(["python3",
+             "-m",
+             "nuitka",
+             "--standalone",
+             "--onefile",
+             f"--linux-icon={os.path.join(os.getcwd(), 'assets', 'icon.png')}",
+             "--enable-plugin=pyside6",
+             "--output-dir=dist",
+             "File-Find.py"])
 
         # Renaming the app
-        subprocess.run(["mv", os.path.join("dist", "File-Find.bin"), os.path.join("dist", "File Find.bin")])
+        run(["mv", os.path.join("dist", "File-Find.bin"), os.path.join("dist", "File Find.bin")])
 
     # On Windows
-    elif sys.platform == "win32" or sys.platform == 'cygwin':
+    elif sys.platform == "win32" or sys.platform == "cygwin":
         # Building App
-        subprocess.run(["python",
-                        "-m",
-                        "nuitka",
-                        "--standalone",
-                        "--onefile",
-                        f"--windows-icon-from-ico={os.path.join(os.getcwd(), 'assets', 'icon.ico')}",
-                        "--enable-plugin=pyside6",
-                        "--output-dir=dist",
-                        "--disable-console",
-                        "--assume-yes-for-downloads",
-                        "--disable-cache=all",
-                        "--output-filename=File Find.exe",
-                        "File-Find.py"])
+        run(["python",
+             "-m",
+             "nuitka",
+             "--standalone",
+             "--onefile",
+             f"--windows-icon-from-ico={os.path.join(os.getcwd(), 'assets', 'icon.ico')}",
+             "--enable-plugin=pyside6",
+             "--output-dir=dist",
+             "--disable-console",
+             "--assume-yes-for-downloads",
+             "--disable-cache=all",
+             "--output-filename=File Find.exe",
+             "File-Find.py"])
 
         # Renaming the app
-        print("Built exe, renaming..")
+        print("Built exe, done")
 
 
 if __name__ == "__main__":
