@@ -23,7 +23,7 @@ from PySide6.QtWidgets import (QMainWindow, QWidget, QGridLayout, QHBoxLayout, Q
                                QRadioButton, QSlider, QSpinBox, QDialogButtonBox, QSpacerItem, QSizePolicy, QPushButton,
                                QTreeWidget, QTreeWidgetItem)
 from PySide6.QtCore import Qt, QSize, Signal, QObject
-from PySide6.QtGui import QIcon, QFont, QAction
+from PySide6.QtGui import QFont, QAction
 
 # Projects Libraries
 import FF_Menubar
@@ -291,7 +291,7 @@ class DuplicatedSettings:
 
         self.Duplicated_Settings.show()
 
-        # Menubar
+        # Menu bar
         menu_bar = self.Duplicated_Settings.menuBar()
 
         # Menus
@@ -388,7 +388,7 @@ class DuplicatedUI:
         # Add the model to the final
         self.Duplicated_Layout.addWidget(self.Duplicated_Tree, 1, 0, 5, 8)
 
-        # Setup menubar
+        # Setup menu bar
         menu_bar = FF_Menubar.MenuBar(
             parent=self.Duplicated_Window, window="duplicated", listbox=self.Duplicated_Tree, search_path=match_path)
 
@@ -411,7 +411,7 @@ class DuplicatedUI:
             button.clicked.connect(command)
             # Set the icon
             if icon is not None:
-                button.setIcon(QIcon(icon))
+                FF_Additional_UI.UIIcon(icon, button.setIcon)
                 button.setIconSize(QSize(23, 23))
             # Return the value of the Button, to move the Button
             return button
@@ -450,7 +450,7 @@ class DuplicatedUI:
 
         # Time needed
         time_text = QLabel(self.Duplicated_Window)
-        time_text.setText(f"Time needed:")
+        time_text.setText("Time needed:")
         time_text.setFont(small_text_font)
         # Displaying
         self.Duplicated_Layout.addWidget(time_text, 0, 0)

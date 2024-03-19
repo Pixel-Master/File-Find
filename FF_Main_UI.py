@@ -16,7 +16,7 @@ from pyperclip import copy
 
 # PySide6 Gui Imports
 from PySide6.QtCore import QSize, Qt, QDate
-from PySide6.QtGui import QFont, QDoubleValidator, QIcon, QAction, QKeySequence
+from PySide6.QtGui import QFont, QDoubleValidator, QAction, QKeySequence, QIcon
 from PySide6.QtWidgets import QWidget, QLabel, QPushButton, QRadioButton, QFileDialog, \
     QLineEdit, QButtonGroup, QDateEdit, QComboBox, QSystemTrayIcon, QMenu, QCompleter, QTabWidget, \
     QMainWindow, QGridLayout, QSpacerItem, QSizePolicy, QApplication
@@ -58,16 +58,6 @@ class MainWindow:
         self.Central_Widget.setLayout(self.Main_Layout)
         self.Main_Layout.setContentsMargins(20, 20, 20, 20)
         self.Main_Layout.setVerticalSpacing(20)
-
-        # File Find Label
-        # Define the Label
-        main_label = QLabel("File Find", parent=self.Root_Window)
-        # Change Font
-        main_label_font = QFont("Futura", 40)
-        main_label_font.setBold(True)
-        main_label.setFont(main_label_font)
-        # Display the Label
-        self.Main_Layout.addWidget(main_label, 0, 0, 1, 4, Qt.AlignmentFlag.AlignTop)
 
         # Tab widget, switch between Basic, Advanced and Sorting
         self.tabbed_widget = QTabWidget(self.Root_Window)
@@ -308,9 +298,10 @@ class MainWindow:
         # Title of searching indicator
         search_status_title_label = QLabel("Status:", self.Root_Window)
         search_status_title_label.setFont(QFont("Arial", 17))
-        search_status_title_label.setToolTip("Search Indicator:\n"
-                                             "Indicates if searching and shows the numbers of active searches.\n"
-                                             "For more precise information click on the File Find logo in the menubar.")
+        search_status_title_label.setToolTip(
+            "Search Indicator:\n"
+            "Indicates if searching and shows the numbers of active searches.\n"
+            "For more precise information click on the File Find logo in the menu-bar.")
         search_status_title_label.show()
         self.Main_Layout.addWidget(search_status_title_label, 12, 0)
 
@@ -675,19 +666,12 @@ class MainWindow:
         search_button.customContextMenuRequested.connect(
             lambda point: context_menu.exec(search_button.mapToGlobal(point)))
         # Icon
-        search_button.setIcon(QIcon(os.path.join(FF_Files.ASSETS_FOLDER, "Find_button_img_small.png")))
+        FF_Additional_UI.UIIcon(
+            os.path.join(FF_Files.ASSETS_FOLDER, "Find_button_img_small.png"), search_button.setIcon)
         search_button.setIconSize(QSize(25, 25))
         # Place
         search_button.setFixedWidth(120)
         self.Main_Layout.addWidget(search_button, 12, 12, Qt.AlignmentFlag.AlignLeft)
-
-        # Help Button, that calls FF_Additional_UI.Help_Window
-        help_button = self.generate_large_button(None, lambda: FF_Help_UI.HelpWindow(self.Root_Window), 25)
-        # Icon
-        help_button.setIcon(QIcon(os.path.join(FF_Files.ASSETS_FOLDER, "Info_button_img_small.png")))
-        help_button.setIconSize(QSize(25, 25))
-        # Place
-        self.Main_Layout.addWidget(help_button, 0, 12, Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignTop)
 
         # Set up the menu bar
         logging.info("Setting up Menu Bar...")
@@ -896,7 +880,7 @@ class MainWindow:
         # Debug
         logging.info("Set all filters to default")
 
-    # Importing all fiter from a FFFilter file
+    # Importing all filters from a FFFilter file
     def import_filters(self, import_path=None):
         if import_path is None:
             # Debug
@@ -908,7 +892,6 @@ class MainWindow:
 
             # If opened file is a search
             if import_path.endswith(".FFSearch"):
-
                 FF_Search.LoadSearch.open_file(import_path, self.Root_Window)
                 # Quit function
                 return
@@ -954,7 +937,7 @@ class MainWindow:
         # Debug
         logging.info("Imported all filters\n")
 
-    # Exporting all fiter in to a FFFilter file
+    # Exporting all filters in to a FFFilter file
     def export_filters(self):
         # Debug
         logging.info("Request location for export")
@@ -1022,7 +1005,7 @@ class MainWindow:
         export_filter_action.setShortcut("Ctrl+S")
         file_menu.addAction(export_filter_action)
 
-        # Seperator
+        # Separator
         file_menu.addSeparator()
 
         # Clear Cache
@@ -1088,17 +1071,21 @@ class MainWindow:
         search_without_cache_action.triggered.connect(self.delete_cache_and_search)
         edit_menu.addAction(search_without_cache_action)
 
-        # Menubar icon
-        logging.debug("Constructing Menubar icon...")
+        # Menu-bar icon
+        logging.debug("Constructing Menu-bar icon...")
 
-        # Menu for menubar_icon_menu
-        global menubar_icon_menu
-        menubar_icon_menu = QMenu(self.Root_Window)
+        # Menu for menu_bar_icon_menu
+        global menu_bar_icon_menu
+        menu_bar_icon_menu = QMenu(self.Root_Window)
 
         # Add this icon to the menu bar
-        global menubar_icon
-        menubar_icon = QSystemTrayIcon(self.Root_Window)
-        menubar_icon.setIcon(QIcon(os.path.join(FF_Files.ASSETS_FOLDER, "Menubar_icon_small.png")))
+        global menu_bar_icon
+        menu_bar_icon = QSystemTrayIcon(self.Root_Window)
+        # Icon
+        menu_bar_icon_icon = QIcon(os.path.join(FF_Files.ASSETS_FOLDER, "Menubar_icon_small.png"))
+        # Make it automatically turn dark if background is light and the other way around
+        menu_bar_icon_icon.setIsMask(True)
+        menu_bar_icon.setIcon(menu_bar_icon_icon)
 
         # File Find Title
         ff_title = QAction("&File Find", self.Root_Window)
@@ -1133,22 +1120,22 @@ class MainWindow:
         quit_action = QAction("&Quit File Find", self.Root_Window)
         quit_action.triggered.connect(app.quit)
 
-        # Constructing menubar_icon_menu
-        menubar_icon_menu.addAction(ff_title)
-        menubar_icon_menu.addSeparator()
-        menubar_icon_menu.addMenu(search_status_menu)
-        menubar_icon_menu.addMenu(search_status_menu)
-        menubar_icon_menu.addSeparator()
-        menubar_icon_menu.addAction(reopen_action)
-        menubar_icon_menu.addSeparator()
-        menubar_icon_menu.addAction(about_action)
-        menubar_icon_menu.addAction(quit_action)
+        # Constructing menu_bar_icon_menu
+        menu_bar_icon_menu.addAction(ff_title)
+        menu_bar_icon_menu.addSeparator()
+        menu_bar_icon_menu.addMenu(search_status_menu)
+        menu_bar_icon_menu.addMenu(search_status_menu)
+        menu_bar_icon_menu.addSeparator()
+        menu_bar_icon_menu.addAction(reopen_action)
+        menu_bar_icon_menu.addSeparator()
+        menu_bar_icon_menu.addAction(about_action)
+        menu_bar_icon_menu.addAction(quit_action)
 
         # Display the Icon
-        menubar_icon.setContextMenu(menubar_icon_menu)
-        menubar_icon.show()
+        menu_bar_icon.setContextMenu(menu_bar_icon_menu)
+        menu_bar_icon.show()
 
-        return menubar_icon
+        return menu_bar_icon
 
     # Generic Label input
     @staticmethod
@@ -1193,7 +1180,7 @@ class SearchUpdate:
         MainWindow.update_search_status_label()
 
         # Assigning local values
-        self.menubar_icon_menu: QMenu = menubar_icon_menu
+        self.menubar_icon_menu: QMenu = menu_bar_icon_menu
         self.search_status_menu: QMenu = search_status_menu
 
         # Path action
@@ -1218,4 +1205,4 @@ class SearchUpdate:
         self.search_status.setText(text)
 
 
-global menubar_icon_menu, search_status_menu, menubar_icon, search_status_label
+global menu_bar_icon_menu, search_status_menu, menu_bar_icon, search_status_label

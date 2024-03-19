@@ -165,7 +165,7 @@ class HelpWindow:
             answer="It is possible that for example reloading Files or Building the UI at the end of a search"
                    "\ncan cause File Find to freeze. Just wait a minute!")
 
-        # Menubar
+        # Menu bar
         menu_bar = about_window.menuBar()
 
         # Menus

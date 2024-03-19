@@ -35,8 +35,10 @@ class SearchWindow:
         # Debug
         logging.info("Setting up Search UI...")
 
-        # Setting search_path to a local variable
+        # Setting search_path and matched_list to a local variable
         self.search_path = search_path
+        self.matched_list = matched_list.copy()
+        del matched_list
 
         # Saves Time
         time_dict["time_before_building"] = perf_counter()
@@ -84,7 +86,7 @@ class SearchWindow:
 
         # Files found label
         objects_text = QLabel(self.Search_Results_Window)
-        objects_text.setText(f"Files found: {len(matched_list)}")
+        objects_text.setText(f"Files found: {len(self.matched_list)}")
         objects_text.setFont(small_text_font)
         # Displaying
         self.Search_Results_Layout.addWidget(objects_text, 0, 2)
@@ -151,17 +153,23 @@ class SearchWindow:
                 logging.info("Reload...")
                 time_before_reload = perf_counter()
                 removed_list = []
-                # TODO: os.path.exists() sometimes return false positives
-                for matched_file in matched_list:
+                # Creating a copy so that the list doesn't run out of index
+                matched_list_without_deleted_files = self.matched_list.copy()
+
+                for matched_file in self.matched_list:
                     if os.path.exists(matched_file):
                         continue
                     else:
                         # Remove file from widget if it doesn't exist
-                        self.result_listbox.takeItem(matched_list.index(matched_file))
-                        matched_list.remove(matched_file)
+                        self.result_listbox.takeItem(matched_list_without_deleted_files.index(matched_file))
+                        matched_list_without_deleted_files.remove(matched_file)
                         logging.debug(f"File Does Not exist: {matched_file}")
                         # Adding file to removed_list to later remove it from cache
                         removed_list.append(matched_file)
+
+                self.matched_list = matched_list_without_deleted_files.copy()
+
+                # del matched_list_without_deleted_files
 
                 # Loading cache to update it
                 with open(
@@ -190,7 +198,7 @@ class SearchWindow:
                     f" in {round(perf_counter() - time_before_reload, 3)} sec.",
                     self.Search_Results_Window)
                 # UI
-                objects_text.setText(f"Files found: {len(matched_list)}")
+                objects_text.setText(f"Files found: {len(self.matched_list)}")
                 objects_text.adjustSize()
 
                 # Delete variables out of memory
@@ -208,24 +216,24 @@ class SearchWindow:
             save_file = save_dialog[0]
             if save_file.endswith(".txt") and not os.path.exists(save_file):
                 with open(save_file, "w") as export_file:
-                    for save_file in matched_list:
+                    for save_file in self.matched_list:
                         export_file.write(save_file + "\n")
             elif save_file.endswith(".FFSearch") and not os.path.exists(save_file):
                 with open(save_file, "w") as export_file:
-                    dump(matched_list, export_file)
+                    dump(self.matched_list, export_file)
 
-        # Building Menubar
+        # Building Menu-bar
         menu_bar = FF_Menubar.MenuBar(
             parent=self.Search_Results_Window,
             listbox=self.result_listbox,
             window="search",
-            matched_list=matched_list,
+            matched_list=self.matched_list,
             search_path=search_path,
             reload_files=reload_files,
             save_search=save_search)
 
         # Debug
-        logging.info("Finished Setting up menubar")
+        logging.info("Finished Setting up menu-bar")
 
         # Buttons
         # Functions to automate Button
@@ -238,7 +246,7 @@ class SearchWindow:
             button.clicked.connect(command)
             # Set the icon
             if icon is not None:
-                button.setIcon(QIcon(icon))
+                FF_Additional_UI.UIIcon(icon, button.setIcon)
                 button.setIconSize(QSize(23, 23))
             # Return the value of the Button, to move the Button
             return button
@@ -283,20 +291,20 @@ class SearchWindow:
         # Save Action
         options_menu_save_action = options_menu.addAction("&Save Search")
         options_menu_save_action.triggered.connect(save_search)
-        # Seperator
+        # Separator
         options_menu.addSeparator()
         # Compare Action
         options_menu_compare_action = options_menu.addAction(
             "&Compare to other Search...")
         options_menu_compare_action.triggered.connect(
-            lambda: FF_Compare.CompareSearches(matched_list, search_path, self.Search_Results_Window))
-        # Seperator
+            lambda: FF_Compare.CompareSearches(self.matched_list, search_path, self.Search_Results_Window))
+        # Separator
         options_menu.addSeparator()
         # Duplicated Action
         options_menu_duplicated_action = options_menu.addAction(
             "&Find duplicated...")
         options_menu_duplicated_action.triggered.connect(
-            lambda: FF_Duplicated.DuplicatedSettings(self.Search_Results_Window, search_path, matched_list))
+            lambda: FF_Duplicated.DuplicatedSettings(self.Search_Results_Window, search_path, self.matched_list))
 
         # More Options Button
         options_button = generate_button(
@@ -316,7 +324,7 @@ class SearchWindow:
         # Compare Button
         compare_button = generate_button(
             None,
-            lambda: FF_Compare.CompareSearches(matched_list, search_path, self.Search_Results_Window),
+            lambda: FF_Compare.CompareSearches(self.matched_list, search_path, self.Search_Results_Window),
             icon=os.path.join(FF_Files.ASSETS_FOLDER, "Compare_files_img_small.png"))
         # Icon size
         compare_button.setIconSize(QSize(50, 50))
@@ -330,7 +338,7 @@ class SearchWindow:
         # Duplicated Button
         duplicated_button = generate_button(
             None,
-            lambda: FF_Duplicated.DuplicatedSettings(self.Search_Results_Window, search_path, matched_list),
+            lambda: FF_Duplicated.DuplicatedSettings(self.Search_Results_Window, search_path, self.matched_list),
             icon=os.path.join(FF_Files.ASSETS_FOLDER, "Duplicated_files_img_small.png"))
         # Icon size
         duplicated_button.setIconSize(QSize(50, 50))
@@ -343,7 +351,7 @@ class SearchWindow:
 
         # Adding every object from matched_list to self.result_listbox
         logging.debug("Adding Files to Listbox...")
-        self.result_listbox.addItems(matched_list)
+        self.result_listbox.addItems(self.matched_list)
         # Setting the row
         self.result_listbox.setCurrentRow(0)
 
@@ -369,9 +377,9 @@ class SearchWindow:
                      f"Total: {time_dict['time_total']}")
 
         # Push Notification
-        FF_Main_UI.menubar_icon.showMessage("File Find - Search finished!", f"Your Search finished!\nin {search_path}",
-                                            QIcon(os.path.join(FF_Files.ASSETS_FOLDER, "Find_button_img_small.png")),
-                                            100000)
+        FF_Main_UI.menu_bar_icon.showMessage("File Find - Search finished!", f"Your Search finished!\nin {search_path}",
+                                             QIcon(os.path.join(FF_Files.ASSETS_FOLDER, "Find_button_img_small.png")),
+                                             100000)
         # Updated Search indicator
         FF_Main_UI.MainWindow.update_search_status_label()
 

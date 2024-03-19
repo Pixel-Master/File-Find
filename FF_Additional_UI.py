@@ -15,18 +15,89 @@ from json import load, dump
 
 # PySide6 Gui Imports
 from PySide6.QtCore import Qt, Signal, QObject
-from PySide6.QtGui import QFont, QAction
+from PySide6.QtGui import QFont, QAction, QPixmap, QColor
 from PySide6.QtWidgets import QMessageBox, QComboBox, QDialog, QLabel, QVBoxLayout
 
 # Projects Libraries
 import FF_Files
+
+# keeping a list of all created icons
+icons = set()
+global app, global_color_scheme
+
+
+# Create a QPixmap that automatically adjusts to light and dark mode
+class UIIcon:
+    def __init__(self, path, icon_set_func=None, input_app=None):
+        global app, global_color_scheme
+        # Make parameter class wide
+        self.icon_set_func = icon_set_func
+
+        # If class is called at launch for initial setup
+        if input_app is not None:
+            # Debug
+            logging.debug("Initialising UIIcon...")
+
+            app = input_app
+
+            def change_global__color_scheme(scheme):
+                global global_color_scheme
+                global_color_scheme = scheme
+
+            global_color_scheme = app.styleHints().colorScheme()
+            # Connecting color scheme change
+            app.styleHints().colorSchemeChanged.connect(self.style_changed)
+            app.styleHints().colorSchemeChanged.connect(change_global__color_scheme)
+
+        # Creating an icon
+        else:
+            # Debug
+            logging.debug(f"Creating icon for {path} ...")
+
+            # Storing path
+            self.path = path
+            # Filling the pixmap in and mapping the black part out
+            self.pixmap = QPixmap(path)
+            self.mask = self.pixmap.createMaskFromColor(QColor("black"), Qt.MaskOutColor)
+            # Filling in the mapped out part
+            if global_color_scheme == Qt.ColorScheme.Dark:
+                self.turn_dark()
+            elif global_color_scheme == Qt.ColorScheme.Light:
+                self.turn_light()
+
+            # Add icon to list
+            icons.add(self)
+
+    def turn_dark(self):
+        # Debug
+        logging.debug(f"Turning {self.path} dark-mode")
+
+        self.pixmap.fill((QColor("white")))
+        self.pixmap.setMask(self.mask)
+        self.icon_set_func(self.pixmap)
+
+    def turn_light(self):
+        # Debug
+        logging.debug(f"Turning {self.path} into light-mode")
+
+        self.pixmap.fill((QColor("black")))
+        self.pixmap.setMask(self.mask)
+        self.icon_set_func(self.pixmap)
+
+    @staticmethod
+    def style_changed(color_scheme):
+        for icon in icons:
+            if color_scheme == Qt.ColorScheme.Dark:
+                UIIcon.turn_dark(icon)
+            elif color_scheme == Qt.ColorScheme.Light:
+                UIIcon.turn_light(icon)
 
 
 # A custom checkbox
 class CheckableComboBox(QComboBox):
     # once there is a checkState set, it is rendered
     def __init__(self, parent):
-        logging.debug("Initialising checkable combobox...")
+        logging.debug("Initialising check-able combobox...")
         # initialising the combobox
         QComboBox.__init__(self, parent)
         # setting a placeholder text
@@ -255,7 +326,6 @@ def welcome_popups(parent):
         question_popup.exec()
 
         if question_popup == QMessageBox.ButtonRole.YesRole:
-
             # Showing welcome messages
             PopUps.show_info_messagebox(
                 title="Welcome to File Find",
@@ -271,7 +341,7 @@ def welcome_popups(parent):
                 title="Welcome to File Find",
                 text="Welcome to File Find!\n\nSearch with the Find button.\n\n"
                      "You can find all info's and settings in the Settings section!\n\n"
-                     "If you press on the File Find icon in the menubar and go to \"Searches:\","
+                     "If you press on the File Find icon in the menu bar and go to \"Searches:\","
                      " you can see the state of all your searches",
                 parent=parent)
             PopUps.show_info_messagebox(

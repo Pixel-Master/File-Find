@@ -32,7 +32,7 @@ import FF_Help_UI
 import FF_Settings
 
 
-# This file contains the code for the menubar in the search-results window,
+# This file contains the code for the menu-bar in the search-results window,
 # the compare window and the duplicated files window
 
 # Main class
@@ -40,14 +40,14 @@ class MenuBar:
 
     def __init__(
             self, parent, window, listbox, matched_list=None, search_path=None, save_search=None, reload_files=None):
-        logging.debug("Setting up menubar...")
+        logging.debug("Setting up menu-bar...")
 
         self.parent = parent
         self.listbox: QListWidget | QTreeWidget = listbox
         self.search_path = search_path
         self.window = window
 
-        # Menubar
+        # Menu-bar
         self.menu_bar = self.parent.menuBar()
 
         # Menus

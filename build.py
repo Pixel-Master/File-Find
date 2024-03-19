@@ -13,6 +13,7 @@ from subprocess import run
 import os
 import sys
 import plistlib
+import shutil
 
 # Projects Libraries
 from FF_Files import VERSION, VERSION_SHORT
@@ -20,7 +21,8 @@ from FF_Files import VERSION, VERSION_SHORT
 
 def main():
     # Cleaning
-    run(["rm", "-rf", "dist", "build", "File-Find.build", "File-Find.dist"])
+    shutil.rmtree(os.path.join(os.getcwd(), "dist"), ignore_errors=True)
+    shutil.rmtree(os.path.join(os.getcwd(), "build"), ignore_errors=True)
     # Creating a distribution dir
     os.mkdir(os.path.join(os.getcwd(), "dist"))
 
@@ -77,7 +79,7 @@ def main():
                        "NSHighResolutionCapable": True}, fp=plist)
 
         # This is temporary, as long as I don't have an Apple Developer ID, just remove the signature
-        run(["codesign", "--remove-signature", "Downloads/File Find.app"])
+        run(["codesign", "--remove-signature", "dist/File Find.app"])
 
         # Building DMG
         print("\n\nBuilding DMG...")

@@ -21,6 +21,7 @@ from PySide6.QtWidgets import QApplication
 
 # Projects Library
 import FF_Files
+import FF_Additional_UI
 import FF_Main_UI
 import FF_Search
 
@@ -59,10 +60,13 @@ if __name__ == "__main__":
 
             return super().event(event)
 
+
     app = CreateApp([])
 
+    FF_Additional_UI.UIIcon(path=None, input_app=app)
+
     # Turning of automatic garbage collection because
-    gc.disable()
+    # gc.disable()
 
     # File Operation
     FF_Files.setup()
@@ -79,6 +83,9 @@ if __name__ == "__main__":
 
     # Main loop for User-Interface
     app.exec()
+
+    # Closing
+    gc.collect()
 
     # Debug
     logging.info("Closed.")

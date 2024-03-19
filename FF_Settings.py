@@ -222,10 +222,10 @@ class SettingsWindow:
         with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings")) as settings_load_file:
             filter_preset_name = load(settings_load_file)["filter_preset_name"]
 
-        filter_lineedit = QLineEdit(self.Settings_Window)
-        filter_lineedit.setText(filter_preset_name)
-        filter_lineedit.setReadOnly(True)
-        self.Settings_Layout.addWidget(filter_lineedit, 1, 1)
+        filter_line_edit = QLineEdit(self.Settings_Window)
+        filter_line_edit.setText(filter_preset_name)
+        filter_line_edit.setReadOnly(True)
+        self.Settings_Layout.addWidget(filter_line_edit, 1, 1)
 
         # Function for resetting filter preset settings
         def reset_filter_preset():
@@ -238,7 +238,7 @@ class SettingsWindow:
                 settings["filter_preset_name"] = FF_Files.STANDARD_SETTINGS["filter_preset_name"]
 
             # Updating line edit
-            filter_lineedit.setText(FF_Files.STANDARD_SETTINGS["filter_preset_name"])
+            filter_line_edit.setText(FF_Files.STANDARD_SETTINGS["filter_preset_name"])
 
             # Dump new settings
             with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "w") as settings_preset_file:
@@ -281,7 +281,7 @@ class SettingsWindow:
                 dump(preset, settings_preset_file)
 
             # Updating line edit
-            filter_lineedit.setText(os.path.basename(file_path))
+            filter_line_edit.setText(os.path.basename(file_path))
 
             # Updating settings
 
@@ -447,7 +447,7 @@ class SettingsWindow:
         combobox_cache.adjustSize()
         self.Settings_Layout.addWidget(combobox_cache, 5, 1)
 
-        # Menubar
+        # Menu-bar
         menu_bar = self.Settings_Window.menuBar()
 
         # Menus

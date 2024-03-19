@@ -41,7 +41,8 @@ File Find isn't ready for Release yet Run from source or download pre-build macO
 	* **Name contains**: The name of a file must contain input, ignoring case.
     * **File Type**: Select groups of files that should be included in search results.
     * **Directory**: The Directory to search in.
-    * 
+  
+
 - **Properties**
 
   <img src="https://github.com/Pixel-Master/Pixel-Master.github.io/blob/main/File-Find/screenshots/properties.png?raw=true" height="250">
@@ -143,7 +144,7 @@ A: File Find stores the cache under `/Users/$USERNAME/Library/Application Suppor
 Q: **Why does File Find ask for permission for Contacts, Calenders, Photos, etc...?**
 
 A: File Find scans the entire specified directory, even if files are excluded they are scanned first and then sorted out. 
-Your photos, calendar data, contacts etc. are stored in a library folder, which means that File Find scans them. 
+Your photos, Calendar data, Contacts etc. are stored in a library folder, which means that File Find scans them. 
 File Find does not connect to the internet, everything stays on your machine. You can also press "Do not allow", the associated files will not appear in your searches.
 
 Q: **Why does File Find ask for permission for Downloads, Desktop, Documents, etc...?**

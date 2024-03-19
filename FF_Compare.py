@@ -14,12 +14,13 @@ import logging
 import os
 
 # PySide6 Gui Imports
-from PySide6.QtGui import QFont, QIcon
+from PySide6.QtGui import QFont
 from PySide6.QtCore import QObject, Signal, QThreadPool, QSize
 from PySide6.QtWidgets import (
     QMainWindow, QFileDialog, QListWidget, QLabel, QPushButton, QWidget, QGridLayout, QHBoxLayout)
 
 # Projects Libraries
+import FF_Additional_UI
 import FF_Files
 import FF_Menubar
 
@@ -153,8 +154,8 @@ class CompareUi:
         button.clicked.connect(command)
         # Set the icon
         if icon is not None:
-            button.setIcon(QIcon(icon))
-            button.setIconSize(QSize(23, 23))
+            FF_Additional_UI.UIIcon(icon, button.setIcon)
+            button.setIconSize(QSize(23, 22))
         # Return the value of the Button, to move the Button
         return button
 

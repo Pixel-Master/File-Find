@@ -399,7 +399,7 @@ class Search:
 
         # Debug
         logging.info("Starting Scanning...")
-        # Update the menubar status
+        # Update the menu-bar status
         self.ui_logger.update("Scanning...")
 
         '''Checking, if Cache File exist, if not it goes through every file in the directory and saves it. If It
@@ -450,7 +450,7 @@ class Search:
 
         # Debug
         logging.info("Starting Indexing...")
-        # Update the menubar status
+        # Update the menu-bar status
         self.ui_logger.update("Indexing...")
 
         # Creating a copy because items can't be removed while iterating over a set
@@ -743,7 +743,7 @@ class Search:
         # Caching Results with pickle
         # Testing if cache file exist, if it doesn't exist it caches scanned files
         if not used_cached:
-            # Debug and menubar log
+            # Debug and menu-bar log
             logging.info("Caching Search Results...")
             self.ui_logger.update("Caching Search Results...")
 
