@@ -39,15 +39,64 @@ jobs:
       run: |
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-    #- name: Test with pytest
-      #run: |
-        #pytest
+
+
+build-macos-arm:
+    name: "Building macOS ARM (Apple Silicon) App"
+    runs-on: macos-14
+
+    steps:
+    - name: Setup
+      uses: actions/checkout@v3
+      
+    - name: Install Python 3.11
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.11"
+        
+    - name: Install dependencies
+      run: |
+        # Installing python dependencies
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+        # Install create-dmg 
+        brew install create-dmg
+    
+    - name: Build .app with nuitka and creating dmg
+      run: |
+        # Building File Find
+        # Build arch is depending on system arch
+        python3 build.py
+        
+    - name: Zip .app
+      run: |
+        cd dist
+        zip -r "File Find.app.zip" "File Find.app"
+        
+    # Upload app
+    - name: Upload File Find.app
+      uses: actions/upload-artifact@v2
+      with:
+          if-no-files-found: error
+          name: File Find.app.zip
+          path: dist/File Find.app.zip
+          
+    # Upload dmg
+    - name: Upload File Find.dmg
+      uses: actions/upload-artifact@v2
+      with:
+          if-no-files-found: warn
+          name: File Find.dmg
+          path: dist/File Find.dmg  
+
+  
 
 
 
-  build-macos:
-    name: "Building macOS App"
-    runs-on: macos-latest
+build-macos-intel:
+    name: "Building macOS Intel App"
+    runs-on: macos-12
 
     steps:
     - name: Setup
