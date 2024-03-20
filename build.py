@@ -79,7 +79,7 @@ def main():
                        "NSHighResolutionCapable": True}, fp=plist)
 
         # This is temporary, as long as I don't have an Apple Developer ID, just remove the signature
-        run(["codesign", "--remove-signature", "dist/File Find.app"])
+        run(["codesign", "-s", "-", "-f", os.path.join("dist", "File Find.app")])
 
         # Building DMG
         print("\n\nBuilding DMG...")
@@ -87,14 +87,14 @@ def main():
         run(
             ["create-dmg",
              "--volname", "File Find",
-             "--volicon", "assets/icon.icns",
-             "--background", "assets/background.png",
+             "--volicon", os.path.join("assets", "icon.icns"),
+             "--background", os.path.join("assets", "background.png"),
              "--window-pos", "200", "120",
              "--window-size", "800", "400",
              "--icon-size", "100",
-             "--icon", "dist/File Find.app", "200", "190",
+             "--icon", os.path.join("dist", "File Find.app"), "200", "190",
              "--app-drop-link", "600", "190",
-             "dist/File Find.dmg",
+             os.path.join("dist", "File Find.dmg"),
              "dist"])
 
     # On Linux
