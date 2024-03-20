@@ -39,7 +39,7 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
 
-build-macos-arm:
+  build-macos-arm:
     name: "Building macOS ARM (Apple Silicon) App"
     runs-on: macos-14
 
@@ -92,7 +92,7 @@ build-macos-arm:
 
 
 
-build-macos-intel:
+  build-macos-intel:
     name: "Building macOS Intel App"
     runs-on: macos-12
 
