@@ -77,7 +77,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
           if-no-files-found: error
-          name: File Find.app.zip
+          name: File Find_apple_silicon.app.zip
           path: dist/File Find.app.zip
           
     # Upload dmg
@@ -85,7 +85,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
           if-no-files-found: warn
-          name: File Find.dmg
+          name: File Find_apple_silicon.dmg
           path: dist/File Find.dmg  
 
   
@@ -130,7 +130,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
           if-no-files-found: error
-          name: File Find.app.zip
+          name: File Find_intel.app.zip
           path: dist/File Find.app.zip
           
     # Upload dmg
@@ -138,7 +138,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
           if-no-files-found: warn
-          name: File Find.dmg
+          name: File Find_intel.dmg
           path: dist/File Find.dmg  
 
   build-windows:
