@@ -66,7 +66,7 @@ if __name__ == "__main__":
     FF_Additional_UI.UIIcon(path=None, input_app=app)
 
     # Turning of automatic garbage collection because
-    # gc.disable()
+    gc.disable()
 
     # File Operation
     FF_Files.setup()

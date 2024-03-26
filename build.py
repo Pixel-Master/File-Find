@@ -15,6 +15,10 @@ import sys
 import plistlib
 import shutil
 
+# Only macOS needs dmgbuild
+if sys.platform == "darwin":
+    import dmgbuild
+
 # Projects Libraries
 from FF_Files import VERSION, VERSION_SHORT
 
@@ -84,18 +88,12 @@ def main():
         # Building DMG
         print("\n\nBuilding DMG...")
 
-        run(
-            ["create-dmg",
-             "--volname", "File Find",
-             "--volicon", os.path.join("assets", "icon.icns"),
-             "--background", os.path.join("assets", "background.png"),
-             "--window-pos", "200", "120",
-             "--window-size", "800", "400",
-             "--icon-size", "100",
-             "--icon", os.path.join("dist", "File Find.app"), "200", "190",
-             "--app-drop-link", "600", "190",
-             os.path.join("dist", "File Find.dmg"),
-             "dist"])
+        dmgbuild.build_dmg(os.path.join("dist", "File Find.dmg"), "File Find Installer",
+                           settings={"files": [os.path.join("dist", "File Find.app")],
+                                     "symlinks": {"Applications": "/Applications"},
+                                     "icon_locations": {"File Find.app": (50, 60), "Applications": (250, 60)},
+                                     "background": os.path.join("assets", "background.png"),
+                                     "icon_size": 70})
 
     # On Linux
     elif sys.platform == "linux":

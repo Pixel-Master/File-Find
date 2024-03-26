@@ -190,6 +190,20 @@ class Search:
             # Saving the time
             unix_time_list[time_drop_down[0]] = time_to_add_to_time_list
 
+        # Test if file size numbers are valid
+        try:
+            if data_file_size_min != "" and data_file_size_max != "":
+                if float(data_file_size_min) < float(data_file_size_max):
+                    size_data = "valid"
+                else:
+                    # Both fields are empty
+                    size_data = "invalid"
+            else:
+                size_data = "unused"
+
+        except ValueError:
+            size_data = "invalid"
+
         # Fetching Errors
         # Testing if file ending, file groups or name contains are used together with name,
         # because if they do no file will be found
@@ -221,14 +235,14 @@ class Search:
                 parent=None)
 
         # File Size max must be larger than File Size min
-        elif data_file_size_min >= data_file_size_max and not data_file_size_min == data_file_size_max:
+        elif size_data == "invalid":
             # Debug
-            logging.error("Size Error! File Size min is larger than File Size max!")
+            logging.error("Size Error! File Size min is larger than File Size max or one of them is invalid!")
 
             # Show Popup
             FF_Additional_UI.PopUps.show_critical_messagebox(
                 "SIZE ERROR!",
-                "Size Error!\n\nFile size min is larger than file size max!",
+                "Size Error!\n\nFile size min is larger than file size max or one of them is invalid!",
                 parent=None)
 
         # First Date must be earlier than second Date

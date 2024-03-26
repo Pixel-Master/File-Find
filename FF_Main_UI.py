@@ -545,7 +545,7 @@ class MainWindow:
                 f"Name contains: {self.edit_name_contains.text()}\n"
                 f"File Ending: {self.edit_file_extension.text()}\n"
                 f"Search from: {os.getcwd()}\n\n"
-                f"File size(MB): min:{self.edit_size_min.text()} max: {self.edit_size_max.text()}\n"
+                f"File size(MB): min:{self.edit_size_min.text()} max:{self.edit_size_max.text()}\n"
                 f"Date modified from: {self.m_date_from_drop_down.text()} to: {self.m_date_to_drop_down.text()}\n"
                 f"Date created from: {self.c_date_from_drop_down.text()} to: {self.c_date_to_drop_down.text()}\n"
                 f"Content: {self.edit_file_contains.text()}\n\n"
@@ -701,7 +701,7 @@ class MainWindow:
         # Return the label to place it in the layout
         return label
 
-    # Function to automate Entry creation
+    # Function to automate entry creation
     def generate_filter_entry(self, tab: QWidget, only_int: bool = False):
         # Define the Entry
         entry = QLineEdit(tab)
@@ -711,7 +711,9 @@ class MainWindow:
         entry.setFixedWidth(230)
         # If only_int true, configure the label
         if only_int:
-            entry.setValidator(QDoubleValidator(self.Root_Window))
+            validator = QDoubleValidator(self.Root_Window)
+            validator.setBottom(0)
+            entry.setValidator(validator)
         # Display the Entry
         entry.show()
         # Return the Label to place it

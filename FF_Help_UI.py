@@ -15,9 +15,8 @@ from sys import platform
 from subprocess import run
 
 # PySide6 Gui Imports
-from PySide6.QtCore import QRect
 from PySide6.QtGui import QFont, QPixmap, QAction
-from PySide6.QtWidgets import QMainWindow, QLabel, QPushButton, QFrame
+from PySide6.QtWidgets import QMainWindow, QLabel, QPushButton, QWidget, QGridLayout
 
 # Projects Libraries
 import FF_Files
@@ -44,43 +43,28 @@ class HelpWindow:
     @staticmethod
     def setup(parent):
         # Debug
-        logging.info("Building Help UI...")
-
-        # A function to generate these Faq texts
-        def faq(question, answer, y):
-            # The Question
-            question_label = QLabel(about_window)
-            question_label.setText(question)
-            bold_font = QFont("Arial", 20)
-            bold_font.setBold(True)
-            question_label.setFont(bold_font)
-            question_label.adjustSize()
-            question_label.show()
-            question_label.move(15, y)
-
-            # The Answer
-            answer_label = QLabel(about_window)
-            answer_label.setText(answer)
-            answer_label.setFont(QFont("Arial", 13))
-            answer_label.adjustSize()
-            answer_label.show()
-            answer_label.move(25, y + 27)
+        logging.info("Building About UI...")
 
         # The Base Window with Labels
         about_window = QMainWindow(parent)
         about_window.setWindowTitle("About File Find")
-        about_window.setFixedHeight(500)
-        about_window.setFixedWidth(700)
+
+        # Main Layout
+        # Create a central widget
+        central_widget = QWidget(about_window)
+        about_window.setCentralWidget(central_widget)
+        # Create the main Layout
+        about_layout = QGridLayout(central_widget)
+        about_layout.setContentsMargins(30, 30, 30, 30)
+        about_layout.setVerticalSpacing(10)
 
         # File Find for macOS Label
         ff_info = QLabel(about_window)
         # Change Font and Text
-        ff_info.setText("File Find for macOS")
+        ff_info.setText("File Find")
         ff_info.setFont(QFont("Futura", 30))
         # Display the Label
-        ff_info.move(200, 170)
-        ff_info.adjustSize()
-        ff_info.show()
+        about_layout.addWidget(ff_info, 3, 1)
 
         # File Find Logo
         ff_logo = QLabel(about_window)
@@ -88,15 +72,7 @@ class HelpWindow:
         ff_logo_img = QPixmap(os.path.join(FF_Files.ASSETS_FOLDER, "FFlogo_small.png"))
         ff_logo.setPixmap(ff_logo_img)
         # Display the Icon
-        ff_logo.move(280, 50)
-        ff_logo.adjustSize()
-        ff_logo.show()
-
-        # The Frame
-        logo_frame = QFrame(about_window)
-        logo_frame.setGeometry(QRect(100, 40, 500, 270))
-        logo_frame.setFrameShape(QFrame.Shape.StyledPanel)
-        logo_frame.show()
+        about_layout.addWidget(ff_logo, 0, 1, 2, 1)
 
         # The Version Label
         version_label = QLabel(about_window)
@@ -106,9 +82,7 @@ class HelpWindow:
         # The command and tooltip
         version_label.setToolTip(f"Version: {FF_Files.VERSION_SHORT} Extended Version: {FF_Files.VERSION}")
         # Display the Label
-        version_label.adjustSize()
-        version_label.show()
-        version_label.move(260, 210)
+        about_layout.addWidget(version_label, 4, 1)
 
         # The Author Label
         author_label = QLabel(about_window)
@@ -119,9 +93,9 @@ class HelpWindow:
         # The command and tooltip
         author_label.setToolTip(f"Version: {FF_Files.VERSION_SHORT} Extended Version: {FF_Files.VERSION}")
         # Display the Label
-        author_label.adjustSize()
-        author_label.show()
-        author_label.move(120, 230)
+        # author_label.setAlignment(Qt.AlignmentFlag.AlignTop) , 6, 3
+        author_label.setFixedHeight(50)
+        about_layout.addWidget(author_label, 8, 0, 8, 3)
 
         # Links using QPushButton
         def generate_link_button(displayed_text, domain, color):
@@ -148,22 +122,14 @@ class HelpWindow:
             # Return the Label to move it
             return link
 
-        sourcecode = generate_link_button("Source Code", "https://github.com/Pixel-Master/File-Find", "blue")
-        sourcecode.move(120, 270)
+        sourcecode = generate_link_button("Website", "https://pixel-master.github.io/File-Find/", "blue")
+        about_layout.addWidget(sourcecode, 7, 0)
 
         update = generate_link_button("Update", "https://github.com/Pixel-Master/File-Find/releases", "green")
-        update.move(310, 270)
+        about_layout.addWidget(update, 7, 1)
 
-        faq_link = generate_link_button("FaQ", "https://github.com/Pixel-Master/File-Find#faq", "red")
-        faq_link.move(470, 270)
-
-        # Calling the faq functions for the Labels
-        faq(question="What is File Find and how does it work?", y=320,
-            answer="File Find is an open-source macOS Utility, that makes it easy to find Files.\n"
-                   "To search fill in the filters you need and leave the filters you don't need empty.")
-        faq(question="Why does File Find sometimes freeze?", y=400,
-            answer="It is possible that for example reloading Files or Building the UI at the end of a search"
-                   "\ncan cause File Find to freeze. Just wait a minute!")
+        faq_link = generate_link_button("FaQ", "https://pixel-master.github.io/File-Find/#faq", "red")
+        about_layout.addWidget(faq_link, 7, 2)
 
         # Menu bar
         menu_bar = about_window.menuBar()

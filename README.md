@@ -1,9 +1,9 @@
 <p align="center">
-  <img src="https://gitlab.com/Pixel-Mqster/File-Find/-/raw/main/assets/icon.png" height="128">
-  <h1 align="center">File Find for macOS</h1>
+  <img src="https://github.com/Pixel-Master/File-Find/blob/main/assets/icon.png?raw=true" height="128">
+  <h1 align="center">File Find</h1>
 
 
-<h3 align="center">A macOS file search utility that helps you find files easier.</h3>
+<h3 align="center">A     file search utility that helps you find files easier.</h3>
 
 <h4 align="center">Completely open-source and free. By Pixel-Master</h4>
 
@@ -22,11 +22,14 @@
 - [Download](#download)
 - [Features](#features)
 - [Building from source](#building-from-source)
+  - [On macOS](#on-macos)
+  - [On Linux](#on-linux)
+  - [On Windows](#on-windows)
 - [FAQ](#faq)
 - [File Structure](#file-structure)
 
 ## Download
-File Find isn't ready for Release yet Run from source or download pre-build macOS Apps from the GitHub action Page.
+File Find isn't ready for Release yet Run from source or download pre-build macOS, Windows or Linux Apps from the GitHub action Page.
 - [Building from Source](#building-from-source)
 - [GitHub Action Page](https://github.com/Pixel-Master/File-Find/actions/workflows/File-Find.yml)
 
@@ -35,7 +38,7 @@ File Find isn't ready for Release yet Run from source or download pre-build macO
 ### Search options
 - **Basic**
 	<p align="left">
-  <img src="https://github.com/Pixel-Master/Pixel-Master.github.io/blob/main/File-Find/screenshots/File%20Find%20screenshot%20dark.png?raw=true" height="250">
+  <img src="https://github.com/Pixel-Master/Pixel-Master.github.io/blob/main/File-Find/screenshots/File%20Find%20screenshot%20white.png?raw=true" height="250">
 
 	* **Name**: Input needs to match the name of a file exactly, ignoring case. Also supports unix shell-style wildcards, which are not the same as regular expressions (also ignoring case).
 	* **Name contains**: The name of a file must contain input, ignoring case.
@@ -92,7 +95,7 @@ File Find isn't ready for Release yet Run from source or download pre-build macO
 
 ### Note:
 
-###### File Find won't work properly on Linux or Windows, because the UI displays different depending on the operating-system and some features depend on the system. 
+###### File Find works on Linux or Windows, but currently only in beta. Please report any errory.
 
 
 ### Dependencies for building
@@ -100,9 +103,12 @@ File Find isn't ready for Release yet Run from source or download pre-build macO
 - [PySide6](https://pypi.org/project/PySide6/) 6.4.1 or higher
 - [pyperclip](https://pypi.org/project/pyperclip/) 1.8.2 or higher
 - [nuitka](https://pypi.org/project/nuitka/) 2.0 or higher
-- [create-dmg](https://github.com/create-dmg/create-dmg) 1.1 or higher
+- **Only macOS:** [dmgbuild](https://pypi.org/project/dmgbuild/) 1.1 or higher
 
 ### Building
+
+#### On macOS
+
 1. Install Python:
     
     Download the installer: [here](https://www.python.org/ftp/python/3.11.6/python-3.11.6-macos11.pkg) or use
@@ -121,12 +127,66 @@ File Find isn't ready for Release yet Run from source or download pre-build macO
    2. Activate the virtual environment: `source venv/bin/activate`
 
 
-5. [Install python dependencies](#dependencies-for-building): `pip3 install -r requirements.txt`
+5. [Install dependencies](#dependencies-for-building): `pip3 install -r requirements.txt`
 
 
 6. Build using:
 
 `python3 build.py` 
+
+#### On Linux
+
+1. Install Python:
+    
+    With your favourite packet-manager
+
+    E.g.: `sudo apt install python3.11`
+
+
+2. Clone the File Find repository with git: `git clone https://github.com/Pixel-Master/File-Find.git`
+
+
+3. cd into the repository: `cd File-Find`
+
+
+4. Create a virtual environment: 
+   1. Create: `python3 -m venv ./venv`
+   2. Activate the virtual environment: `source venv/bin/activate`
+
+
+5. [Install dependencies](#dependencies-for-building): `pip3 install -r requirements.txt`
+
+
+6. Build using:
+
+`python3 build.py` 
+
+#### On Windows
+
+1. Install Python:
+    
+    Download the installer: [here](https://www.python.org/ftp/python/3.11.8/python-3.11.8-amd64.exe)
+
+
+2. Clone the File Find repository with git: `git clone https://github.com/Pixel-Master/File-Find.git`
+   or download it from GitHub
+
+
+3. cd into the repository: `cd File-Find`
+
+
+4. Create a virtual environment: 
+   1. Create: `python -m venv ./venv`
+   2. Activate the virtual environment: `venv/bin/activate.bat`
+
+
+5. [Install dependencies](#dependencies-for-building): `pip3 install -r requirements.txt`
+
+
+6. Build using:
+
+`python build.py` 
+
 
 ## FAQ
 Q: **What is File Find and how does it work?**
