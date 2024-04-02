@@ -134,64 +134,64 @@ class MainWindow:
         # -----File Content-----
         # Tab and Label
         # Creating a new QWidget for the file content tab
-        self.content_search_widget = QWidget()
+        self.properties_widget = QWidget()
         # Layout
-        self.content_search_widget_layout = QGridLayout(self.content_search_widget)
-        self.content_search_widget.setLayout(self.content_search_widget_layout)
+        self.properties_widget_layout = QGridLayout(self.properties_widget)
+        self.properties_widget.setLayout(self.properties_widget_layout)
         # Adding space
-        self.content_search_widget_layout.addItem(horizontal_spacer, 0, 0)
-        self.content_search_widget_layout.addItem(horizontal_spacer, 0, 6)
+        self.properties_widget_layout.addItem(horizontal_spacer, 0, 0)
+        self.properties_widget_layout.addItem(horizontal_spacer, 0, 6)
         # Add Tab
-        self.tabbed_widget.addTab(self.content_search_widget, "Properties")
+        self.tabbed_widget.addTab(self.properties_widget, "Properties")
 
         # Search for file content
         label_file_contains = self.generate_large_filter_label(
             "File contains:",
-            self.content_search_widget,
+            self.properties_widget,
             self.generic_tooltip("File contains:",
                                  "Allows you to search in files. Input must be in the file content.\n"
                                  "This option can take really long.\nInput is case-sensitive.",
                                  "This is an example file!",
                                  os.path.join(
                                      FF_Files.USER_FOLDER, "example.txt (which contains: This is an example file!)")))
-        self.content_search_widget_layout.addWidget(label_file_contains, 0, 1)
+        self.properties_widget_layout.addWidget(label_file_contains, 0, 1)
 
         # Creation date
         label_c_date = self.generate_large_filter_label(
             "Date created:",
-            self.content_search_widget,
+            self.properties_widget,
             self.generic_tooltip("Date created",
                                  "Specify a date range for the date the file has been created,\n"
                                  "leave at default to ignore.",
                                  "5.Jul.2020 - 10.Aug.2020",
                                  os.path.join(FF_Files.USER_FOLDER, "example.txt (created at 1.Aug.2020)")))
-        self.content_search_widget_layout.addWidget(label_c_date, 1, 1)
-        label_c_date_2 = self.generate_large_filter_label("-", self.content_search_widget)
-        self.content_search_widget_layout.addWidget(label_c_date_2, 1, 3)
+        self.properties_widget_layout.addWidget(label_c_date, 1, 1)
+        label_c_date_2 = self.generate_large_filter_label("-", self.properties_widget)
+        self.properties_widget_layout.addWidget(label_c_date_2, 1, 4)
 
         # Date modified
         label_m_date = self.generate_large_filter_label(
             "Date modified:",
-            self.content_search_widget,
+            self.properties_widget,
             self.generic_tooltip("Date modified",
                                  "Specify a date range for the date the file has been modified,\n "
                                  "leave at default to ignore.",
                                  "5.Jul.2020 -  10.Aug.2020",
                                  os.path.join(FF_Files.USER_FOLDER, "example.txt (modified at 1.Aug.2020)")))
-        self.content_search_widget_layout.addWidget(label_m_date, 2, 1)
-        label_m_date_2 = self.generate_large_filter_label("-", self.content_search_widget)
-        self.content_search_widget_layout.addWidget(label_m_date_2, 2, 3)
+        self.properties_widget_layout.addWidget(label_m_date, 2, 1)
+        label_m_date_2 = self.generate_large_filter_label("-", self.properties_widget)
+        self.properties_widget_layout.addWidget(label_m_date_2, 2, 4)
 
         label_file_size = self.generate_large_filter_label(
-            "File size(MB) min:",
-            self.content_search_widget,
+            "File size min:",
+            self.properties_widget,
             self.generic_tooltip("File size",
                                  "Input specifies file size in Mega Bytes (MB)\nin a range from min to max",
                                  "min: 10 max: 10.3",
                                  os.path.join(FF_Files.USER_FOLDER, "example.txt (with a size of 10.2 MB)")))
-        self.content_search_widget_layout.addWidget(label_file_size, 3, 1)
-        label_file_size_max = self.generate_large_filter_label("max:", self.content_search_widget)
-        self.content_search_widget_layout.addWidget(label_file_size_max, 3, 3)
+        self.properties_widget_layout.addWidget(label_file_size, 3, 1)
+        label_file_size_max = self.generate_large_filter_label("max:", self.properties_widget)
+        self.properties_widget_layout.addWidget(label_file_size_max, 3, 4)
 
         # -----Advanced Search-----
         # Tab and Label
@@ -330,7 +330,7 @@ class MainWindow:
         self.basic_search_widget_layout.addWidget(self.edit_name_contains, 1, 2)
 
         # File extension
-        self.edit_file_extension = self.generate_filter_entry(self.advanced_search_widget)
+        self.edit_file_extension = self.generate_filter_entry(self.properties_widget)
         # Place
         self.advanced_search_widget_layout.addWidget(self.edit_file_extension, 0, 2, 1, 5)
 
@@ -346,19 +346,58 @@ class MainWindow:
         self.basic_search_widget_layout.addWidget(self.edit_directory, 3, 2)
 
         # File contains
-        self.edit_file_contains = self.generate_filter_entry(self.advanced_search_widget)
+        self.edit_file_contains = self.generate_filter_entry(self.properties_widget)
         self.edit_file_contains.resize(230, 25)
-        self.content_search_widget_layout.addWidget(self.edit_file_contains, 0, 2, 1, 4)
+        self.properties_widget_layout.addWidget(self.edit_file_contains, 0, 2, 1, 7)
+
+        # File size
 
         # File size min
-        self.edit_size_min = self.generate_filter_entry(self.advanced_search_widget, True)
+        self.edit_size_min = self.generate_filter_entry(self.properties_widget, True)
         self.edit_size_min.setFixedWidth(60)
-        self.content_search_widget_layout.addWidget(self.edit_size_min, 3, 2)
+        self.properties_widget_layout.addWidget(self.edit_size_min, 3, 2)
 
         # File size max
-        self.edit_size_max = self.generate_filter_entry(self.advanced_search_widget, True)
+        self.edit_size_max = self.generate_filter_entry(self.properties_widget, True)
         self.edit_size_max.setFixedWidth(60)
-        self.content_search_widget_layout.addWidget(self.edit_size_max, 3, 4)
+        self.properties_widget_layout.addWidget(self.edit_size_max, 3, 5)
+
+        # Unit selectors for selecting Byte, KiloByte, Megabyte...
+        def create_unit_selector(corresponding_edit):
+            # Create a QComboBox
+            unit_selector = QComboBox(self.advanced_search_widget)
+            unit_selector.addItems(["No Limit", "Bytes", "KB", "MB", "GB"])
+            # Set a fixed width
+            unit_selector.setFixedWidth(100)
+
+            def selection_changed():
+                if unit_selector.currentText() == "No Limit":
+                    corresponding_edit.setEnabled(False)
+                    corresponding_edit.setToolTip("No Limit is selected")
+                    corresponding_edit.setStyleSheet("background-color: #7f7f7f;")
+                else:
+                    corresponding_edit.setEnabled(True)
+                    corresponding_edit.setToolTip("")
+                    corresponding_edit.setStyleSheet(";")
+
+            # Connect to change event
+            unit_selector.currentTextChanged.connect(selection_changed)
+
+            # Set value to "No Limit"
+            unit_selector.setCurrentText("No Limit")
+
+            # Deactivate Edit
+            selection_changed()
+
+            return unit_selector
+
+        # Unit selector min
+        self.unit_selector_min = create_unit_selector(self.edit_size_min)
+        self.properties_widget_layout.addWidget(self.unit_selector_min, 3, 3)
+
+        # Unit selector max
+        self.unit_selector_max = create_unit_selector(self.edit_size_max)
+        self.properties_widget_layout.addWidget(self.unit_selector_max, 3, 6)
 
         # Radio Button
         logging.debug("Setting up Radio Buttons...")
@@ -483,17 +522,17 @@ class MainWindow:
         logging.debug("Setting up Day Entries...")
         # Date Created
         self.c_date_from_drop_down = self.generate_day_entry(self.advanced_search_widget)
-        self.content_search_widget_layout.addWidget(self.c_date_from_drop_down, 1, 2)
+        self.properties_widget_layout.addWidget(self.c_date_from_drop_down, 1, 2, 1, 4)
         self.c_date_to_drop_down = self.generate_day_entry(self.advanced_search_widget)
         self.c_date_to_drop_down.setDate(QDate.currentDate())
-        self.content_search_widget_layout.addWidget(self.c_date_to_drop_down, 1, 4)
+        self.properties_widget_layout.addWidget(self.c_date_to_drop_down, 1, 5, 1, 7)
 
         # Date Modified
         self.m_date_from_drop_down = self.generate_day_entry(self.advanced_search_widget)
-        self.content_search_widget_layout.addWidget(self.m_date_from_drop_down, 2, 2)
+        self.properties_widget_layout.addWidget(self.m_date_from_drop_down, 2, 2, 1, 4)
         self.m_date_to_drop_down = self.generate_day_entry(self.advanced_search_widget)
         self.m_date_to_drop_down.setDate(QDate.currentDate())
-        self.content_search_widget_layout.addWidget(self.m_date_to_drop_down, 2, 4)
+        self.properties_widget_layout.addWidget(self.m_date_to_drop_down, 2, 5, 1, 7)
 
         # Push Buttons
         logging.debug("Setting up Push Buttons...")
@@ -545,7 +584,8 @@ class MainWindow:
                 f"Name contains: {self.edit_name_contains.text()}\n"
                 f"File Ending: {self.edit_file_extension.text()}\n"
                 f"Search from: {os.getcwd()}\n\n"
-                f"File size(MB): min:{self.edit_size_min.text()} max:{self.edit_size_max.text()}\n"
+                f"File size: min: {self.edit_size_min.text()} ({self.unit_selector_min.currentText()})"
+                f" max: {self.edit_size_max.text()} ({self.unit_selector_min.currentText()})\n"
                 f"Date modified from: {self.m_date_from_drop_down.text()} to: {self.m_date_to_drop_down.text()}\n"
                 f"Date created from: {self.c_date_from_drop_down.text()} to: {self.c_date_to_drop_down.text()}\n"
                 f"Content: {self.edit_file_contains.text()}\n\n"
@@ -568,6 +608,8 @@ class MainWindow:
                 data_in_name=self.edit_name_contains.text(),
                 data_filetype=self.edit_file_extension.text(),
                 data_file_size_min=self.edit_size_min.text(), data_file_size_max=self.edit_size_max.text(),
+                data_file_size_min_unit=self.unit_selector_min.currentText(),
+                data_file_size_max_unit=self.unit_selector_max.currentText(),
                 data_library=self.rb_library_yes.isChecked(),
                 data_search_from_valid=os.getcwd(),
                 data_search_from_unchecked=self.edit_directory.text(),
@@ -870,6 +912,9 @@ class MainWindow:
             self.edit_size_max.setText("")
             self.edit_size_min.setText("")
 
+            self.unit_selector_min.setCurrentText("No Limit")
+            self.unit_selector_max.setCurrentText("No Limit")
+
             # Resetting Advanced
             self.edit_file_extension.setText("")
             self.rb_library_yes.setChecked(False)
@@ -926,6 +971,8 @@ class MainWindow:
 
         self.edit_size_min.setText(filters["size"]["min"])
         self.edit_size_max.setText(filters["size"]["max"])
+        self.unit_selector_min.setCurrentText(filters["size_unit"]["min"])
+        self.unit_selector_max.setCurrentText(filters["size_unit"]["max"])
 
         # Advanced
         self.edit_file_extension.setText(filters["file_extension"])
@@ -965,6 +1012,8 @@ class MainWindow:
                              "c_date_to": self.c_date_to_drop_down.date().toString(Qt.DateFormat.ISODate)},
                    "size": {"min": self.edit_size_min.text(),
                             "max": self.edit_size_max.text()},
+                   "size_unit": {"min": self.unit_selector_min.currentText(),
+                                 "max": self.unit_selector_max.currentText()},
 
                    "file_extension": self.edit_file_extension.text(),
                    "hidden_files": self.rb_library_yes.isChecked(),

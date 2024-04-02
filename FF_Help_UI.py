@@ -93,7 +93,6 @@ class HelpWindow:
         # The command and tooltip
         author_label.setToolTip(f"Version: {FF_Files.VERSION_SHORT} Extended Version: {FF_Files.VERSION}")
         # Display the Label
-        # author_label.setAlignment(Qt.AlignmentFlag.AlignTop) , 6, 3
         author_label.setFixedHeight(50)
         about_layout.addWidget(author_label, 8, 0, 8, 3)
 

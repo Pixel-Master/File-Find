@@ -157,7 +157,8 @@ class LoadSearch:
 
 # The Search Engine
 class Search:
-    def __init__(self, data_name, data_in_name, data_filetype, data_file_size_min, data_file_size_max, data_library,
+    def __init__(self, data_name, data_in_name, data_filetype, data_file_size_min, data_file_size_max,
+                 data_file_size_min_unit, data_file_size_max_unit, data_library,
                  data_search_for, data_search_from_valid, data_search_from_unchecked, data_content, data_date_edits,
                  data_sort_by, data_reverse_sort, data_file_group, parent: QWidget):
         # Debug
@@ -190,19 +191,39 @@ class Search:
             # Saving the time
             unix_time_list[time_drop_down[0]] = time_to_add_to_time_list
 
-        # Test if file size numbers are valid
+        # Convert file size values to bytes and test if file size numbers are valid
         try:
-            if data_file_size_min != "" and data_file_size_max != "":
-                if float(data_file_size_min) < float(data_file_size_max):
+            if data_file_size_min_unit == "No Limit" and data_file_size_min_unit == "No Limit":
+                # Store data
+                size_data = "unused"
+                data_file_size_max = ""
+                data_file_size_min = ""
+            else:
+                # Replacing No Limit with fixed values
+                if data_file_size_min_unit == "No Limit":
+                    data_file_size_min = 0
+
+                elif data_file_size_max_unit == "No Limit":
+                    # Using 1 Petabyte as the upper limit
+                    data_file_size_max = 1e15
+
+                size_unit_factors = {"No Limit": 1, "Bytes": 1, "KB": 1000, "MB": 1000000, "GB": 1000000000}
+
+                # Adjust units
+                data_file_size_min = float(data_file_size_min) * size_unit_factors[data_file_size_min_unit]
+                data_file_size_max = float(data_file_size_max) * size_unit_factors[data_file_size_max_unit]
+
+                # Testing if one is larger than the other
+                if data_file_size_min < data_file_size_max:
                     size_data = "valid"
                 else:
                     # Both fields are empty
                     size_data = "invalid"
-            else:
-                size_data = "unused"
 
         except ValueError:
             size_data = "invalid"
+
+        logging.debug(f"{size_data = }, {data_file_size_min = }, {data_file_size_max = }")
 
         # Fetching Errors
         # Testing if file ending, file groups or name contains are used together with name,
@@ -667,9 +688,7 @@ class Search:
 
             # Looping through every file
             for size_file in found_path_set:
-                if not (float(data_file_size_max) * 1000000) \
-                       >= int(FF_Files.get_file_size(size_file)) \
-                       >= (float(data_file_size_min) * 1000000):
+                if not data_file_size_max >= FF_Files.get_file_size(size_file) >= data_file_size_min:
                     # Remove file
                     copy_found_path_set.remove(size_file)
 
