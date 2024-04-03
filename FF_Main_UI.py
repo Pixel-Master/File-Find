@@ -185,10 +185,14 @@ class MainWindow:
         label_file_size = self.generate_large_filter_label(
             "File size min:",
             self.properties_widget,
-            self.generic_tooltip("File size",
-                                 "Input specifies file size in Mega Bytes (MB)\nin a range from min to max",
-                                 "min: 10 max: 10.3",
-                                 os.path.join(FF_Files.USER_FOLDER, "example.txt (with a size of 10.2 MB)")))
+            self.generic_tooltip(
+                "File size",
+                "Input specifies file size in a range from min to max.\n"
+                "Select the unit (Byte, Megabyte, Gigabyte...) on the left.\n"
+                "Select \"No Limit\" to only set a minimum or maximum value.",
+                "min: 1 GB max: No Limit",
+                os.path.join(FF_Files.USER_FOLDER, "Applications",
+                             "Microsoft Word.app (with a size of 2 GB)")))
         self.properties_widget_layout.addWidget(label_file_size, 3, 1)
         label_file_size_max = self.generate_large_filter_label("max:", self.properties_widget)
         self.properties_widget_layout.addWidget(label_file_size_max, 3, 4)

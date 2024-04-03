@@ -52,7 +52,7 @@ File Find isn't ready for Release yet Run from source or download pre-build macO
 	
 	* **File contains**: Allows you to search in files. Input must be in the file content. This option can take really long. Input is case-sensitive.
     * **Date created and modified**: Specify a date range for the date the file has been created/ modified, leave at default to ignore.
-    * **File size**: Input specifies file size in Mega Bytes (MB) in a range from min to max.
+    * **File size**: Input specifies file size in a range from min to max. Select the unit (Byte, Megabyte, Gigabyte...) on the right. Select "No Limit" to only set a minimum or maximum value.
 
 
 - **Advanced**
