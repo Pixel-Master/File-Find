@@ -18,10 +18,10 @@ jobs:
     steps:
     
     - name: Setup
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     
     - name: Install Python 3.11
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v5
       with:
         python-version: "3.11"
     
@@ -45,10 +45,10 @@ jobs:
 
     steps:
     - name: Setup
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       
     - name: Install Python 3.11
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v5
       with:
         python-version: "3.11"
         
@@ -74,7 +74,7 @@ jobs:
         
     # Upload app
     - name: Upload File Find.app
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
           if-no-files-found: error
           name: File Find_apple_silicon.app.zip
@@ -82,7 +82,7 @@ jobs:
           
     # Upload dmg
     - name: Upload File Find.dmg
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
           if-no-files-found: warn
           name: File Find_apple_silicon.dmg
@@ -98,10 +98,10 @@ jobs:
 
     steps:
     - name: Setup
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       
     - name: Install Python 3.11
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v5
       with:
         python-version: "3.11"
         
@@ -127,7 +127,7 @@ jobs:
         
     # Upload app
     - name: Upload File Find.app
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
           if-no-files-found: error
           name: File Find_intel.app.zip
@@ -135,7 +135,7 @@ jobs:
           
     # Upload dmg
     - name: Upload File Find.dmg
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
           if-no-files-found: warn
           name: File Find_intel.dmg
@@ -147,10 +147,10 @@ jobs:
 
     steps:
     - name: Setup
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       
     - name: Install Python 3.11
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v5
       with:
         python-version: "3.11"
         
@@ -179,10 +179,10 @@ jobs:
 
     steps:
     - name: Setup
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       
     - name: Install Python 3.11
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v5
       with:
         python-version: "3.11"
         
@@ -200,7 +200,7 @@ jobs:
         
     # Upload app
     - name: Upload File Find.app
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
           if-no-files-found: error
           name: File Find.bin
