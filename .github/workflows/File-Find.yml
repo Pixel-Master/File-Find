@@ -74,7 +74,7 @@ jobs:
         
     # Upload app
     - name: Upload File Find.app
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
           if-no-files-found: error
           name: File Find_apple_silicon.app.zip
@@ -82,7 +82,7 @@ jobs:
           
     # Upload dmg
     - name: Upload File Find.dmg
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
           if-no-files-found: warn
           name: File Find_apple_silicon.dmg
@@ -127,7 +127,7 @@ jobs:
         
     # Upload app
     - name: Upload File Find.app
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
           if-no-files-found: error
           name: File Find_intel.app.zip
@@ -135,7 +135,7 @@ jobs:
           
     # Upload dmg
     - name: Upload File Find.dmg
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
           if-no-files-found: warn
           name: File Find_intel.dmg
@@ -167,7 +167,7 @@ jobs:
             
     # Upload executable
     - name: Upload File Find.exe
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
           if-no-files-found: error
           name: File Find.exe
@@ -200,7 +200,7 @@ jobs:
         
     # Upload app
     - name: Upload File Find.app
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
           if-no-files-found: error
           name: File Find.bin
