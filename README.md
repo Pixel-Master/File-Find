@@ -42,16 +42,18 @@ File Find isn't ready for Release yet Run from source or download pre-build macO
 
 	* **Name**: Input needs to match the name of a file exactly, ignoring case. Also supports unix shell-style wildcards, which are not the same as regular expressions (also ignoring case).
 	* **Name contains**: The name of a file must contain input, ignoring case.
-    * **File Type**: Select groups of files that should be included in search results.
-    * **Directory**: The Directory to search in.
+    * **File Type**: Select groups of files types that should be included in search results.
+    * **Directory**: The directory tree to search in. Excluding subdirectory content is currently not possibly
+
+
   
 
 - **Properties**
 
   <img src="https://github.com/Pixel-Master/Pixel-Master.github.io/blob/main/File-Find/screenshots/properties.png?raw=true" height="250">
 	
-	* **File contains**: Allows you to search in files. Input must be in the file content. This option can take really long. Input is case-sensitive.
-    * **Date created and modified**: Specify a date range for the date the file has been created/ modified, leave at default to ignore.
+	* **File contains**: Allows you to search in files. Input must be in the file content. This option can take really long. Your input is case-sensitive.
+    * **Date created and modified**: Specify a date range for the date the file has been created / modified, leave at default to ignore.
     * **File size**: Input specifies file size in a range from min to max. Select the unit (Byte, Megabyte, Gigabyte...) on the right. Select "No Limit" to only set a minimum or maximum value.
 
 

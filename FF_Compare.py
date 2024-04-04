@@ -53,7 +53,7 @@ class CompareUi:
         self.Compare_Window.setCentralWidget(self.Central_Widget)
         # Create the main Layout
         self.Compare_Layout = QGridLayout(self.Central_Widget)
-        self.Compare_Layout.setContentsMargins(20, 0, 20, 20)
+        self.Compare_Layout.setContentsMargins(20, 20, 20, 20)
         self.Compare_Layout.setVerticalSpacing(1)
 
         # Listbox Layout
@@ -64,7 +64,7 @@ class CompareUi:
 
         # Bottom Layout
         self.Bottom_Layout = QHBoxLayout(self.Compare_Window)
-        self.Bottom_Layout.setContentsMargins(0, 0, 0, 0)
+        self.Bottom_Layout.setContentsMargins(0, 20, 0, 0)
         # Add to main Layout
         self.Compare_Layout.addLayout(self.Bottom_Layout, 10, 0, 1, 2)
 
@@ -172,9 +172,8 @@ class CompareUi:
         label1.setText(text)
         label1.setFont(font1)
         label1.setStyleSheet(f"color: {color};")
-        # Display the label
-        label1.adjustSize()
-        label1.show()
+
+        label1.setFixedHeight(40)
 
         # Label 2
         label2 = QLabel(self.Compare_Window)
@@ -192,10 +191,6 @@ class CompareUi:
         font2.setBold(True)
         # Configure the font
         label2.setFont(font2)
-
-        # Display the label
-        label2.adjustSize()
-        label2.show()
 
         return label1, label2
 

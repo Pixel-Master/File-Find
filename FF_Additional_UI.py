@@ -320,12 +320,16 @@ def welcome_popups(parent):
         logging.info("Showing Welcomes PopUp...")
 
         # Asking if tutorial is necessary
-        question_popup = QMessageBox(text="Do you want to have a short tutorial?", parent=parent)
+        question_popup = QMessageBox(text="Would you like to have a short tutorial?", parent=parent)
 
         question_popup.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+        # Entering the mainloop
         question_popup.exec()
 
-        if question_popup == QMessageBox.ButtonRole.YesRole:
+        # Getting the button role of the clicked button
+        question_selected_button_role = question_popup.buttonRole(question_popup.clickedButton())
+
+        if question_selected_button_role == QMessageBox.ButtonRole.YesRole:
             # Showing welcome messages
             PopUps.show_info_messagebox(
                 title="Welcome to File Find",

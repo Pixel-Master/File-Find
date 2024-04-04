@@ -610,7 +610,7 @@ class MenuBar:
 
                 # Time Feedback
                 final_time = perf_counter() - saved_time
-                logging.debug(f"Took {final_time}")
+                logging.debug(f"Took {final_time} seconds")
 
                 # Give Feedback
                 FF_Additional_UI.PopUps.show_info_messagebox(f"Hashes of {FF_Files.display_path(hash_file, 90)}",

@@ -483,19 +483,19 @@ class DuplicatedUI:
             FF_Additional_UI.PopUps.show_info_messagebox(
                 "Time Stats",
                 f"Time needed:\n"
-                f"Indexing: {round(time_needed_dict['time_before_building_ui'] - time_needed_dict['start_time'], 3)}\n"
+                f"Indexing: {round(time_needed_dict['time_before_building_ui'] - time_needed_dict['start_time'], 3)}s\n"
                 f"Creating UI: "
-                f"{round(time_needed_dict['time_after_building_ui'] - time_needed_dict['time_before_building_ui'], 3)}"
+                f"{round(time_needed_dict['time_after_building_ui'] - time_needed_dict['time_before_building_ui'], 3)}s"
                 f"\n---------\n"
-                f"Total: {round(time_needed_dict['time_after_building_ui'] - time_needed_dict['start_time'], 3)}\n\n\n"
+                f"Total: {round(time_needed_dict['time_after_building_ui'] - time_needed_dict['start_time'], 3)}s\n\n\n"
                 ""
                 f"Timestamps:\n"
-                f"Search opened: {ctime(time_stamp)}",
+                f"Search opened: {ctime(time_stamp)}s",
                 self.Duplicated_Window)
 
         # Optimize label
         total_time = time_needed_dict["time_after_building_ui"] - time_needed_dict["start_time"]
-        time_text.setText(f"Time needed: {round(total_time, 3)}")
+        time_text.setText(f"Time needed: {round(total_time, 3)}s")
 
         # Collect garbage
         gc.collect()

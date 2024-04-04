@@ -134,12 +134,12 @@ class SearchWindow:
             FF_Additional_UI.PopUps.show_info_messagebox(
                 "Time Stats",
                 f"Time needed:\n"
-                f"Scanning: {round(time_dict['time_searching'], 3)}\n"
-                f"Indexing: {round(time_dict['time_indexing'], 3)}\n"
-                f"Sorting: {round(time_dict['time_sorting'], 3)}\n"
-                f"Creating UI: {round(time_dict['time_building'], 3)}\n"
+                f"Scanning: {round(time_dict['time_searching'], 3)}s\n"
+                f"Indexing: {round(time_dict['time_indexing'], 3)}s\n"
+                f"Sorting: {round(time_dict['time_sorting'], 3)}s\n"
+                f"Creating UI: {round(time_dict['time_building'], 3)}s\n"
                 f"---------\n"
-                f"Total: {round(time_dict['time_total'] + time_dict['time_building'], 3)}\n\n\n"
+                f"Total: {round(time_dict['time_total'] + time_dict['time_building'], 3)}s\n\n\n"
                 f""
                 f"Timestamps:\n"
                 f"Cache created: {cache_created_time}\n"
@@ -360,7 +360,7 @@ class SearchWindow:
 
         # Update Seconds needed Label
         seconds_text.setText(
-            f"Time needed: {round(time_dict['time_total'] + (perf_counter() - time_dict['time_before_building']), 3)}")
+            f"Time needed: {round(time_dict['time_total'] + (perf_counter() - time_dict['time_before_building']), 3)}s")
         seconds_text.adjustSize()
 
         # Time building UI
