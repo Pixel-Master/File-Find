@@ -13,7 +13,7 @@ import logging
 import os
 from fnmatch import fnmatch
 from json import dump, load
-from sys import exit, platform
+from sys import platform
 from time import perf_counter, mktime
 
 # PySide6 Gui Imports
@@ -301,7 +301,7 @@ class Search:
             ACTIVE_SEARCH_THREADS += 1
 
             # Defining menu bar log
-            self.ui_logger = FF_Main_UI.SearchUpdate(lambda: exit(0), data_search_from_valid)
+            self.ui_logger = FF_Main_UI.SearchUpdate(data_search_from_valid)
 
             # Testing Cache
             FF_Files.cache_test(is_launching=False)

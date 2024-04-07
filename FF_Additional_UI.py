@@ -306,7 +306,7 @@ class PopUps:
 
 
 # Displaying Welcome Popups
-def welcome_popups(parent):
+def welcome_popups(parent, force_popups=False):
     # Debug
     logging.debug("Testing for PopUps...")
 
@@ -315,12 +315,13 @@ def welcome_popups(parent):
         settings = load(settings_file)
         popup_dict = settings["popup"]
 
-    if popup_dict["FF_welcome"]:
+    if popup_dict["FF_welcome"] or force_popups:
         # Debug
         logging.info("Showing Welcomes PopUp...")
 
         # Asking if tutorial is necessary
-        question_popup = QMessageBox(text="Would you like to have a short tutorial?", parent=parent)
+        question_popup = QMessageBox(text="Would you like to have a short tutorial?\n\n"
+                                          "By going to Help > Tutorial, you can get it later.", parent=parent)
 
         question_popup.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
         # Entering the mainloop
@@ -336,7 +337,7 @@ def welcome_popups(parent):
                 text="Welcome to File Find!\n\nThanks for downloading File Find!\n"
                      "File Find is an open-source macOS utility,"
                      " that makes it easy to search and find files.\n\n"
-                     "To search fill in the filters you need and leave those"
+                     "To search, fill in the filters you need and leave those"
                      " you don't need empty.\n\n\n"
                      "File Find version: "
                      f"{FF_Files.VERSION_SHORT}[{FF_Files.VERSION}]",
@@ -344,10 +345,20 @@ def welcome_popups(parent):
             PopUps.show_info_messagebox(
                 title="Welcome to File Find",
                 text="Welcome to File Find!\n\nSearch with the Find button.\n\n"
-                     "You can find all info's and settings in the Settings section!\n\n"
+                     "You can find all and settings in the settings menu.\n"
+                     "(find it by going to File Find > Setting in the menubar)\n\n"
                      "If you press on the File Find icon in the menu bar and go to \"Searches:\","
-                     " you can see the state of all your searches",
+                     " you can see the state of all your active searches.",
                 parent=parent)
+            PopUps.show_info_messagebox(
+                title="Welcome to File Find",
+                text="Welcome to File Find!\n\nSave a search or a filter preset \n"
+                     "by pressing CMD/Ctrl + S in the result or main window.\n\n"
+                     "After you opened a search, you can find duplicated files\n"
+                     "or compare the opened search to an search saved on the disk,\n"
+                     "by pressing the corresponding buttons in the top right.",
+                parent=parent)
+
             PopUps.show_info_messagebox(
                 title="Welcome to File Find",
                 text="Welcome to File Find!\n\n"

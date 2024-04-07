@@ -24,7 +24,7 @@ from PySide6.QtWidgets import QWidget, QLabel, QPushButton, QRadioButton, QFileD
 # Projects Libraries
 import FF_Additional_UI
 import FF_Files
-import FF_Help_UI
+import FF_About_UI
 import FF_Search
 import FF_Settings
 
@@ -1087,7 +1087,7 @@ class MainWindow:
 
         # About File Find
         about_action = QAction("&About File Find", self.Root_Window)
-        about_action.triggered.connect(lambda: FF_Help_UI.HelpWindow(self.Root_Window))
+        about_action.triggered.connect(lambda: FF_About_UI.AboutWindow(self.Root_Window))
         help_menu.addAction(about_action)
 
         # Settings
@@ -1097,10 +1097,15 @@ class MainWindow:
         help_menu.addAction(settings_action)
 
         # Help
-        help_action = QAction("&File Find Settings", self.Root_Window)
-        help_action.triggered.connect(lambda: FF_Help_UI.HelpWindow(self.Root_Window))
+        help_action = QAction("&About File Find", self.Root_Window)
+        help_action.triggered.connect(lambda: FF_About_UI.AboutWindow(self.Root_Window))
         help_action.setShortcut(QKeySequence.StandardKey.HelpContents)
         help_menu.addAction(help_action)
+
+        # Tutorial
+        tutorial_action = QAction("&Tutorial", self.Root_Window)
+        tutorial_action.triggered.connect(lambda: FF_Additional_UI.welcome_popups(self.Root_Window, force_popups=True))
+        help_menu.addAction(tutorial_action)
 
         # Show File Find window
         reopen_action = QAction("&Show File Find Window", self.Root_Window)
@@ -1230,7 +1235,7 @@ class MainWindow:
 
 
 class SearchUpdate:
-    def __init__(self, stopping_search, path: str):
+    def __init__(self, path: str):
         # Updating Label
         MainWindow.update_search_status_label()
 
@@ -1246,15 +1251,10 @@ class SearchUpdate:
         self.search_status: QAction = QAction("Setup Search Status...")
         self.search_status.setDisabled(True)
 
-        # Setup stop search (doesn't work)
-        self.stop_search: QAction = QAction("Stop")
-        self.stop_search.triggered.connect(stopping_search)
-
         # Setup
         search_status_menu.addSeparator()
         search_status_menu.addAction(self.search_path)
         search_status_menu.addAction(self.search_status)
-        # search_status_menu.addAction(self.stop_search)
 
     def update(self, text: str):
         self.search_status.setText(text)

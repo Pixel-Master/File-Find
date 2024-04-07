@@ -28,7 +28,7 @@ import FF_Additional_UI
 import FF_Compare
 import FF_Duplicated
 import FF_Files
-import FF_Help_UI
+import FF_About_UI
 import FF_Settings
 
 
@@ -161,7 +161,7 @@ class MenuBar:
 
         # About File Find
         about_action = QAction("&About File Find", self.parent)
-        about_action.triggered.connect(lambda: FF_Help_UI.HelpWindow(self.parent))
+        about_action.triggered.connect(lambda: FF_About_UI.AboutWindow(self.parent))
         self.help_menu.addAction(about_action)
 
         # Settings
@@ -178,9 +178,14 @@ class MenuBar:
         self.window_menu.addAction(close_action)
 
         # Help
-        help_action = QAction("&File Find Settings", self.parent)
-        help_action.triggered.connect(lambda: FF_Help_UI.HelpWindow(self.parent))
+        help_action = QAction("&About File Find", self.parent)
+        help_action.triggered.connect(lambda: FF_About_UI.AboutWindow(self.parent))
         self.help_menu.addAction(help_action)
+
+        # Tutorial
+        tutorial_action = QAction("&Tutorial", self.parent)
+        tutorial_action.triggered.connect(lambda: FF_Additional_UI.welcome_popups(self.parent, force_popups=True))
+        self.help_menu.addAction(tutorial_action)
 
         if window == "search":
             # Compare Search

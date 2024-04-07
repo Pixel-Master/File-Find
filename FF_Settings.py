@@ -24,7 +24,7 @@ from PySide6.QtWidgets import QMainWindow, QLabel, QPushButton, QListWidget, QFi
 # Projects Libraries
 import FF_Additional_UI
 import FF_Files
-import FF_Help_UI
+import FF_About_UI
 
 
 # The class for the help window
@@ -462,13 +462,18 @@ class SettingsWindow:
 
         # About File Find
         about_action = QAction("&About File Find", self.Settings_Window)
-        about_action.triggered.connect(lambda: FF_Help_UI.HelpWindow(self.Settings_Window))
+        about_action.triggered.connect(lambda: FF_About_UI.AboutWindow(self.Settings_Window))
         help_menu.addAction(about_action)
 
         # Help
-        help_action = QAction("&File Find Settings", self.Settings_Window)
-        help_action.triggered.connect(self.Settings_Window.show)
+        help_action = QAction("&About File Find", self.Settings_Window)
+        help_action.triggered.connect(lambda: FF_About_UI.AboutWindow(self.Settings_Window))
         help_menu.addAction(help_action)
+
+        # Tutorial
+        tutorial_action = QAction("&Tutorial", self.Settings_Window)
+        tutorial_action.triggered.connect(lambda: FF_Additional_UI.welcome_popups(parent, force_popups=True))
+        help_menu.addAction(tutorial_action)
 
         # Debug
         logging.info("Finished Setting up Help UI\n")

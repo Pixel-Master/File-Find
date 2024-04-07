@@ -13,23 +13,23 @@ import logging
 import os
 from json import load
 from threading import Thread
-import difflib
-import hashlib
-import gc
 from time import perf_counter, time, ctime
+import difflib
+import gc
+import hashlib
 
 # PySide6 Gui Imports
-from PySide6.QtWidgets import (QMainWindow, QWidget, QGridLayout, QHBoxLayout, QVBoxLayout, QLabel, QButtonGroup,
-                               QRadioButton, QSlider, QSpinBox, QDialogButtonBox, QSpacerItem, QSizePolicy, QPushButton,
-                               QTreeWidget, QTreeWidgetItem)
+from PySide6.QtWidgets import (QMainWindow, QWidget, QGridLayout, QHBoxLayout, QVBoxLayout, QLabel, QSlider, QSpinBox,
+                               QDialogButtonBox, QSpacerItem, QSizePolicy, QPushButton,
+                               QTreeWidget, QTreeWidgetItem, QComboBox)
 from PySide6.QtCore import Qt, QSize, Signal, QObject
 from PySide6.QtGui import QFont, QAction
 
 # Projects Libraries
 import FF_Menubar
-import FF_Files
-import FF_Help_UI
 import FF_Additional_UI
+import FF_Files
+import FF_About_UI
 
 # Global variables
 global duplicated_dict, time_dict, duplicated_display_dict
@@ -46,8 +46,8 @@ class DuplicatedSettings:
         # Set the Title of the Window
         self.Duplicated_Settings.setWindowTitle(f"Find duplicated in: {FF_Files.display_path(search_path)}")
         # Set the start size of the Window, because it's resizable
-        self.BASE_WIDTH = 400
-        self.BASE_HEIGHT = 400
+        self.BASE_WIDTH = 350
+        self.BASE_HEIGHT = 300
         self.Duplicated_Settings.setBaseSize(self.BASE_WIDTH, self.BASE_HEIGHT)
         # Display the Window
         self.Duplicated_Settings.show()
@@ -64,8 +64,8 @@ class DuplicatedSettings:
         self.Central_Widget.setLayout(self.Duplicated_Settings_Layout)
 
         # Upper Horizontal Layout
-        self.Upper_Layout = QHBoxLayout(self.Duplicated_Settings)
-        self.Upper_Layout.setContentsMargins(0, 0, 0, 0)
+        self.vertical_layout = QHBoxLayout(self.Duplicated_Settings)
+        self.vertical_layout.setContentsMargins(0, 0, 0, 0)
 
         # Middle Horizontal Layout
         self.Middle_Layout = QHBoxLayout(self.Duplicated_Settings)
@@ -80,7 +80,7 @@ class DuplicatedSettings:
 
         # Title label
         self.title_label = QLabel(parent=self.Duplicated_Settings)
-        self.title_label.setText(f"Find duplicated files in: {FF_Files.display_path(search_path, 30)}")
+        self.title_label.setText(f"Find duplicated files in:\n{FF_Files.display_path(search_path, 45)}")
         self.title_label.setToolTip(search_path)
         # Make the Font bigger
         font = self.title_label.font()
@@ -91,156 +91,72 @@ class DuplicatedSettings:
         self.title_label.adjustSize()
         self.Duplicated_Settings_Layout.addWidget(self.title_label)
 
-        # Button group
-        self.button_group = QButtonGroup(self.Duplicated_Settings)
+        # Combobox for selecting mode
+        self.mode_selector_combobox = QComboBox()
+        self.duplicated_mode_display_name_dict = {
+            "name": "File name",
+            "size": "File size (faster than File content)",
+            "content": "File content"}
+        self.mode_selector_combobox.addItems([self.duplicated_mode_display_name_dict["name"],
+                                              self.duplicated_mode_display_name_dict["size"],
+                                              self.duplicated_mode_display_name_dict["content"]])
 
-        # File name
-        # Checkbox
-        self.name_checkbox = QRadioButton(parent=self.Duplicated_Settings)
-        self.name_checkbox.setText("File name")
-        self.button_group.addButton(self.name_checkbox)
-        self.Duplicated_Settings_Layout.addWidget(self.name_checkbox)
-
-        # Match percentage label
-        self.match_name_label = QLabel(parent=self.Duplicated_Settings)
-        self.match_name_label.setText("Files must match at least:")
-        self.Upper_Layout.addWidget(self.match_name_label)
-        # Slider
-        self.name_slider = QSlider(parent=self.Duplicated_Settings)
-        self.name_slider.setOrientation(Qt.Orientation.Horizontal)
-        self.name_slider.setRange(1, 100)
-        self.Upper_Layout.addWidget(self.name_slider)
-        # Spinbox
-        self.name_spinbox = QSpinBox(parent=self.Duplicated_Settings)
-        self.name_spinbox.setMaximum(100)
-        self.Upper_Layout.addWidget(self.name_spinbox)
-        # Connecting slider and Spinbox
-        self.name_spinbox.valueChanged.connect(self.name_slider.setValue)
-        self.name_slider.valueChanged.connect(self.name_spinbox.setValue)
-        # Set value to 100 %
-        self.name_spinbox.setValue(100)
-
-        # Deactivate and activate functions
-        def de_activate_name():
-            if self.name_checkbox.isChecked():
-                logging.debug("activating name")
-                self.match_name_label.setDisabled(False)
-                self.name_slider.setDisabled(False)
-                self.name_spinbox.setDisabled(False)
-
-            elif not self.name_checkbox.isChecked():
-                logging.debug("deactivating name")
-                self.match_name_label.setDisabled(True)
-                self.name_slider.setDisabled(True)
-                self.name_spinbox.setDisabled(True)
-
-        # Connecting
-        self.button_group.buttonToggled.connect(de_activate_name)
-        # Deactivating
-        de_activate_name()
-
-        # Add to main Layout
-        self.Duplicated_Settings_Layout.addLayout(self.Upper_Layout)
-        # Add a Spacer
-        self.Duplicated_Settings_Layout.addItem(spacer)
-
-        # File size
-        # Checkbox
-        self.size_checkbox = QRadioButton(parent=self.Duplicated_Settings)
-        self.size_checkbox.setText("File size (faster than File content)")
-        self.button_group.addButton(self.size_checkbox)
-        self.Duplicated_Settings_Layout.addWidget(self.size_checkbox)
+        self.Duplicated_Settings_Layout.addWidget(self.mode_selector_combobox)
 
         # Match percentage label
-        self.match_size_label = QLabel(parent=self.Duplicated_Settings)
-        self.match_size_label.setText("Files must match at least:")
-        self.Middle_Layout.addWidget(self.match_size_label)
+        self.match_label = QLabel(parent=self.Duplicated_Settings)
+        self.match_label.setText("Files must match at least:")
+        self.Duplicated_Settings_Layout.addWidget(self.match_label)
+
         # Slider
-        self.size_slider = QSlider(parent=self.Duplicated_Settings)
-        self.size_slider.setOrientation(Qt.Orientation.Horizontal)
-        self.size_slider.setRange(1, 100)
-        self.Middle_Layout.addWidget(self.size_slider)
+        self.slider = QSlider(parent=self.Duplicated_Settings)
+        self.slider.setOrientation(Qt.Orientation.Horizontal)
+        self.slider.setRange(1, 100)
+        self.vertical_layout.addWidget(self.slider)
         # Spinbox
-        self.size_spinbox = QSpinBox(parent=self.Duplicated_Settings)
-        self.size_spinbox.setMaximum(100)
-        self.Middle_Layout.addWidget(self.size_spinbox)
+        self.spinbox = QSpinBox(parent=self.Duplicated_Settings)
+        self.spinbox.setMaximum(100)
+        self.vertical_layout.addWidget(self.spinbox)
         # Connecting slider and Spinbox
-        self.size_spinbox.valueChanged.connect(self.size_slider.setValue)
-        self.size_slider.valueChanged.connect(self.size_spinbox.setValue)
+        self.spinbox.valueChanged.connect(self.slider.setValue)
+        self.slider.valueChanged.connect(self.spinbox.setValue)
         # Set value to 100 %
-        self.size_spinbox.setValue(100)
+        self.spinbox.setValue(100)
 
-        # Deactivate and activate functions
-        def de_activate_size():
-            if self.size_checkbox.isChecked():
-                logging.debug("activating size")
-                self.match_size_label.setDisabled(False)
-                self.size_slider.setDisabled(False)
-                self.size_spinbox.setDisabled(False)
-
-            elif not self.size_checkbox.isChecked():
-                logging.debug("deactivating size")
-                self.match_size_label.setDisabled(True)
-                self.size_slider.setDisabled(True)
-                self.size_spinbox.setDisabled(True)
-
-        # Connecting
-        self.button_group.buttonToggled.connect(de_activate_size)
-        # Deactivating
-        de_activate_size()
-
-        # Add to main Layout
-        self.Duplicated_Settings_Layout.addLayout(self.Middle_Layout)
-        # Add a Spacer
-        self.Duplicated_Settings_Layout.addItem(spacer)
-
-        # File content
-        # Checkbox
-        self.content_checkbox = QRadioButton(parent=self.Duplicated_Settings)
-        self.content_checkbox.setText("File content")
-        self.button_group.addButton(self.content_checkbox)
-        self.Duplicated_Settings_Layout.addWidget(self.content_checkbox)
-
-        # Match percentage label
-        self.match_content_label = QLabel(parent=self.Duplicated_Settings)
-        self.match_content_label.setText("Files must match at least:")
-        self.Lower_Layout.addWidget(self.match_content_label)
-        # Slider
-        self.content_slider = QSlider(parent=self.Duplicated_Settings)
-        self.content_slider.setOrientation(Qt.Orientation.Horizontal)
-        self.content_slider.setRange(1, 100)
-        self.Lower_Layout.addWidget(self.content_slider)
-        # Spinbox
-        self.content_spinbox = QSpinBox(parent=self.Duplicated_Settings)
-        self.content_spinbox.setMaximum(100)
-        self.Lower_Layout.addWidget(self.content_spinbox)
-        # Connecting slider and Spinbox
-        self.content_spinbox.valueChanged.connect(self.content_slider.setValue)
-        self.content_slider.valueChanged.connect(self.content_spinbox.setValue)
-        # Set value to 100 %
-        self.content_spinbox.setValue(100)
-
-        # Deactivate and activate functions
+        # Deactivate and activate the slider and spinbox if content is selected
         def de_activate_content():
-            if self.content_checkbox.isChecked():
-                logging.debug("activating content")
-                self.match_content_label.setDisabled(False)
-                self.content_slider.setDisabled(False)
-                self.content_spinbox.setDisabled(False)
-
-            elif not self.content_checkbox.isChecked():
+            if self.mode_selector_combobox.currentText() == self.duplicated_mode_display_name_dict["content"]:
                 logging.debug("deactivating content")
-                self.match_content_label.setDisabled(True)
-                self.content_slider.setDisabled(True)
-                self.content_spinbox.setDisabled(True)
+                self.match_label.setDisabled(True)
+                self.slider.setDisabled(True)
+                self.spinbox.setDisabled(True)
+                # Set it to 100%
+                self.spinbox.setValue(100)
+
+            else:
+                logging.debug("activating name")
+                self.match_label.setDisabled(False)
+                self.slider.setDisabled(False)
+                self.spinbox.setDisabled(False)
+                # Set it to the saved value
+                self.spinbox.setValue(self.saved_value)
 
         # Connecting
-        self.button_group.buttonToggled.connect(de_activate_content)
-        # Deactivating
-        de_activate_content()
+        self.mode_selector_combobox.currentTextChanged.connect(de_activate_content)
+
+        # Store value to insert it, if content is deactivated
+        def store_value():
+            # Only if anything else than content is activated
+            if self.mode_selector_combobox.currentText() != self.duplicated_mode_display_name_dict["content"]:
+                self.saved_value = self.spinbox.value()
+
+        self.spinbox.valueChanged.connect(store_value)
+
+        # Default
+        self.saved_value = 100
 
         # Add to main Layout
-        self.Duplicated_Settings_Layout.addLayout(self.Lower_Layout)
+        self.Duplicated_Settings_Layout.addLayout(self.vertical_layout)
         # Add a Spacer
         self.Duplicated_Settings_Layout.addItem(spacer)
 
@@ -251,22 +167,33 @@ class DuplicatedSettings:
 
         # Connect events
         def start_duplicated():
+
+            # Default criteria
+            criteria = {
+                "name": {"activated": False,
+                         "match_percentage": self.spinbox.value()},
+                "size": {"activated": False,
+                         "match_percentage": self.spinbox.value()},
+                "content": {"activated": False,
+                            "match_percentage": self.spinbox.value()}}
+
             # Events for threading
             class Events(QObject):
                 finished = Signal()
 
             finished_event_class = Events()
 
+            if self.mode_selector_combobox.currentText() == self.duplicated_mode_display_name_dict["name"]:
+                criteria["name"]["activated"] = True
+            elif self.mode_selector_combobox.currentText() == self.duplicated_mode_display_name_dict["size"]:
+                criteria["size"]["activated"] = True
+            elif self.mode_selector_combobox.currentText() == self.duplicated_mode_display_name_dict["content"]:
+                criteria["content"]["activated"] = True
+
             # Starting Thread
             Thread(
                 target=lambda: FindDuplicated(
-                    criteria={
-                        "name": {"activated": self.name_checkbox.isChecked(),
-                                 "match_percentage": self.name_spinbox.value()},
-                        "size": {"activated": self.size_checkbox.isChecked(),
-                                 "match_percentage": self.size_spinbox.value()},
-                        "content": {"activated": self.content_checkbox.isChecked(),
-                                    "match_percentage": self.content_spinbox.value()}},
+                    criteria=criteria,
                     search_path=search_path,
                     matched_list=matched_list,
                     finished_signal=finished_event_class)).start()
@@ -306,13 +233,18 @@ class DuplicatedSettings:
 
         # About File Find
         about_action = QAction("&About File Find", self.Duplicated_Settings)
-        about_action.triggered.connect(lambda: FF_Help_UI.HelpWindow(parent))
+        about_action.triggered.connect(lambda: FF_About_UI.AboutWindow(parent))
         help_menu.addAction(about_action)
 
-        # Help
-        help_action = QAction("&File Find Settings", self.Duplicated_Settings)
-        help_action.triggered.connect(lambda: FF_Help_UI.HelpWindow(parent))
+        # About
+        help_action = QAction("&About File Find", self.Duplicated_Settings)
+        help_action.triggered.connect(lambda: FF_About_UI.AboutWindow(parent))
         help_menu.addAction(help_action)
+
+        # Tutorial
+        tutorial_action = QAction("&Tutorial", self.Duplicated_Settings)
+        tutorial_action.triggered.connect(lambda: FF_Additional_UI.welcome_popups(parent, force_popups=True))
+        help_menu.addAction(tutorial_action)
 
         # Debug
         logging.info("Finished Setting up Help UI\n")
@@ -469,7 +401,7 @@ class DuplicatedUI:
         logging.info(f"\nSeconds needed:\n"
                      f"Indexing: {time_needed_dict['time_before_building_ui'] - time_needed_dict['start_time']}\n"
                      f"Building UI: "
-                     f"{time_needed_dict['time_after_building_ui']- time_needed_dict['time_before_building_ui']}\n"
+                     f"{time_needed_dict['time_after_building_ui'] - time_needed_dict['time_before_building_ui']}\n"
                      f"Total: {time_needed_dict['time_after_building_ui'] - time_needed_dict['start_time']}")
 
         time_stamp = time()

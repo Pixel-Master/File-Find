@@ -97,7 +97,7 @@ File Find isn't ready for Release yet Run from source or download pre-build macO
 
 ### Note:
 
-###### File Find works on Linux or Windows, but currently only in beta. Please report any errory.
+###### File Find works on Linux or Windows, but currently only in beta. Please report any errors.
 
 
 ### Dependencies for building
