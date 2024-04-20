@@ -19,7 +19,7 @@ from time import perf_counter, ctime
 from sys import platform
 
 # PySide6 Gui Imports
-from PySide6.QtGui import QIcon, QAction, QColor, QKeySequence
+from PySide6.QtGui import QAction, QColor, QKeySequence
 from PySide6.QtWidgets import QFileDialog, QListWidget, QTreeWidget
 from pyperclip import copy
 
@@ -218,7 +218,10 @@ class MenuBar:
 
         try:
             # Selecting the highlighted item of the listbox
-            selected_file = self.get_current_item()
+            if self.window == "compare" or self.window == "search":
+                selected_file = self.get_listbox().currentItem().text()
+            else:
+                selected_file = self.get_listbox().currentItem().text(0)
 
             # Debug
             logging.info(f"Selected file: {selected_file}, prompting for new location...")
@@ -252,29 +255,51 @@ class MenuBar:
                     self.parent
                 )
 
+            # If everything ran successful
             else:
-                # If everything ran successful
-
                 # Debug
                 logging.debug(f"Moved {selected_file} to {new_location}")
 
                 if self.window == "compare" or self.window == "search":
                     # Set the icon
-                    self.get_listbox().item(
-                        self.get_listbox().currentRow()).setIcon(
-                        QIcon(os.path.join(FF_Files.ASSETS_FOLDER, "move_icon_small.png")))
+                    icon = FF_Additional_UI.UIIcon(
+                        os.path.join(FF_Files.ASSETS_FOLDER, "move_icon_small.png"),
+                        icon_set_func=self.get_listbox().item(self.get_listbox().currentRow()).setIcon,
+                        turn_auto=False)
 
-                    # Change the color to blue
+                    icon.turn_dark()
+
+                    # Change the color to red
                     self.get_listbox().item(
-                        self.get_listbox().currentRow()).setBackground(QColor("#1ccaff"))
+                        self.get_listbox().currentRow()).setBackground(QColor(FF_Files.RED_COLOR))
+                    # Change font color to white
+                    self.get_listbox().item(self.get_listbox().currentRow()).setForeground(QColor("white"))
+
+                    # Change font to italic
+                    font = self.get_listbox().item(self.get_listbox().currentRow()).font()
+                    font.setItalic(True)
+                    self.get_listbox().item(self.get_listbox().currentRow()).setFont(font)
 
                 # QTreeWidget needs special treatment
                 elif self.window == "duplicated":
                     # Icon
-                    self.get_listbox().currentItem().setIcon(
-                        0, QIcon(os.path.join(FF_Files.ASSETS_FOLDER, "move_icon_small.png")))
-                    # Color
-                    self.get_listbox().currentItem().setBackground(0, QColor("#1ccaff"))
+                    # Set the icon
+                    icon = FF_Additional_UI.UIIcon(
+                        os.path.join(FF_Files.ASSETS_FOLDER, "move_icon_small.png"),
+                        icon_set_func=lambda x: self.get_listbox().currentItem().setIcon(0, x),
+                        turn_auto=False)
+
+                    icon.turn_dark()
+
+                    # Change the color to red
+                    self.get_listbox().currentItem().setBackground(0, QColor(FF_Files.RED_COLOR))
+                    # Change font color to white
+                    self.get_listbox().currentItem().setForeground(0, QColor("white"))
+
+                    # Change font to italic
+                    font = self.get_listbox().currentItem().font(0)
+                    font.setItalic(True)
+                    self.get_listbox().currentItem().setFont(0, font)
 
                 # Removing file from cache
                 logging.info("Removing file from cache...")
@@ -287,11 +312,15 @@ class MenuBar:
     def delete_file(self):
         try:
             # Selecting the highlighted item of the listbox
-            selected_file = self.get_listbox().currentItem().text()
+            if self.window == "compare" or self.window == "search":
+                selected_file = self.get_listbox().currentItem().text()
+            else:
+                selected_file = self.get_listbox().currentItem().text(0)
 
             # Trash location
-            new_location = os.path.join(FF_Files.USER_FOLDER, ".Trash", os.path.basename(selected_file))[0]
+            new_location = str(os.path.join(FF_Files.USER_FOLDER, ".Trash", os.path.basename(selected_file)))
 
+            logging.info(f"File: {selected_file} New: {new_location}")
             # Moving the file to trash
             if FF_Additional_UI.PopUps.show_delete_question(self.parent, selected_file):
 
@@ -316,21 +345,44 @@ class MenuBar:
                     if self.window == "compare" or self.window == "search":
 
                         # Set the icon
-                        self.get_listbox().item(
-                            self.get_listbox().currentRow()).setIcon(
-                            QIcon(os.path.join(FF_Files.ASSETS_FOLDER, "trash_icon_small.png")))
+                        icon = FF_Additional_UI.UIIcon(
+                            os.path.join(FF_Files.ASSETS_FOLDER, "trash_icon_small.png"),
+                            icon_set_func=self.get_listbox().item(self.get_listbox().currentRow()).setIcon,
+                            turn_auto=False)
 
-                        # Change the color to blue
+                        icon.turn_dark()
+
+                        # Change the color to red
                         self.get_listbox().item(
-                            self.get_listbox().currentRow()).setBackground(QColor("#ff0000"))
+                            self.get_listbox().currentRow()).setBackground(QColor(FF_Files.RED_COLOR))
+                        # Change font color to white
+                        self.get_listbox().item(self.get_listbox().currentRow()).setForeground(QColor("white"))
+
+                        # Change font to italic
+                        font = self.get_listbox().item(self.get_listbox().currentRow()).font()
+                        font.setItalic(True)
+                        self.get_listbox().item(self.get_listbox().currentRow()).setFont(font)
 
                     # QTreeWidget needs special treatment
                     elif self.window == "duplicated":
                         # Icon
-                        self.get_listbox().currentItem().setIcon(0, QIcon(os.path.join(FF_Files.ASSETS_FOLDER,
-                                                                                       "trash_icon_small.png")))
-                        # Color
-                        self.get_listbox().currentItem().setBackground(0, QColor("#ff0000"))
+                        # Set the icon
+                        icon = FF_Additional_UI.UIIcon(
+                            os.path.join(FF_Files.ASSETS_FOLDER, "trash_icon_small.png"),
+                            icon_set_func=lambda x: self.get_listbox().currentItem().setIcon(0, x),
+                            turn_auto=False)
+
+                        icon.turn_dark()
+
+                        # Change the color to red
+                        self.get_listbox().currentItem().setBackground(0, QColor(FF_Files.RED_COLOR))
+                        # Change font color to white
+                        self.get_listbox().currentItem().setForeground(0, QColor("white"))
+
+                        # Change font to italic
+                        font = self.get_listbox().currentItem().font(0)
+                        font.setItalic(True)
+                        self.get_listbox().currentItem().setFont(0, font)
 
                     # Removing file from cache
                     logging.info("Removing file from cache...")

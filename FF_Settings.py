@@ -13,8 +13,6 @@ import logging
 import os
 from json import load, dump
 import shutil
-from subprocess import run
-from sys import platform
 
 # PySide6 Gui Imports
 from PySide6.QtGui import QFont, QAction, Qt
@@ -58,9 +56,6 @@ class SettingsWindow:
         # Set the start size of the Window, because it's resizable
         self.BASE_WIDTH = 500
         self.BASE_HEIGHT = 400
-        # Spacer for prettier ui
-        spacer = QSpacerItem(10, 30, hData=QSizePolicy.Policy.Maximum)
-
         self.Settings_Window.setBaseSize(self.BASE_WIDTH, self.BASE_HEIGHT)
 
         # Adding Layouts
@@ -74,12 +69,12 @@ class SettingsWindow:
 
         self.Central_Widget.setLayout(self.Settings_Layout)
 
-        # Spacer
-        self.Settings_Layout.addItem(spacer, 8, 0)
+        # # Spacer for prettier ui
+        self.Settings_Layout.addItem(QSpacerItem(10, 30, hData=QSizePolicy.Policy.Maximum), 8, 0)
 
         # Excluded Files
         # Define the Label
-        exclude_label = QLabel("Excluded Files:", parent=self.Settings_Window)
+        exclude_label = QLabel("Never show results\nfrom these folders:", parent=self.Settings_Window)
         # Change Font
         exclude_label.setFont(QFont("Arial", 15))
         # Display the Label
@@ -251,7 +246,7 @@ class SettingsWindow:
                 # If it doesn't exist it doesn't matter
                 pass
 
-        reset_preset_button = generate_button("Reset", reset_filter_preset, 80)
+        reset_preset_button = generate_button("Set to default", reset_filter_preset, 120)
         self.Settings_Layout.addWidget(reset_preset_button, 1, 2)
 
         # Select a filter preset (.FFFilter)
@@ -318,43 +313,7 @@ class SettingsWindow:
         # Display
         self.Settings_Layout.addWidget(combobox_language, 2, 1)
 
-        # Open File Find Folder
-        # Define the Label
-        open_ff_folder_label = QLabel("Open File Find Folder:", parent=self.Settings_Window)
-        # Change Font
-        open_ff_folder_label.setFont(QFont("Arial", 15))
-        # Display the Label
-        self.Settings_Layout.addWidget(open_ff_folder_label, 3, 0)
-
         # Push Button
-        # Open Button
-        # Defining
-        open_ff_folder_button = QPushButton(self.Settings_Window)
-        # Set Text
-        open_ff_folder_button.setText("Open")
-        # Make it not change size
-        open_ff_folder_button.setFixedWidth(80)
-
-        # Open Event
-        def open_lib_folder():
-            # Debug
-            logging.debug(f"Open File Find Folder: {FF_Files.FF_LIB_FOLDER}")
-
-            # Opening folder with the macOS open command
-            # Opening the file, the specific command depends on the platform
-            if platform == "darwin":
-                # on macOS
-                run(["open", "-R", FF_Files.FF_LIB_FOLDER])
-            elif platform == "win32" or platform == "cygwin":
-                # on Windows
-                run(["start", FF_Files.FF_LIB_FOLDER], shell=True)
-            elif platform == "linux":
-                # on different GNU/Linux distros
-                run(["xdg-open", FF_Files.FF_LIB_FOLDER])
-
-        open_ff_folder_button.clicked.connect(open_lib_folder)
-        # Display
-        self.Settings_Layout.addWidget(open_ff_folder_button, 3, 1)
 
         # Reset Settings
         # Define the Label

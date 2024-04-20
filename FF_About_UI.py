@@ -98,11 +98,13 @@ class AboutWindow:
         about_layout.addWidget(author_label, 8, 0, 8, 3)
 
         # Links using QPushButton
-        def generate_link_button(displayed_text, domain, color):
+        def generate_link_button(displayed_text, domain):
             link = QPushButton(about_window)
             # Font and Text
             link.setText(displayed_text)
-            link.setFont(QFont("Arial", 20))
+            font = QFont("Arial", 20)
+            font.setUnderline(True)
+            link.setFont(font)
             # The command and tooltip
             link.setToolTip(domain)
             # Depends on the os
@@ -115,20 +117,20 @@ class AboutWindow:
                 link.clicked.connect(lambda: run(["xdg-open", domain]))
 
             # Set the color to blue
-            link.setStyleSheet(f"color: {color};")
+            link.setStyleSheet(f"color: #7090FF;")
             # Display the Label
             link.adjustSize()
             link.show()
             # Return the Label to move it
             return link
 
-        sourcecode = generate_link_button("Website", "https://pixel-master.github.io/File-Find/", "blue")
+        sourcecode = generate_link_button("Website", "https://pixel-master.github.io/File-Find/")
         about_layout.addWidget(sourcecode, 7, 0)
 
-        update = generate_link_button("Update", "https://github.com/Pixel-Master/File-Find/releases", "green")
+        update = generate_link_button("Update", "https://github.com/Pixel-Master/File-Find/releases")
         about_layout.addWidget(update, 7, 1)
 
-        faq_link = generate_link_button("FaQ", "https://pixel-master.github.io/File-Find/#faq", "red")
+        faq_link = generate_link_button("FaQ", "https://pixel-master.github.io/File-Find/#faq")
         about_layout.addWidget(faq_link, 7, 2)
 
         # Menu bar

@@ -211,7 +211,7 @@ class SearchWindow:
         # Save Search
         def save_search():
             save_dialog = QFileDialog.getSaveFileName(self.Search_Results_Window, "Export File Find Search",
-                                                      FF_Files.SAVED_SEARCHES_FOLDER,
+                                                      FF_Files.USER_FOLDER,
                                                       "File Find Search (*.FFSearch);;Plain Text File (*.txt)")
             save_file = save_dialog[0]
             if save_file.endswith(".txt") and not os.path.exists(save_file):
@@ -220,7 +220,7 @@ class SearchWindow:
                         export_file.write(save_file + "\n")
             elif save_file.endswith(".FFSearch") and not os.path.exists(save_file):
                 with open(save_file, "w") as export_file:
-                    dump(self.matched_list, export_file)
+                    dump({"VERSION": FF_Files.FF_SEARCH_VERSION, "matched_list": self.matched_list}, export_file)
 
         # Building Menu-bar
         menu_bar = FF_Menubar.MenuBar(
@@ -380,7 +380,7 @@ class SearchWindow:
         FF_Main_UI.menu_bar_icon.showMessage("File Find - Search finished!", f"Your Search finished!\nin {search_path}",
                                              QIcon(os.path.join(FF_Files.ASSETS_FOLDER, "Find_button_img_small.png")),
                                              100000)
-        # Updated Search indicator
+        # Update Search indicator
         FF_Main_UI.MainWindow.update_search_status_label()
 
         logging.info("Finished Building Search-Results-UI!\n")

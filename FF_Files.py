@@ -19,13 +19,18 @@ import hashlib
 # Versions
 VERSION: str = "rc_4-apr-24"
 VERSION_SHORT: str = "0.0"
+# Versions of file formats
+FF_FILTER_VERSION = 1
+FF_SEARCH_VERSION = 1
+FF_SETTINGS_VERSION = 1
 
 # Defining folder variables
 USER_FOLDER = os.path.expanduser("~")
 FF_LIB_FOLDER = os.path.join(USER_FOLDER, "Library", "Application Support", "File-Find")
 CACHED_SEARCHES_FOLDER = os.path.join(FF_LIB_FOLDER, "Cached Searches")
-SAVED_SEARCHES_FOLDER = os.path.join(FF_LIB_FOLDER, "Saved Searches")
 ASSETS_FOLDER = os.path.join(FF_LIB_FOLDER, "assets")
+
+SELECTED_DIR = USER_FOLDER
 
 # Hash for the assets folder in the library dir
 TARGET_ASSETS_FOLDER_HASH = "eb391462d1d9ad75cc63f8eca37a01abc3bbb3bd7af90b6eb86a7fee6eec9cc8"
@@ -40,37 +45,44 @@ FILE_FORMATS = {"Image": ("png", "jpeg", "webp", "heic", "tiff", "gif", "tif", "
 
                 "Audio": ("mp3", "mscz", "midi", "m4a", "wav", "wma", "m3u", "flac", "aif", "aiff"),
 
-                "Text": ("txt", "rtx", "ttf", "tex"),
+                "Text": ("txt", "rtx", "ttf", "tex", "eml"),
 
                 "Developer": (
                     "py", "pyc", "pyi", "c", "cpp", "js", "qml", "xcodeproj", "xcworkspace", "sqlite", "m", "json",
-                    "sql", "toml", "fo", "java", "f", "cs", "sh", "command", "csh", "zsh", "qm", "npy", "yml",
+                    "sql", "toml", "fo", "java", "f", "cs", "sh", "command", "csh", "zsh", "qm", "npy", "yml", "rs",
                     "csv", "php", "html", "kt", "lua", "pl", "swift", "unity", "vcxproj", "yaml", "plist", "r", "ts",
-                    "inl", "db", "car", "ui", "md", "playground", "mlmodelc", "storyboardc", "storyboard", "h"),
+                    "inl", "db", "car", "ui", "md", "playground", "mlmodelc", "storyboardc", "storyboard", "h", "css"),
 
                 "Office": (
                     "docx", "doc", "pptx", "ppt", "key", "pages", "numbers", "odt", "wpd", "ods", "xls", "xlsx", "pdf"),
 
                 "Graphical": (
-                    "svg", "blend", "icns", "psd", "html", "css", "max", "fbx", "obj", "ai", "ps", "indd",
+                    "svg", "blend", "icns", "psd", "max", "fbx", "obj", "ai", "ps", "indd",
                     "pub", "ico", "cur", "cpl", "deskthemepack", "xcf"),
 
                 "Archive": (
                     "zip", "tar", "7z", "gzip", "iso", "dmg", "xz", "zstd", "wim", "bzip2", "rar", "gz", "zipx"),
 
                 "Executable": (
-                    "app", "exe", "bin", "jar", "apk", "bat", "cmd", "command", "ipa", "run", "pkg", "deb", "luac"),
+                    "app", "exe", "bin", "jar", "apk", "bat", "cmd", "command",
+                    "ipa", "run", "pkg", "deb", "luac", "so"),
 
                 "Other": tuple("*")}
 
 # Standard content of Settings File
 # The Structure of the settings File
-STANDARD_SETTINGS = {"first_version": f"{VERSION_SHORT}[{VERSION}]",
+STANDARD_SETTINGS = {"settings_version": FF_SETTINGS_VERSION,
+                     "first_version": f"{VERSION_SHORT}[{VERSION}]",
                      "version": f"{VERSION_SHORT}[{VERSION}]",
                      "excluded_files": [],
                      "cache": "On Launch",
                      "popup": {"FF_ver_welcome": False, "FF_welcome": True, "delete_question": False},
                      "filter_preset_name": "Default"}
+
+# Color schemes
+RED_COLOR = "#b31b00"
+GREEN_COLOR = "#009903"
+GREY_DISABLED_COLOR = "#7f7f7f"
 
 
 # Remove Search cache
@@ -190,20 +202,22 @@ def convert_file_name_for_terminal(name):
 
 
 # Convert File Size to a String
-def conv_file_size(byte_size: int) -> str:
+def conv_file_size(byte_size: int, decimal_places=2) -> str:
     logging.debug("Called conv_file_size")
     if byte_size == -1:
         return "ERROR! (File does not exist or isn't valid)"
     elif byte_size == -2:
         return "ERROR! (File is a Link to an other File)"
     elif byte_size > 1000000000:
-        return f"{round(byte_size / 1000000000, 2)} GB"
+        return f"{round(byte_size / 1000000000, decimal_places)} GB"
     elif byte_size > 1000000:
-        return f"{round(byte_size / 1000000, 2)} MB"
+        return f"{round(byte_size / 1000000, decimal_places)} MB"
     elif byte_size > 1000:
-        return f"{round(byte_size / 1000, 2)} KB"
-    else:
+        return f"{round(byte_size / 1000, decimal_places)} KB"
+    elif byte_size >= 1:
         return f"{byte_size} Bytes"
+    else:
+        return f"{byte_size} Byte"
 
 
 # Function for nicely displaying Paths
@@ -217,11 +231,8 @@ def display_path(path: str, length_of_first_part_of_string: int = 40):
 # Setup File-Find dir
 def setup():
     logging.info("Setting up Library Folder...\n")
-    # Set the current working directory to the folder of the user
-    os.chdir(USER_FOLDER)
 
     # Creating necessary directories
-    os.makedirs(SAVED_SEARCHES_FOLDER, exist_ok=True)
     os.makedirs(CACHED_SEARCHES_FOLDER, exist_ok=True)
     os.makedirs(ASSETS_FOLDER, exist_ok=True)
 
@@ -240,6 +251,7 @@ def setup():
                 updated = False
 
             # Checking if all settings exist
+            settings["settings_version"] = FF_SEARCH_VERSION
             settings["first_version"] = settings["first_version"]
             settings["version"] = f"{VERSION_SHORT}[{VERSION}]"
             settings["excluded_files"] = settings["excluded_files"]

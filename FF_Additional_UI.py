@@ -28,10 +28,11 @@ global app, global_color_scheme
 
 # Create a QPixmap that automatically adjusts to light and dark mode
 class UIIcon:
-    def __init__(self, path, icon_set_func=None, input_app=None):
+    def __init__(self, path, icon_set_func=None, input_app=None, turn_auto=True):
         global app, global_color_scheme
         # Make parameter class wide
         self.icon_set_func = icon_set_func
+        self.turn_auto = turn_auto
 
         # If class is called at launch for initial setup
         if input_app is not None:
@@ -45,6 +46,7 @@ class UIIcon:
                 global_color_scheme = scheme
 
             global_color_scheme = app.styleHints().colorScheme()
+
             # Connecting color scheme change
             app.styleHints().colorSchemeChanged.connect(self.style_changed)
             app.styleHints().colorSchemeChanged.connect(change_global__color_scheme)
@@ -58,7 +60,7 @@ class UIIcon:
             self.path = path
             # Filling the pixmap in and mapping the black part out
             self.pixmap = QPixmap(path)
-            self.mask = self.pixmap.createMaskFromColor(QColor("black"), Qt.MaskOutColor)
+            self.mask = self.pixmap.createMaskFromColor(QColor("black"), Qt.MaskMode.MaskOutColor)
             # Filling in the mapped out part
             if global_color_scheme == Qt.ColorScheme.Dark:
                 self.turn_dark()
@@ -68,32 +70,33 @@ class UIIcon:
             # Add icon to list
             icons.add(self)
 
+    # Turn icons white for dark-mode
     def turn_dark(self):
-        # Debug
-        logging.debug(f"Turning {self.path} dark-mode")
-
         self.pixmap.fill((QColor("white")))
         self.pixmap.setMask(self.mask)
         self.icon_set_func(self.pixmap)
 
+    # Turn icons dark for light-mode
     def turn_light(self):
-        # Debug
-        logging.debug(f"Turning {self.path} into light-mode")
-
         self.pixmap.fill((QColor("black")))
         self.pixmap.setMask(self.mask)
         self.icon_set_func(self.pixmap)
 
     @staticmethod
     def style_changed(color_scheme):
+        # Debug
+        logging.debug(f"Turning icons into {color_scheme}")
+
         for icon in icons:
             if color_scheme == Qt.ColorScheme.Dark:
-                UIIcon.turn_dark(icon)
+                if icon.turn_auto:
+                    UIIcon.turn_dark(icon)
             elif color_scheme == Qt.ColorScheme.Light:
-                UIIcon.turn_light(icon)
+                if icon.turn_auto:
+                    UIIcon.turn_light(icon)
 
 
-# A custom checkbox
+# A custom checkbox that allows the user to check (select) multiple items
 class CheckableComboBox(QComboBox):
     # once there is a checkState set, it is rendered
     def __init__(self, parent):

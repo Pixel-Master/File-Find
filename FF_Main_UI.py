@@ -16,10 +16,10 @@ from pyperclip import copy
 
 # PySide6 Gui Imports
 from PySide6.QtCore import QSize, Qt, QDate
-from PySide6.QtGui import QFont, QDoubleValidator, QAction, QKeySequence, QIcon
+from PySide6.QtGui import QFont, QDoubleValidator, QAction, QIcon
 from PySide6.QtWidgets import QWidget, QLabel, QPushButton, QRadioButton, QFileDialog, \
     QLineEdit, QButtonGroup, QDateEdit, QComboBox, QSystemTrayIcon, QMenu, QCompleter, QTabWidget, \
-    QMainWindow, QGridLayout, QSpacerItem, QSizePolicy, QApplication
+    QMainWindow, QGridLayout, QSpacerItem, QSizePolicy
 
 # Projects Libraries
 import FF_Additional_UI
@@ -31,7 +31,7 @@ import FF_Settings
 
 # The class for the main window where filters can be selected
 class MainWindow:
-    def __init__(self, app: QApplication):
+    def __init__(self):
         # Debug
         logging.info("Launching UI...")
         logging.debug("Setting up self.Root_Window...")
@@ -63,8 +63,6 @@ class MainWindow:
         self.tabbed_widget = QTabWidget(self.Root_Window)
         # Display at the correct position
         self.Main_Layout.addWidget(self.tabbed_widget, 1, 0, 10, 13)
-        # Spacer for having blank spaces
-        horizontal_spacer = QSpacerItem(600, 0, hData=QSizePolicy.Policy.Maximum)
 
         # Labels
         logging.debug("Setting up Labels...")
@@ -72,12 +70,12 @@ class MainWindow:
         # -----Basic Search-----
         # Tabs and Label
         # Creating a new QWidget for the Basic tab
-        self.basic_search_widget = QWidget()
+        self.basic_search_widget = QWidget(self.Root_Window)
         # Layout
         self.basic_search_widget_layout = QGridLayout(self.basic_search_widget)
         self.basic_search_widget.setLayout(self.basic_search_widget_layout)
-        self.basic_search_widget_layout.addItem(horizontal_spacer, 0, 0)
-        self.basic_search_widget_layout.addItem(horizontal_spacer, 0, 5)
+        self.basic_search_widget_layout.addItem(QSpacerItem(600, 0, hData=QSizePolicy.Policy.Maximum), 0, 0)
+        self.basic_search_widget_layout.addItem(QSpacerItem(600, 0, hData=QSizePolicy.Policy.Maximum), 0, 5)
         # Add Tab
         self.tabbed_widget.addTab(self.basic_search_widget, "Basic")
 
@@ -134,13 +132,13 @@ class MainWindow:
         # -----File Content-----
         # Tab and Label
         # Creating a new QWidget for the file content tab
-        self.properties_widget = QWidget()
+        self.properties_widget = QWidget(self.Root_Window)
         # Layout
         self.properties_widget_layout = QGridLayout(self.properties_widget)
         self.properties_widget.setLayout(self.properties_widget_layout)
         # Adding space
-        self.properties_widget_layout.addItem(horizontal_spacer, 0, 0)
-        self.properties_widget_layout.addItem(horizontal_spacer, 0, 6)
+        self.properties_widget_layout.addItem(QSpacerItem(600, 0, hData=QSizePolicy.Policy.Maximum), 0, 0)
+        self.properties_widget_layout.addItem(QSpacerItem(600, 0, hData=QSizePolicy.Policy.Maximum), 0, 6)
         # Add Tab
         self.tabbed_widget.addTab(self.properties_widget, "Properties")
 
@@ -200,13 +198,13 @@ class MainWindow:
         # -----Advanced Search-----
         # Tab and Label
         # Creating a new QWidget for the file content tab
-        self.advanced_search_widget = QWidget()
+        self.advanced_search_widget = QWidget(self.Root_Window)
         # Layout
         self.advanced_search_widget_layout = QGridLayout(self.advanced_search_widget)
         self.advanced_search_widget.setLayout(self.advanced_search_widget_layout)
         # Adding a spacer
-        self.advanced_search_widget_layout.addItem(horizontal_spacer, 0, 0)
-        self.advanced_search_widget_layout.addItem(horizontal_spacer, 0, 6)
+        self.advanced_search_widget_layout.addItem(QSpacerItem(600, 0, hData=QSizePolicy.Policy.Maximum), 0, 0)
+        self.advanced_search_widget_layout.addItem(QSpacerItem(600, 0, hData=QSizePolicy.Policy.Maximum), 0, 6)
         # Add Tab
         self.tabbed_widget.addTab(self.advanced_search_widget, "Advanced")
 
@@ -242,14 +240,14 @@ class MainWindow:
 
         # -----Sorting-----
         # Tab and Label
-        # Creating a new QWidget for the Advanced tab
-        self.sorting_widget = QWidget()
+        # Creating a new QWidget for the Sorting tab
+        self.sorting_widget = QWidget(self.Root_Window)
         # Layout
         self.sorting_widget_layout = QGridLayout(self.sorting_widget)
         self.sorting_widget.setLayout(self.sorting_widget_layout)
         # Adding a spacer
-        self.sorting_widget_layout.addItem(horizontal_spacer, 0, 0)
-        self.sorting_widget_layout.addItem(horizontal_spacer, 0, 6)
+        self.sorting_widget_layout.addItem(QSpacerItem(600, 0, hData=QSizePolicy.Policy.Maximum), 0, 0)
+        self.sorting_widget_layout.addItem(QSpacerItem(600, 0, hData=QSizePolicy.Policy.Maximum), 0, 6)
         # Add Tab
         self.tabbed_widget.addTab(self.sorting_widget, "Sorting")
 
@@ -300,7 +298,8 @@ class MainWindow:
 
         # ----- Search Indicator-----
         # Title of searching indicator
-        search_status_title_label = QLabel("Status:", self.Root_Window)
+        search_status_title_label = QLabel(self.Root_Window)
+        search_status_title_label.setText("Status:")
         search_status_title_label.setFont(QFont("Arial", 17))
         search_status_title_label.setToolTip(
             "Search Indicator:\n"
@@ -311,12 +310,13 @@ class MainWindow:
 
         # Label to indicate if searching
         global search_status_label
-        search_status_label = QLabel("Inactive", self.Root_Window)
+        search_status_label = QLabel(self.Root_Window)
+        search_status_label.setText("Inactive")
         search_status_label.setFont(QFont("Arial", 17))
-        search_status_label.setStyleSheet("color: green;")
+        search_status_label.setStyleSheet(f"color: {FF_Files.GREEN_COLOR};")
         search_status_label.show()
         self.Main_Layout.addWidget(search_status_label, 12, 1)
-        self.Main_Layout.addItem(horizontal_spacer, 12, 2)
+        self.Main_Layout.addItem(QSpacerItem(600, 0, hData=QSizePolicy.Policy.Maximum), 12, 2)
 
         # Entries
         logging.debug("Setting up Entries...")
@@ -341,11 +341,11 @@ class MainWindow:
         # Edit for displaying the Path
         self.edit_directory = self.generate_filter_entry(self.basic_search_widget)
         # Set text and tooltip to display the directory
-        self.edit_directory.setText(os.getcwd())
+        self.edit_directory.setText(FF_Files.SELECTED_DIR)
         # Execute the validate_dir function if text is changed
         self.edit_directory.textChanged.connect(self.validate_dir)
         # Loading Completions
-        self.complete_path(os.getcwd(), check=False)
+        self.complete_path(FF_Files.SELECTED_DIR, check=False)
         # Resize and place on screen
         self.basic_search_widget_layout.addWidget(self.edit_directory, 3, 2)
 
@@ -378,7 +378,7 @@ class MainWindow:
                 if unit_selector.currentText() == "No Limit":
                     corresponding_edit.setEnabled(False)
                     corresponding_edit.setToolTip("No Limit is selected")
-                    corresponding_edit.setStyleSheet("background-color: #7f7f7f;")
+                    corresponding_edit.setStyleSheet(f"background-color: {FF_Files.GREY_DISABLED_COLOR};")
                 else:
                     corresponding_edit.setEnabled(True)
                     corresponding_edit.setToolTip("")
@@ -484,7 +484,7 @@ class MainWindow:
                 # Block the file ending edit
                 self.edit_file_extension.setDisabled(True)
                 self.edit_file_extension.setToolTip("File types can't be used together with file extension")
-                self.edit_file_extension.setStyleSheet("background-color: #7f7f7f;")
+                self.edit_file_extension.setStyleSheet(f"background-color: {FF_Files.GREY_DISABLED_COLOR};")
             else:
                 # Debug
                 logging.debug("Enabled file ending edit")
@@ -546,9 +546,9 @@ class MainWindow:
         # Search from Button
         # Opens the File dialogue and changes the current working dir into the returned value
         def open_dialog():
-            search_from = QFileDialog.getExistingDirectory(dir=os.getcwd())
+            search_from = QFileDialog.getExistingDirectory(dir=FF_Files.SELECTED_DIR)
             try:
-                os.chdir(search_from)
+                FF_Files.SELECTED_DIR = search_from
                 self.edit_directory.setText(search_from)
             except OSError:
                 pass
@@ -587,7 +587,7 @@ class MainWindow:
                 f"Name: {self.edit_name.text()}\n"
                 f"Name contains: {self.edit_name_contains.text()}\n"
                 f"File Ending: {self.edit_file_extension.text()}\n"
-                f"Search from: {os.getcwd()}\n\n"
+                f"Search from: {FF_Files.SELECTED_DIR}\n\n"
                 f"File size: min: {self.edit_size_min.text()} ({self.unit_selector_min.currentText()})"
                 f" max: {self.edit_size_max.text()} ({self.unit_selector_min.currentText()})\n"
                 f"Date modified from: {self.m_date_from_drop_down.text()} to: {self.m_date_to_drop_down.text()}\n"
@@ -615,7 +615,7 @@ class MainWindow:
                 data_file_size_min_unit=self.unit_selector_min.currentText(),
                 data_file_size_max_unit=self.unit_selector_max.currentText(),
                 data_library=self.rb_library_yes.isChecked(),
-                data_search_from_valid=os.getcwd(),
+                data_search_from_valid=FF_Files.SELECTED_DIR,
                 data_search_from_unchecked=self.edit_directory.text(),
                 data_content=self.edit_file_contains.text(),
                 data_search_for=self.combobox_search_for.currentText(),
@@ -721,7 +721,7 @@ class MainWindow:
 
         # Set up the menu bar
         logging.info("Setting up Menu Bar...")
-        self.menu_bar(generate_terminal_command, app)
+        self.menu_bar(generate_terminal_command)
 
         # Setting filters to default
         self.reset_filters()
@@ -831,7 +831,7 @@ class MainWindow:
             paths = []
             for list_folder in os.listdir(path):
                 if os.path.isdir(list_folder):
-                    paths.append(os.path.join(os.getcwd(), list_folder))
+                    paths.append(os.path.join(FF_Files.SELECTED_DIR, list_folder))
 
             # Returns the list
             return paths
@@ -862,6 +862,10 @@ class MainWindow:
         # Get the text
         check_path = self.edit_directory.text()
 
+        # If User pressed "Cancel"
+        if check_path == "":
+            return
+
         # Changing Tool-Tip
         self.edit_directory.setToolTip(self.edit_directory.text())
 
@@ -869,7 +873,7 @@ class MainWindow:
         if os.path.isdir(check_path):
             # Changing Path
             logging.debug(f"Path: {check_path} valid")
-            os.chdir(check_path)
+            FF_Files.SELECTED_DIR = check_path
 
             # Change color
             self.edit_directory.setStyleSheet("")
@@ -882,7 +886,7 @@ class MainWindow:
             logging.debug(f"Path: {check_path} invalid")
 
             # Change color
-            self.edit_directory.setStyleSheet("color: red;")
+            self.edit_directory.setStyleSheet(f"color: {FF_Files.RED_COLOR};")
 
             # Resetting all filters
 
@@ -957,21 +961,31 @@ class MainWindow:
             return
 
         # Debug
-        logging.info("setting all filters to import...")
+        logging.info(f"Importing filters with version: {filters['VERSION']},"
+                     f" while local version: {FF_Files.FF_FILTER_VERSION}...")
 
         # Basic
         self.edit_name.setText(filters["name"])
         self.edit_name_contains.setText(filters["name_contains"])
         self.combobox_file_types.check_items(filters["file_types"])
-        self.edit_directory.setText(filters["directory"])
+        directory = filters["directory"].replace("USER_FOLDER", FF_Files.USER_FOLDER)
+        self.edit_directory.setText(directory)
 
         # Properties
         self.edit_file_contains.setText(filters["file_contains"])
 
         self.m_date_from_drop_down.setDate(QDate.fromString(filters["dates"]["m_date_from"], Qt.DateFormat.ISODate))
         self.c_date_from_drop_down.setDate(QDate.fromString(filters["dates"]["c_date_from"], Qt.DateFormat.ISODate))
-        self.m_date_to_drop_down.setDate(QDate.fromString(filters["dates"]["m_date_to"], Qt.DateFormat.ISODate))
-        self.c_date_to_drop_down.setDate(QDate.fromString(filters["dates"]["c_date_to"], Qt.DateFormat.ISODate))
+
+        if filters["dates"]["m_date_to"] == "DEFAULT_DATE":
+            self.m_date_to_drop_down.setDate(QDate.currentDate())
+        else:
+            self.m_date_to_drop_down.setDate(QDate.fromString(filters["dates"]["m_date_to"], Qt.DateFormat.ISODate))
+
+        if filters["dates"]["c_date_to"] == "DEFAULT_DATE":
+            self.c_date_to_drop_down.setDate(QDate.currentDate())
+        else:
+            self.c_date_to_drop_down.setDate(QDate.fromString(filters["dates"]["c_date_to"], Qt.DateFormat.ISODate))
 
         self.edit_size_min.setText(filters["size"]["min"])
         self.edit_size_max.setText(filters["size"]["max"])
@@ -999,21 +1013,37 @@ class MainWindow:
                                                   caption="Export File Find Search",
                                                   filter="File Find Filter Preset (*.FFFilter);;"
                                                          "JSON (JavaScript Object Notation) (*.json)")[0]
+        # If User pressed "Cancel"
+        if export_path == "":
+            return
 
         # Debug
-        logging.info(f"Exporting all filters to {export_path}...")
+        logging.info(f"Exporting all filters to {export_path}, with {FF_Files.FF_FILTER_VERSION = }...")
+        # Making user folder compatible
+        directory = self.edit_directory.text()
+        directory = directory.replace(FF_Files.USER_FOLDER, "USER_FOLDER")
+
+        # If dates are left at default
+        m_date_to = self.m_date_to_drop_down.date().toString(Qt.DateFormat.ISODate)
+        c_date_to = self.c_date_to_drop_down.date().toString(Qt.DateFormat.ISODate)
+        if m_date_to == QDate.currentDate().toString(Qt.DateFormat.ISODate):
+            m_date_to = "DEFAULT_DATE"
+        if c_date_to == QDate.currentDate().toString(Qt.DateFormat.ISODate):
+            c_date_to = "DEFAULT_DATE"
 
         # Directory to save filter settings
-        filters = {"name": self.edit_name.text(),
+        filters = {"VERSION": FF_Files.FF_FILTER_VERSION,
+
+                   "name": self.edit_name.text(),
                    "name_contains": self.edit_name_contains.text(),
                    "file_types": self.combobox_file_types.all_checked_items(),
-                   "directory": self.edit_directory.text(),
+                   "directory": directory,
 
                    "file_contains": self.edit_file_contains.text(),
                    "dates": {"m_date_from": self.m_date_from_drop_down.date().toString(Qt.DateFormat.ISODate),
                              "c_date_from": self.c_date_from_drop_down.date().toString(Qt.DateFormat.ISODate),
-                             "m_date_to": self.m_date_to_drop_down.date().toString(Qt.DateFormat.ISODate),
-                             "c_date_to": self.c_date_to_drop_down.date().toString(Qt.DateFormat.ISODate)},
+                             "m_date_to": m_date_to,
+                             "c_date_to": c_date_to},
                    "size": {"min": self.edit_size_min.text(),
                             "max": self.edit_size_max.text()},
                    "size_unit": {"min": self.unit_selector_min.currentText(),
@@ -1037,7 +1067,7 @@ class MainWindow:
             logging.info("Exported all filters\n")
 
     # Setting up the menu bar
-    def menu_bar(self, shell_cmd, app: QApplication):
+    def menu_bar(self, shell_cmd):
 
         # Menu Bar
         menu_bar = self.Root_Window.menuBar()
@@ -1095,12 +1125,6 @@ class MainWindow:
         settings_action.triggered.connect(lambda: FF_Settings.SettingsWindow(self.Root_Window))
         settings_action.setShortcut("Ctrl+,")
         help_menu.addAction(settings_action)
-
-        # Help
-        help_action = QAction("&About File Find", self.Root_Window)
-        help_action.triggered.connect(lambda: FF_About_UI.AboutWindow(self.Root_Window))
-        help_action.setShortcut(QKeySequence.StandardKey.HelpContents)
-        help_menu.addAction(help_action)
 
         # Tutorial
         tutorial_action = QAction("&Tutorial", self.Root_Window)
@@ -1178,7 +1202,7 @@ class MainWindow:
 
         # Quit File Find
         quit_action = QAction("&Quit File Find", self.Root_Window)
-        quit_action.triggered.connect(app.quit)
+        quit_action.triggered.connect(exit)
 
         # Constructing menu_bar_icon_menu
         menu_bar_icon_menu.addAction(ff_title)
@@ -1205,19 +1229,23 @@ class MainWindow:
 
     # Updating Actives Searches Label
     @staticmethod
-    def update_search_status_label():
+    def update_search_status_label(ui_building=False):
         # Debug
         logging.debug(f"Updating search status label, active searches: {FF_Search.ACTIVE_SEARCH_THREADS}")
         # If there are no active searches
         if FF_Search.ACTIVE_SEARCH_THREADS == 0:
             search_status_label.setText("Inactive")
-            search_status_label.setStyleSheet("color: green;")
+            search_status_label.setStyleSheet(f"color: {FF_Files.GREEN_COLOR};")
             search_status_label.adjustSize()
+
+        # While the UI is being build, you cannot use File Find
+        elif ui_building:
+            search_status_label.setText(f"Please Wait ({FF_Search.ACTIVE_SEARCH_THREADS}) ...")
 
         # If there are ongoing searches updating label
         else:
-            search_status_label.setText(f"Searching...({FF_Search.ACTIVE_SEARCH_THREADS})")
-            search_status_label.setStyleSheet("color: red;")
+            search_status_label.setText(f"Searching ({FF_Search.ACTIVE_SEARCH_THREADS}) ...")
+            search_status_label.setStyleSheet(f"color: {FF_Files.RED_COLOR};")
             search_status_label.adjustSize()
 
     # Search without using the cache

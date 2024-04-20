@@ -75,12 +75,10 @@ class DuplicatedSettings:
         self.Lower_Layout = QHBoxLayout(self.Duplicated_Settings)
         self.Lower_Layout.setContentsMargins(0, 0, 0, 0)
 
-        # Spacer for prettier ui
-        spacer = QSpacerItem(10, 30, hData=QSizePolicy.Policy.Maximum)
-
         # Title label
         self.title_label = QLabel(parent=self.Duplicated_Settings)
-        self.title_label.setText(f"Find duplicated files in:\n{FF_Files.display_path(search_path, 45)}")
+        self.title_label.setText(f"Find duplicated files in results of search in:"
+                                 f"\n{FF_Files.display_path(search_path, 45)}")
         self.title_label.setToolTip(search_path)
         # Make the Font bigger
         font = self.title_label.font()
@@ -157,8 +155,8 @@ class DuplicatedSettings:
 
         # Add to main Layout
         self.Duplicated_Settings_Layout.addLayout(self.vertical_layout)
-        # Add a Spacer
-        self.Duplicated_Settings_Layout.addItem(spacer)
+        # Add a Spacer for prettier ui
+        self.Duplicated_Settings_Layout.addItem(QSpacerItem(10, 30, hData=QSizePolicy.Policy.Maximum))
 
         # Okay and Cancel button
         self.button_box = QDialogButtonBox(parent=self.Duplicated_Settings)
@@ -247,7 +245,7 @@ class DuplicatedSettings:
         help_menu.addAction(tutorial_action)
 
         # Debug
-        logging.info("Finished Setting up Help UI\n")
+        logging.info("Finished Setting up Duplicated UI\n")
         logging.info("Finished duplicated question setup!\n\n")
 
 
@@ -290,7 +288,10 @@ class DuplicatedUI:
         # Main Tree Widget
         self.Duplicated_Tree = QTreeWidget(self.Duplicated_Window)
         self.Duplicated_Tree.headerItem().setText(0, "Path")
-        self.Duplicated_Tree.verticalScrollBar()
+        self.Duplicated_Tree.headerItem().setText(1, "Size")
+        self.Duplicated_Tree.setColumnWidth(1, 20)
+        self.Duplicated_Tree.setColumnWidth(0, 550)
+        self.Duplicated_Tree.horizontalScrollBar().show()
 
         # Get index
         main_index = 0
@@ -307,12 +308,18 @@ class DuplicatedUI:
                 QTreeWidgetItem(main_tree_item)
 
                 main_tree_item.child(sub_index).setText(0, sub_item)
+                main_tree_item.child(sub_index).setText(1, FF_Files.conv_file_size(os.path.getsize(sub_item)))
+                main_tree_item.child(sub_index).setTextAlignment(1, Qt.AlignmentFlag.AlignRight)
 
                 # Increase sub index by one
                 sub_index += 1
 
             # Set the text
-            self.Duplicated_Tree.topLevelItem(main_index).setText(0, matched_display_dict[main_item])
+            self.Duplicated_Tree.topLevelItem(main_index).setText(
+                0, matched_display_dict[main_item])
+            self.Duplicated_Tree.topLevelItem(main_index).setText(
+                1, FF_Files.conv_file_size(os.path.getsize(matched_display_dict[main_item])))
+            self.Duplicated_Tree.topLevelItem(main_index).setTextAlignment(1, Qt.AlignmentFlag.AlignRight)
 
             # Increase main index by one
             main_index += 1
@@ -564,11 +571,13 @@ class FindDuplicated:
 
             else:
                 # factor of allowed divergence
-                # factor 1 upper = 1 lower = 1
-                # factor 0.8 upper = 1.2 lower = 0.8
-                # factor 0.4 upper = 1.6 lower = 0.8
+                # factor 1, upper = 1, lower = 1
+                # factor 0.8, upper = 1.2, lower = 0.8
+                # factor 0.4, upper = 1.6, lower = 0.8
                 lower_allowed_divergence_factor = criteria["size"]["match_percentage"] / 100
-                upper_allowed_divergence_factor = lower_allowed_divergence_factor + 1 - lower_allowed_divergence_factor
+                upper_allowed_divergence_factor = 1 + (1 - lower_allowed_divergence_factor)
+
+                logging.info(f"{lower_allowed_divergence_factor = }, {upper_allowed_divergence_factor = }")
 
                 for file in found_path_set:
 
@@ -699,7 +708,7 @@ class FindDuplicated:
 
         gc.collect()
 
-    # Function is used as a "key" ins sorted(). Sorts the list bay closest proximity to file_size
+    # Function is used as a "key" ins sorted(). Sorts the list by closest proximity to file_size
     @staticmethod
     def sort_size(list_file_size, file_size):
 

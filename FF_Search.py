@@ -72,7 +72,7 @@ class Sort:
 # Class for Generating the terminal command
 class GenerateTerminalCommand:
     def __init__(self, name: str, name_contains: str, file_ending: str, fn_match: str):
-        self.shell_command = f"find {os.getcwd()}"
+        self.shell_command = f"find {FF_Files.SELECTED_DIR}"
         self.name_string = ""
         if name != "":
             self.name_string += f"{name}"
@@ -100,7 +100,7 @@ class LoadSearch:
     def __init__(self, parent):
         load_dialog = QFileDialog.getOpenFileName(parent,
                                                   "Import File Find Search",
-                                                  FF_Files.SAVED_SEARCHES_FOLDER,
+                                                  FF_Files.USER_FOLDER,
                                                   "*.FFSearch;")
         self.load_file = load_dialog[0]
 
@@ -117,7 +117,11 @@ class LoadSearch:
             logging.info(f"Loading {load_file}")
             # Opening the file
             with open(load_file) as opened_file:
+                # Saving file content
                 saved_file_content = load(opened_file)
+                # Debug
+                logging.info(f"File has version: {saved_file_content['VERSION']},"
+                             f" local version: {FF_Files.FF_SEARCH_VERSION}")
 
                 # If the cache doesn't exist
                 if not os.path.exists(
@@ -125,12 +129,12 @@ class LoadSearch:
                                      f"{load_file}.FFCache".replace("/", "-"))):
 
                     # Dictionary which is going to be dumped into the cache file
-                    dump_dict = {"found_path_set": saved_file_content,
+                    dump_dict = {"found_path_set": saved_file_content["matched_list"],
                                  "type_dict": {},
                                  "low_basename_dict": {}}
 
                     # Calculating basename and types
-                    for cache_file in saved_file_content:
+                    for cache_file in saved_file_content["matched_list"]:
                         dump_dict["low_basename_dict"][cache_file] = os.path.basename(cache_file)
 
                         if os.path.isdir(cache_file):
@@ -152,7 +156,7 @@ class LoadSearch:
                                              "time_sorting": 0,
                                              "time_building": 0,
                                              "time_total": 0},
-                                            saved_file_content, load_file, parent])
+                                            saved_file_content["matched_list"], load_file, parent])
 
 
 # The Search Engine
@@ -293,6 +297,17 @@ class Search:
                                                              " but search directory is in library folder!",
                                                              parent=None)
 
+        # If data_file_group is an empty list (no files would be found)
+        elif not data_file_group:
+            # Debug
+            logging.error("File Types Error! No File Types are selected")
+
+            # Show Popup
+            FF_Additional_UI.PopUps.show_critical_messagebox("File Types Error!",
+                                                             "File Types Error!\n\nSelect a file type!\n"
+                                                             "No files would be found, because no file type "
+                                                             "category is selected.",
+                                                             parent=None)
         # Start Searching
         else:
 
@@ -791,7 +806,9 @@ class Search:
 
         else:
             logging.info("Cache file already exist, skipping caching...")
-        # Deleting the original_found_path_set
+
+        # Updating search status indicator
+        FF_Main_UI.MainWindow.update_search_status_label(ui_building=True)
 
         # Calculating time
         time_after_sorting = perf_counter() - (time_after_indexing + time_after_searching + time_before_start)

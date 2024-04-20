@@ -110,13 +110,13 @@ class CompareUi:
         # Labels
         # Added files
         self.added_files_label1, self.added_files_label2 = self.generate_title_label(
-            text="Added Files", text2=path_of_first_search, color="green")
+            text="Added Files", text2=path_of_first_search, color=FF_Files.GREEN_COLOR)
         self.Compare_Layout.addWidget(self.added_files_label1, 0, 0)
         self.Compare_Layout.addWidget(self.added_files_label2, 1, 0)
 
         # Removed files
         self.removed_files_label1, self.removed_files_label2 = self.generate_title_label(
-            text="Removed Files", text2=compared_searches.path_of_second_search[0], color="red")
+            text="Removed Files", text2=compared_searches.path_of_second_search[0], color=FF_Files.RED_COLOR)
         self.Compare_Layout.addWidget(self.removed_files_label1, 0, 1)
         self.Compare_Layout.addWidget(self.removed_files_label2, 1, 1)
 
@@ -215,7 +215,7 @@ class CompareSearches:
 
             # Get the files of both searches
             self.files_of_first_search = files_of_first_search
-            logging.debug("Asking for a second FFSearch file...")
+            logging.debug("Asking for a second File Find Search file...")
             self.files_of_second_search, self.path_of_second_search = self.load_second_search()
 
             # Files which are only in one list
@@ -263,7 +263,7 @@ class CompareSearches:
         second_search_file = QFileDialog.getOpenFileName(
             parent=None,
             caption="Select Second Search",
-            dir=FF_Files.SAVED_SEARCHES_FOLDER,
+            dir=FF_Files.USER_FOLDER,
             filter="*.FFSearch;")
 
         # Debug
@@ -272,7 +272,11 @@ class CompareSearches:
         # Load list from file and return path and files
         try:
             with open(second_search_file[0]) as search_file:
-                return load(search_file), second_search_file
+                load_file_content = load(search_file)
+                # Debug
+                logging.info(f"Second search file has version: {load_file_content['VERSION']}")
+                # Return path and list of found files
+                return load_file_content["matched_list"], second_search_file
         except FileNotFoundError:
             # if the user pressed cancel
             return None

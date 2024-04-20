@@ -75,6 +75,8 @@ def main():
                        "CFBundleVersion": VERSION,
                        "CFBundleName": "File-Find",
                        "CFBundlePackageType": "APPL",
+                       "NSSystemAdministrationUsageDescription":
+                           "File Find needs to access your file-system in order to search it",
                        "LSApplicationCategoryType": "public.app-category.utilities",
                        "LSUIElement": False,
                        "NSHumanReadableCopyright": "Copyright © 2022–2024 Pixel Master. Some rights reserved.",
@@ -83,7 +85,13 @@ def main():
                        "NSHighResolutionCapable": True}, fp=plist)
 
         # This is temporary, as long as I don't have an Apple Developer ID, just remove the signature
-        run(["codesign", "-s", "-", "-f", os.path.join("dist", "File Find.app")])
+        run(["codesign",
+             "-s",
+             "-",  # Ad-hoc signed
+             "-f",
+             # "--entitlements",
+             # "File Find.entitlements",
+             os.path.join("dist", "File Find.app")])
 
         # Building DMG
         print("\n\nBuilding DMG...")

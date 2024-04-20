@@ -12,6 +12,7 @@
 import logging
 import gc
 import os
+import sys
 from sys import platform
 
 # PySide6 Gui Imports
@@ -32,7 +33,7 @@ if __name__ == "__main__":
                         force=True)
 
     logging.info(f"Launching File Find with Version {FF_Files.VERSION_SHORT}[{FF_Files.VERSION}]...\n")
-    logging.info(f"Launching on \"{platform}\"...\n")
+    logging.info(f"Launching on \"{platform}\", User Path: {FF_Files.USER_FOLDER}...\n")
 
     # Creating QApplication
     class CreateApp(QApplication):
@@ -60,6 +61,7 @@ if __name__ == "__main__":
 
             return super().event(event)
 
+
     app = CreateApp([])
 
     FF_Additional_UI.UIIcon(path=None, input_app=app)
@@ -72,19 +74,18 @@ if __name__ == "__main__":
     FF_Files.cache_test(is_launching=True)
 
     # Launches the Main Window
-    main_window = FF_Main_UI.MainWindow(app)
+    main_window = FF_Main_UI.MainWindow()
 
     app.setQuitOnLastWindowClosed(False)
 
-    # Only on non Mac systems
-    if not platform == "darwin":
+    # Only on non Mac systems set the icon
+    if platform != "darwin":
         app.setWindowIcon(QIcon(os.path.join(FF_Files.ASSETS_FOLDER, "FFlogo_small.png")))
 
     # Main loop for User-Interface
     app.exec()
 
-    # Closing
-    gc.collect()
-
     # Debug
     logging.info("Closed.")
+
+    sys.exit(0)
