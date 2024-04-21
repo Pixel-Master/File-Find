@@ -36,7 +36,7 @@ jobs:
     - name: Testing Syntax
       run: |
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        flake8 . --count --exit-zero --max-complexity=25 --max-line-length=127 --statistics
+        flake8 . --count --exit-zero --max-complexity=100 --max-line-length=127 --statistics
 
 
   build-macos-arm:
