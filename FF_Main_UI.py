@@ -12,6 +12,7 @@
 import logging
 import os
 from json import dump, load
+import sys
 from pyperclip import copy
 
 # PySide6 Gui Imports
@@ -1202,7 +1203,7 @@ class MainWindow:
 
         # Quit File Find
         quit_action = QAction("&Quit File Find", self.Root_Window)
-        quit_action.triggered.connect(exit)
+        quit_action.triggered.connect(sys.exit)
 
         # Constructing menu_bar_icon_menu
         menu_bar_icon_menu.addAction(ff_title)

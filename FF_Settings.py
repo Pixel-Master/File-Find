@@ -13,6 +13,7 @@ import logging
 import os
 from json import load, dump
 import shutil
+import sys
 
 # PySide6 Gui Imports
 from PySide6.QtGui import QFont, QAction, Qt
@@ -357,7 +358,7 @@ class SettingsWindow:
 
                 # Exiting
                 logging.fatal("Reset, Exiting...")
-                exit(0)
+                sys.exit(0)
 
         reset_button.clicked.connect(reset_settings)
 

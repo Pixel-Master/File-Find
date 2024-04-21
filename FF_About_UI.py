@@ -116,8 +116,8 @@ class AboutWindow:
             elif platform == "linux":
                 link.clicked.connect(lambda: run(["xdg-open", domain]))
 
-            # Set the color to blue
-            link.setStyleSheet(f"color: #7090FF;")
+            # Set the color to a light blue
+            link.setStyleSheet("color: #7090FF;")
             # Display the Label
             link.adjustSize()
             link.show()
