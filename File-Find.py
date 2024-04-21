@@ -61,7 +61,6 @@ if __name__ == "__main__":
 
             return super().event(event)
 
-
     app = CreateApp([])
 
     FF_Additional_UI.UIIcon(path=None, input_app=app)

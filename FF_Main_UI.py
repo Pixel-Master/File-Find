@@ -831,7 +831,7 @@ class MainWindow:
         def get_paths():
             paths = []
             for list_folder in os.listdir(path):
-                if os.path.isdir(list_folder):
+                if os.path.isdir(os.path.join(FF_Files.SELECTED_DIR, list_folder)):
                     paths.append(os.path.join(FF_Files.SELECTED_DIR, list_folder))
 
             # Returns the list
@@ -840,7 +840,11 @@ class MainWindow:
         # Check if "/" is at end of inputted path
         if check:
             # Going through all paths to look if auto-completion should be loaded
-            if path.endswith("/"):
+            if path.endswith("/") and (sys.platform == "darwin" or sys.platform == "linux"):
+                completer_paths = get_paths()
+                logging.debug("Changed QCompleter")
+            # On Windows paths and with "\"
+            elif path.endswith("\\") and (sys.platform == "win32" or sys.platform == "cygwin"):
                 completer_paths = get_paths()
                 logging.debug("Changed QCompleter")
             else:

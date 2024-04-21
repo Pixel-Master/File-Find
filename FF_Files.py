@@ -115,7 +115,7 @@ def cache_test(is_launching):
         # On Windows and Linux
         # (On Linux this currently returns the modification date,
         # because it's impossible to access with pure python)
-        if platform == "win32" or platform == 'cygwin' or platform == "linux":
+        if platform == "win32" or platform == "cygwin" or platform == "linux":
 
             # Iterating through all files in the cache folder
             for file in os.listdir(CACHED_SEARCHES_FOLDER):
@@ -203,7 +203,6 @@ def convert_file_name_for_terminal(name):
 
 # Convert File Size to a String
 def conv_file_size(byte_size: int, decimal_places=2) -> str:
-    logging.debug("Called conv_file_size")
     if byte_size == -1:
         return "ERROR! (File does not exist or isn't valid)"
     elif byte_size == -2:
