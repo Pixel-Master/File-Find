@@ -13,15 +13,15 @@ import os
 from json import dump, load
 import gc
 import shutil
+from pyperclip import copy
 from subprocess import run
-from threading import Thread
 from time import perf_counter, ctime
 from sys import platform
 
 # PySide6 Gui Imports
+from PySide6.QtCore import QThreadPool
 from PySide6.QtGui import QAction, QColor, QKeySequence
 from PySide6.QtWidgets import QFileDialog, QListWidget, QTreeWidget
-from pyperclip import copy
 
 # Projects Libraries
 import FF_Additional_UI
@@ -616,6 +616,7 @@ class MenuBar:
 
                 # Function for all hash types
                 def calc_hash(hash_str: str, hash_func: hashlib):
+                    logging.debug(f"Computing {hash_str} Hash...")
                     with open(hash_file, "rb") as open_hash_file:
                         # Initializing the hash method e.g. sha1
                         computing_hash = hash_func(usedforsecurity=False)
@@ -634,34 +635,27 @@ class MenuBar:
                         hash_list[hash_str] = computing_hash.hexdigest()
 
                 # Defining threads
+                hash_thread_pool = QThreadPool(self.parent)
 
                 # sha1 Hash
-                logging.debug("Computing sha1 Hash...")
-                sha1_hash_thread = Thread(target=lambda: calc_hash("sha1", hashlib.sha1))
-                sha1_hash_thread.start()
+                hash_thread_pool.start(lambda: calc_hash("sha1", hashlib.sha1))
 
                 # md5 Hash
-                logging.debug("Computing md5 Hash...")
-                md5_hash_thread = Thread(target=lambda: calc_hash("md5", hashlib.md5))
-                md5_hash_thread.start()
+                hash_thread_pool.start(lambda: calc_hash("md5", hashlib.md5))
 
                 # sha256 Hash
-                logging.debug("Computing sha256 Hash...")
-                sha256_hash_thread = Thread(target=lambda: calc_hash("sha256", hashlib.sha256))
-                sha256_hash_thread.start()
+                hash_thread_pool.start(lambda: calc_hash("sha256", hashlib.sha256))
 
                 # Waiting for hashes
                 logging.debug("Waiting for Hashes to complete...")
 
-                sha1_hash_thread.join()
+                hash_thread_pool.waitForDone()
                 sha1_hash = hash_list["sha1"]
                 logging.debug(f"{sha1_hash = }")
 
-                md5_hash_thread.join()
                 md5_hash = hash_list["md5"]
                 logging.debug(f"{md5_hash = }")
 
-                sha256_hash_thread.join()
                 sha256_hash = hash_list["sha256"]
                 logging.debug(f"{sha256_hash = }")
 

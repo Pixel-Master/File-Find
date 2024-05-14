@@ -12,7 +12,7 @@
 import logging
 import os
 from json import load
-from threading import Thread
+from sys import platform
 from time import perf_counter, time, ctime
 import difflib
 import gc
@@ -20,9 +20,9 @@ import hashlib
 
 # PySide6 Gui Imports
 from PySide6.QtWidgets import (QMainWindow, QWidget, QGridLayout, QHBoxLayout, QVBoxLayout, QLabel, QSlider, QSpinBox,
-                               QDialogButtonBox, QSpacerItem, QSizePolicy, QPushButton,
-                               QTreeWidget, QTreeWidgetItem, QComboBox)
-from PySide6.QtCore import Qt, QSize, Signal, QObject
+                               QDialogButtonBox, QSpacerItem, QSizePolicy, QPushButton, QTreeWidget, QTreeWidgetItem,
+                               QComboBox)
+from PySide6.QtCore import Qt, QSize, Signal, QObject, QThreadPool
 from PySide6.QtGui import QFont, QAction
 
 # Projects Libraries
@@ -30,9 +30,10 @@ import FF_Menubar
 import FF_Additional_UI
 import FF_Files
 import FF_About_UI
+import FF_Search
 
 # Global variables
-global duplicated_dict, time_dict, duplicated_display_dict
+global duplicated_dict, time_dict, duplicated_parent_file_path_dict
 
 
 class DuplicatedSettings:
@@ -77,7 +78,7 @@ class DuplicatedSettings:
 
         # Title label
         self.title_label = QLabel(parent=self.Duplicated_Settings)
-        self.title_label.setText(f"Find duplicated files in results of search in:"
+        self.title_label.setText(f"Duplicated files in results of search in:"
                                  f"\n{FF_Files.display_path(search_path, 45)}")
         self.title_label.setToolTip(search_path)
         # Make the Font bigger
@@ -89,6 +90,11 @@ class DuplicatedSettings:
         self.title_label.adjustSize()
         self.Duplicated_Settings_Layout.addWidget(self.title_label)
 
+        # Duplicated mode label
+        self.duplicated_mode_label = QLabel(parent=self.Duplicated_Settings)
+        self.duplicated_mode_label.setText("Duplicated mode:")
+        self.Middle_Layout.addWidget(self.duplicated_mode_label)
+
         # Combobox for selecting mode
         self.mode_selector_combobox = QComboBox()
         self.duplicated_mode_display_name_dict = {
@@ -98,12 +104,16 @@ class DuplicatedSettings:
         self.mode_selector_combobox.addItems([self.duplicated_mode_display_name_dict["name"],
                                               self.duplicated_mode_display_name_dict["size"],
                                               self.duplicated_mode_display_name_dict["content"]])
+        self.mode_selector_combobox.setMinimumSize(300, 50)
+        # Add it to the other layout
+        self.Middle_Layout.addWidget(self.mode_selector_combobox)
 
-        self.Duplicated_Settings_Layout.addWidget(self.mode_selector_combobox)
+        # Add the layout to the main layout
+        self.Duplicated_Settings_Layout.addLayout(self.Middle_Layout)
 
         # Match percentage label
         self.match_label = QLabel(parent=self.Duplicated_Settings)
-        self.match_label.setText("Files must match at least:")
+        self.match_label.setText("Files must match at least (percentage):")
         self.Duplicated_Settings_Layout.addWidget(self.match_label)
 
         # Slider
@@ -155,13 +165,34 @@ class DuplicatedSettings:
 
         # Add to main Layout
         self.Duplicated_Settings_Layout.addLayout(self.vertical_layout)
+
+        # Sorting mode label
+        self.sorting_mode_label = QLabel(parent=self.Duplicated_Settings)
+        self.sorting_mode_label.setText("Sorting mode:")
+        self.Lower_Layout.addWidget(self.sorting_mode_label)
+
+        # Combobox for selecting mode
+        self.sorting_selector_combobox = QComboBox()
+        self.sorting_selector_combobox.addItems(["None (fastest)",
+                                                 "File Name",
+                                                 "File Size",
+                                                 "Date Modified",
+                                                 "Date Created",
+                                                 "Path"])
+        # Set a fixed minimum size
+        self.sorting_selector_combobox.setMinimumSize(300, 50)
+        # Add it to the other layout
+        self.Lower_Layout.addWidget(self.sorting_selector_combobox)
+
+        # Add the layout to the main layout
+        self.Duplicated_Settings_Layout.addLayout(self.Lower_Layout)
+
         # Add a Spacer for prettier ui
         self.Duplicated_Settings_Layout.addItem(QSpacerItem(10, 30, hData=QSizePolicy.Policy.Maximum))
 
         # Okay and Cancel button
         self.button_box = QDialogButtonBox(parent=self.Duplicated_Settings)
         self.button_box.setStandardButtons(QDialogButtonBox.StandardButton.Cancel | QDialogButtonBox.StandardButton.Ok)
-        self.button_box.setObjectName("buttonBox")
 
         # Connect events
         def start_duplicated():
@@ -173,7 +204,8 @@ class DuplicatedSettings:
                 "size": {"activated": False,
                          "match_percentage": self.spinbox.value()},
                 "content": {"activated": False,
-                            "match_percentage": self.spinbox.value()}}
+                            "match_percentage": self.spinbox.value()},
+                "sorting": self.sorting_selector_combobox.currentText()}
 
             # Events for threading
             class Events(QObject):
@@ -189,16 +221,17 @@ class DuplicatedSettings:
                 criteria["content"]["activated"] = True
 
             # Starting Thread
-            Thread(
-                target=lambda: FindDuplicated(
+            QThreadPool(self.Duplicated_Settings).start(
+                lambda: FindDuplicated(
                     criteria=criteria,
                     search_path=search_path,
                     matched_list=matched_list,
-                    finished_signal=finished_event_class)).start()
+                    finished_signal=finished_event_class))
 
             # Connect UI to finished signal
             finished_event_class.finished.connect(
-                lambda: DuplicatedUI(parent, search_path, duplicated_dict, duplicated_display_dict, time_dict))
+                lambda: DuplicatedUI(
+                    parent, search_path, criteria, duplicated_dict, duplicated_parent_file_path_dict, time_dict))
 
         # Launch search algorithm
         self.button_box.button(
@@ -251,7 +284,11 @@ class DuplicatedSettings:
 
 # User interface
 class DuplicatedUI:
-    def __init__(self, parent, match_path, matched_dict: dict, matched_display_dict: dict, time_needed_dict: dict):
+    def __init__(
+            self,
+            parent,
+            match_path,
+            criteria, matched_dict: dict, matched_parent_file_path_dict: dict, time_needed_dict: dict):
         # Debug
         logging.info("Setting up Duplicated UI...")
         # Saving time
@@ -261,7 +298,7 @@ class DuplicatedUI:
         # Define the window
         self.Duplicated_Window = QMainWindow(parent)
         # Set the Title of the Window
-        self.Duplicated_Window.setWindowTitle(f"Finding duplicated files in {FF_Files.display_path(match_path, 80)}")
+        self.Duplicated_Window.setWindowTitle(f"Duplicated files in {FF_Files.display_path(match_path, 80)}")
         # Set the start size of the Window, because it's resizable
         self.BASE_WIDTH = 700
         self.BASE_HEIGHT = 700
@@ -293,36 +330,92 @@ class DuplicatedUI:
         self.Duplicated_Tree.setColumnWidth(0, 550)
         self.Duplicated_Tree.horizontalScrollBar().show()
 
-        # Get index
-        main_index = 0
-        # Adding all items to the view
-        for main_item in matched_dict:
+        # Replacing the keys which is size or a filename and replacing them with absolute paths
+        for file_name in matched_dict.copy():
+            # Taking a name like "name.pdf" and converting it to an absolute path
+            matched_dict[matched_parent_file_path_dict[file_name]] = matched_dict[file_name]
+            # Removing it
+            del matched_dict[file_name]
+
+        matched_sorted_list = list(matched_dict.keys())
+
+        # Sorting
+        if criteria["sorting"] == "File Name":
+            logging.info("Sorting list by name...")
+            # Sort the main files
+            matched_sorted_list.sort(key=FF_Search.Sort.name)
+            # Sort files in file groups
+            for sub_file_set_key in matched_sorted_list:
+                matched_dict[sub_file_set_key] = sorted(list(matched_dict[sub_file_set_key]), key=FF_Search.Sort.name)
+
+        elif criteria["sorting"] == "File Size":
+            logging.info("Sorting list by size...")
+            # Sort the main files
+            matched_sorted_list.sort(key=FF_Search.Sort.size, reverse=True)
+            # Sort files in file groups
+            for sub_file_set_key in matched_sorted_list:
+                matched_dict[sub_file_set_key] = sorted(
+                    list(matched_dict[sub_file_set_key]), key=FF_Search.Sort.size, reverse=True)
+
+        elif criteria["sorting"] == "Date Created":
+            logging.info(f"Sorting list by creation date on {platform}...")
+            # On Windows and Linux
+            # (On Linux this currently returns the modification date,
+            # because it's impossible to access with pure python)
+            if platform == "win32" or platform == 'cygwin' or platform == "linux":
+                # Sort the main files
+                matched_sorted_list.sort(key=FF_Search.Sort.c_date_win)
+                # Sort files in file groups
+                for sub_file_set_key in matched_sorted_list:
+                    matched_dict[sub_file_set_key] = sorted(list(matched_dict[sub_file_set_key]),
+                                                            key=FF_Search.Sort.c_date_win)
+
+            # On Mac
+            if platform == "darwin":
+                # Sort the main files
+                matched_sorted_list.sort(key=FF_Search.Sort.c_date_mac)
+                # Sort files in file groups
+                for sub_file_set_key in matched_sorted_list:
+                    matched_dict[sub_file_set_key] = sorted(list(matched_dict[sub_file_set_key]),
+                                                            key=FF_Search.Sort.c_date_mac)
+
+        elif criteria["sorting"] == "Date Modified":
+            logging.info("Sorting list by modification date...")
+            # Sort the main files
+            matched_sorted_list.sort(key=FF_Search.Sort.m_date)
+            # Sort files in file groups
+            for sub_file_set_key in matched_sorted_list:
+                matched_dict[sub_file_set_key] = sorted(list(matched_dict[sub_file_set_key]), key=FF_Search.Sort.m_date)
+
+        elif criteria["sorting"] == "Path":
+            logging.info("Sorting list by path...")
+            # Sort the main files
+            matched_sorted_list.sort(key=lambda sort_file: sort_file.lower())
+            # Sort files in file groups
+            for sub_file_set_key in matched_sorted_list:
+                matched_dict[sub_file_set_key] = sorted(
+                    list(matched_dict[sub_file_set_key]), key=lambda sort_file: sort_file.lower())
+
+        else:
+            logging.info("Skipping Sorting")
+
+        # Iterating through the list of all groups
+        for main_item in matched_sorted_list:
             # main item
             main_tree_item = QTreeWidgetItem(self.Duplicated_Tree)
 
-            # Reset sub_index
-            sub_index = 0
-
-            # Iterating through the set under the key
+            # Iterating through the set of single files under the key
             for sub_item in matched_dict[main_item]:
-                QTreeWidgetItem(main_tree_item)
+                sub_tree_item = QTreeWidgetItem(main_tree_item)
 
-                main_tree_item.child(sub_index).setText(0, sub_item)
-                main_tree_item.child(sub_index).setText(1, FF_Files.conv_file_size(os.path.getsize(sub_item)))
-                main_tree_item.child(sub_index).setTextAlignment(1, Qt.AlignmentFlag.AlignRight)
-
-                # Increase sub index by one
-                sub_index += 1
+                sub_tree_item.setText(0, sub_item)
+                sub_tree_item.setText(1, FF_Files.conv_file_size(os.path.getsize(sub_item)))
+                sub_tree_item.setTextAlignment(1, Qt.AlignmentFlag.AlignRight)
 
             # Set the text
-            self.Duplicated_Tree.topLevelItem(main_index).setText(
-                0, matched_display_dict[main_item])
-            self.Duplicated_Tree.topLevelItem(main_index).setText(
-                1, FF_Files.conv_file_size(os.path.getsize(matched_display_dict[main_item])))
-            self.Duplicated_Tree.topLevelItem(main_index).setTextAlignment(1, Qt.AlignmentFlag.AlignRight)
-
-            # Increase main index by one
-            main_index += 1
+            main_tree_item.setText(0, main_item)
+            main_tree_item.setText(1, FF_Files.conv_file_size(FF_Files.get_file_size(main_item)))
+            main_tree_item.setTextAlignment(1, Qt.AlignmentFlag.AlignRight)
 
         # Add the model to the final
         self.Duplicated_Layout.addWidget(self.Duplicated_Tree, 1, 0, 5, 8)
@@ -448,7 +541,7 @@ class FindDuplicated:
         logging.info(f"{criteria = }")
 
         # Global variables
-        global duplicated_dict, time_dict, duplicated_display_dict
+        global duplicated_dict, time_dict, duplicated_parent_file_path_dict
 
         # Saving time
         time_dict = {"start_time": perf_counter()}
@@ -478,7 +571,7 @@ class FindDuplicated:
             exists_already = set()
             duplicated_name_dict = {}
             # Dict for storing names to be displayed
-            duplicated_name_display_dict = {}
+            duplicated_name_parent_file_path_dict = {}
             # Group by name1
             if criteria["name"]["match_percentage"] == 100:
 
@@ -490,7 +583,7 @@ class FindDuplicated:
                         # Add the file to the dictionaries
                         exists_already.add(low_basename)
                         duplicated_name_dict[low_basename] = set()
-                        duplicated_name_display_dict[low_basename] = file
+                        duplicated_name_parent_file_path_dict[low_basename] = file
 
                     else:
                         # Add the file to the duplicated dict
@@ -511,7 +604,7 @@ class FindDuplicated:
                         if exists_already == set():
                             exists_already.add(low_basename)
                             duplicated_name_dict[low_basename] = set()
-                            duplicated_name_display_dict[low_basename] = file
+                            duplicated_name_parent_file_path_dict[low_basename] = file
                             continue
 
                         # Get the closest match, over the match factor. Function returns a list
@@ -522,7 +615,7 @@ class FindDuplicated:
                         if not closest_match:
                             exists_already.add(low_basename)
                             duplicated_name_dict[low_basename] = set()
-                            duplicated_name_display_dict[low_basename] = file
+                            duplicated_name_parent_file_path_dict[low_basename] = file
 
                         # Add it to the closest match
                         else:
@@ -539,7 +632,7 @@ class FindDuplicated:
                     duplicated_name_dict.pop(duplicated_file)
 
             # Finalize
-            duplicated_display_dict = duplicated_name_display_dict
+            duplicated_parent_file_path_dict = duplicated_name_parent_file_path_dict
             duplicated_dict = duplicated_name_dict
 
         # Group by size
@@ -549,7 +642,7 @@ class FindDuplicated:
 
             exists_already = set()
             duplicated_size_dict = {}
-            duplicated_size_display_dict = {}
+            duplicated_size_parent_file_path_dict = {}
 
             # If the percentage of
             if criteria["size"]["match_percentage"] == 100:
@@ -563,7 +656,7 @@ class FindDuplicated:
                         # Add the file to the dictionary
                         exists_already.add(size)
                         duplicated_size_dict[size] = set()
-                        duplicated_size_display_dict[size] = file
+                        duplicated_size_parent_file_path_dict[size] = file
 
                     else:
                         # Add the file to the duplicated dict
@@ -609,7 +702,7 @@ class FindDuplicated:
                             # Add the file to the exists_already
                             exists_already.add(size)
                             duplicated_size_dict[size] = set()
-                            duplicated_size_display_dict[size] = file
+                            duplicated_size_parent_file_path_dict[size] = file
 
                     # If there is an exact duplicate
                     else:
@@ -634,7 +727,7 @@ class FindDuplicated:
                         duplicated_files.add(duplicated_file)
 
                 duplicated_content_dict = {}
-                duplicated_content_display_dict = {}
+                duplicated_content_parent_file_path_dict = {}
                 exists_already = set()
 
                 # If files must match exactly
@@ -674,7 +767,7 @@ class FindDuplicated:
                             if file_hash not in exists_already:
                                 exists_already.add(file_hash)
                                 duplicated_content_dict[file_hash] = set()
-                                duplicated_content_display_dict[file_hash] = file
+                                duplicated_content_parent_file_path_dict[file_hash] = file
 
                             # If hash exists
                             else:
@@ -694,13 +787,13 @@ class FindDuplicated:
                         duplicated_content_dict.pop(duplicated_file)
 
                 # Finalize
-                duplicated_display_dict = duplicated_content_display_dict
+                duplicated_parent_file_path_dict = duplicated_content_parent_file_path_dict
                 duplicated_dict = duplicated_content_dict
 
             # If content is not activated
             else:
                 # Finalize
-                duplicated_display_dict = duplicated_size_display_dict
+                duplicated_parent_file_path_dict = duplicated_size_parent_file_path_dict
                 duplicated_dict = duplicated_size_dict
 
         # Launch UI
@@ -708,7 +801,7 @@ class FindDuplicated:
 
         gc.collect()
 
-    # Function is used as a "key" ins sorted(). Sorts the list by closest proximity to file_size
+    # Function is used as a "key" in list.sorted(). Sorts the list by closest proximity to file_size
     @staticmethod
     def sort_size(list_file_size, file_size):
 

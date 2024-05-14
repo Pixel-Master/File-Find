@@ -235,7 +235,7 @@ A: **File Find does not connect to the Internet**, everything stays on your mach
 
 - `FF_Additional_UI.py` - This file contains the code for additional UI components like the PopUp windows
 
-- `FF_Help_UI.py` - This file contains the code for the About window
+- `FF_About_UI.py` - This file contains the code for the About window
 
 - `FF_Menubar.py` - Menubar for the search results, compare and duplicated window
 
@@ -254,4 +254,6 @@ A: **File Find does not connect to the Internet**, everything stays on your mach
 ### Other
 
 - `assets/` - Directory contains image assets for File Find
+
+- `File Find.entitlements` - This is an entitlement file, which can be used to sandbox an app on macOS. Tough sandboxing is currently not supported.
 

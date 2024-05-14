@@ -211,7 +211,7 @@ class CompareSearches:
             self.signals.finished.connect(lambda: CompareUi(path_of_first_search, parent))
 
             # Thread
-            comparing_thread = QThreadPool()
+            comparing_thread = QThreadPool(parent)
 
             # Get the files of both searches
             self.files_of_first_search = files_of_first_search

@@ -75,7 +75,7 @@ class SettingsWindow:
 
         # Excluded Files
         # Define the Label
-        exclude_label = QLabel("Never show results\nfrom these folders:", parent=self.Settings_Window)
+        exclude_label = QLabel("Always excluded files:", parent=self.Settings_Window)
         # Change Font
         exclude_label.setFont(QFont("Arial", 15))
         # Display the Label

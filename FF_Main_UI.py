@@ -588,7 +588,7 @@ class MainWindow:
                 f"Name: {self.edit_name.text()}\n"
                 f"Name contains: {self.edit_name_contains.text()}\n"
                 f"File Ending: {self.edit_file_extension.text()}\n"
-                f"Search from: {FF_Files.SELECTED_DIR}\n\n"
+                f"Search from: {os.path.abspath(FF_Files.SELECTED_DIR)}\n\n"
                 f"File size: min: {self.edit_size_min.text()} ({self.unit_selector_min.currentText()})"
                 f" max: {self.edit_size_max.text()} ({self.unit_selector_min.currentText()})\n"
                 f"Date modified from: {self.m_date_from_drop_down.text()} to: {self.m_date_to_drop_down.text()}\n"
@@ -616,7 +616,7 @@ class MainWindow:
                 data_file_size_min_unit=self.unit_selector_min.currentText(),
                 data_file_size_max_unit=self.unit_selector_max.currentText(),
                 data_library=self.rb_library_yes.isChecked(),
-                data_search_from_valid=FF_Files.SELECTED_DIR,
+                data_search_from_valid=os.path.abspath(FF_Files.SELECTED_DIR),
                 data_search_from_unchecked=self.edit_directory.text(),
                 data_content=self.edit_file_contains.text(),
                 data_search_for=self.combobox_search_for.currentText(),

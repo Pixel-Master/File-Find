@@ -364,9 +364,8 @@ class Search:
         # Saving time before scanning
         time_before_start = perf_counter()
 
-        # Remove the "." because it's added later
-        if data_filetype.startswith("."):
-            data_filetype.strip(".")
+        # Remove the "." and any star because they are added later
+        data_filetype = data_filetype.lstrip(".*")
 
         # Lower Arguments to remove case sensitivity
         data_name = data_name.lower()
@@ -407,6 +406,7 @@ class Search:
         with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings")) as excluded_file:
             data_excluded_files = load(excluded_file)["excluded_files"]
 
+        # If data_excluded_files is an empty list
         if not data_excluded_files:
             # If the list is empty
             logging.debug("Excluded files checking is NOT needed")
