@@ -409,7 +409,7 @@ class DuplicatedUI:
                 sub_tree_item = QTreeWidgetItem(main_tree_item)
 
                 sub_tree_item.setText(0, sub_item)
-                sub_tree_item.setText(1, FF_Files.conv_file_size(os.path.getsize(sub_item)))
+                sub_tree_item.setText(1, FF_Files.conv_file_size(FF_Files.get_file_size(sub_item)))
                 sub_tree_item.setTextAlignment(1, Qt.AlignmentFlag.AlignRight)
 
             # Set the text
@@ -648,7 +648,7 @@ class FindDuplicated:
             if criteria["size"]["match_percentage"] == 100:
                 for file in found_path_set:
                     try:
-                        size = os.path.getsize(file)
+                        size = FF_Files.get_file_size(file)
                     except FileNotFoundError:
                         continue
 
@@ -676,7 +676,7 @@ class FindDuplicated:
 
                     # Try getting the size
                     try:
-                        size = os.path.getsize(file)
+                        size = FF_Files.get_file_size(file)
                     except OSError:
                         continue
 
@@ -738,40 +738,72 @@ class FindDuplicated:
 
                     # Iterating through all files that have the same size
                     for file in duplicated_files:
-                        # Open every file
-                        try:
-                            with open(file, "rb") as open_hash_file:
-                                # Initializing the sha1() method
-                                computing_hash = hashlib.sha1(usedforsecurity=False)
 
-                                # Loading the file into the hash function
-                                while True:
-                                    # reading data = BUF_SIZE from the
-                                    # file and saving it in a variable
-                                    data = open_hash_file.read(buffer_size)
+                        # If the file isn't a folder
+                        if os.path.isfile(file):
+                            # Open every file
+                            try:
+                                with open(file, "rb") as open_hash_file:
+                                    # Initializing the sha1() method
+                                    computing_hash = hashlib.sha1(usedforsecurity=False)
 
-                                    # True if eof = 1
-                                    if not data:
-                                        break
-                                    # Updating hash
-                                    computing_hash.update(data)
+                                    # Loading the file into the hash function
+                                    while True:
+                                        # reading data = BUF_SIZE from the
+                                        # file and saving it in a variable
+                                        data = open_hash_file.read(buffer_size)
 
-                                # Getting hash in hex form
-                                file_hash = computing_hash.hexdigest()
-                        except OSError:
-                            continue
+                                        # True if eof = 1
+                                        if not data:
+                                            break
+                                        # Updating hash
+                                        computing_hash.update(data)
+
+                                    # Getting hash in hex form
+                                    file_hash = computing_hash.hexdigest()
+                            except OSError:
+                                continue
+                        else:
+                            # If the file is a folder
+                            # Test if the folder is empty
+                            if not os.listdir(file):
+                                continue
+                            # Initializing the sha1() method
+                            computing_hash = hashlib.sha1(usedforsecurity=False)
+
+                            # Walk through all folders
+                            for (root_dir, folders, files) in os.walk(file):
+                                for sub_file in files:
+                                    try:
+                                        with open(os.path.join(root_dir, sub_file), "rb") as open_hash_file:
+
+                                            # Loading the file into the hash function
+                                            while True:
+                                                # reading data = BUF_SIZE from the
+                                                # file and saving it in a variable
+                                                data = open_hash_file.read(buffer_size)
+
+                                                # True if eof = 1
+                                                if not data:
+                                                    break
+                                                # Updating hash
+                                                computing_hash.update(data)
+
+                                    except OSError:
+                                        continue
+                            # Getting hash in hex form
+                            file_hash = computing_hash.hexdigest()
 
                         # If everything ran successful
-                        else:
-                            # If hash doesn't already exist
-                            if file_hash not in exists_already:
-                                exists_already.add(file_hash)
-                                duplicated_content_dict[file_hash] = set()
-                                duplicated_content_parent_file_path_dict[file_hash] = file
+                        # If hash doesn't already exist
+                        if file_hash not in exists_already:
+                            exists_already.add(file_hash)
+                            duplicated_content_dict[file_hash] = set()
+                            duplicated_content_parent_file_path_dict[file_hash] = file
 
-                            # If hash exists
-                            else:
-                                duplicated_content_dict[file_hash].add(file)
+                        # If hash exists
+                        else:
+                            duplicated_content_dict[file_hash].add(file)
 
                 # TODO: If match percentage is not 100% use pHash
                 else:

@@ -178,8 +178,8 @@ File Find isn't ready for Release yet Run from source or download pre-build macO
 
 
 4. Create a virtual environment: 
-   1. Create: `python -m venv ./venv`
-   2. Activate the virtual environment: `venv/bin/activate.bat`
+   1. Create: `python -m venv venv`
+   2. Activate the virtual environment: `venv\bin\activate.bat`
 
 
 5. [Install dependencies](#dependencies-for-building): `pip3 install -r requirements.txt`

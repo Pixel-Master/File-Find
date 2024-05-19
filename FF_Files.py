@@ -26,7 +26,14 @@ FF_SETTINGS_VERSION = 1
 
 # Defining folder variables
 USER_FOLDER = os.path.expanduser("~")
-FF_LIB_FOLDER = os.path.join(USER_FOLDER, "Library", "Application Support", "File-Find")
+
+if platform == "darwin":
+    FF_LIB_FOLDER = os.path.join(USER_FOLDER, "Library", "Application Support", "File-Find")
+elif platform == "win32" or platform == "cygwin":
+    FF_LIB_FOLDER = os.path.join(USER_FOLDER, "AppData", "Roaming", "File-Find")
+else:
+    FF_LIB_FOLDER = os.path.join(USER_FOLDER, ".file-find")
+
 CACHED_SEARCHES_FOLDER = os.path.join(FF_LIB_FOLDER, "Cached Searches")
 ASSETS_FOLDER = os.path.join(FF_LIB_FOLDER, "assets")
 
