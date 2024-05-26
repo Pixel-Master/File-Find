@@ -772,7 +772,7 @@ class FindDuplicated:
                             computing_hash = hashlib.sha1(usedforsecurity=False)
 
                             # Walk through all folders
-                            for (root_dir, folders, files) in os.walk(file):
+                            for (root_dir, _folders, files) in os.walk(file):
                                 for sub_file in files:
                                     try:
                                         with open(os.path.join(root_dir, sub_file), "rb") as open_hash_file:

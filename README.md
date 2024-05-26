@@ -16,7 +16,7 @@
 
 #### Links: [GitHub](https://github.com/Pixel-Master/File-Find), [Website](https://pixel-master.github.io/File-Find)
 
-![https://github.com/Pixel-Master/File-Find](https://github.com/Pixel-Master/Pixel-Master.github.io/blob/main/File-Find/preview/preview_without_background2.png?raw=true)
+![https://github.com/Pixel-Master/File-Find](https://github.com/Pixel-Master/Pixel-Master.github.io/blob/main/File-Find/preview/preview_round.png?raw=true)
 
 ## Content
 - [Download](#download)
