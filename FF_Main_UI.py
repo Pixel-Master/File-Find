@@ -13,11 +13,10 @@ import logging
 import os
 from json import dump, load
 import sys
-from pyperclip import copy
 
 # PySide6 Gui Imports
 from PySide6.QtCore import QSize, Qt, QDate
-from PySide6.QtGui import QFont, QDoubleValidator, QAction, QIcon
+from PySide6.QtGui import QFont, QDoubleValidator, QAction, QIcon, QClipboard
 from PySide6.QtWidgets import QWidget, QLabel, QPushButton, QRadioButton, QFileDialog, \
     QLineEdit, QButtonGroup, QDateEdit, QComboBox, QSystemTrayIcon, QMenu, QCompleter, QTabWidget, \
     QMainWindow, QGridLayout, QSpacerItem, QSizePolicy
@@ -642,7 +641,8 @@ class MainWindow:
 
             def copy_command():
                 # Copying the command
-                copy(shell_command)
+                clipboard = QClipboard()
+                clipboard.setText(shell_command)
                 # Feedback to the User
                 logging.info(f"Copied Command: {shell_command}")
                 # Messagebox
@@ -668,6 +668,7 @@ class MainWindow:
             try:
                 button_command_copy.clicked.disconnect()
             except (TypeError, RuntimeError):
+                # If this fails, that means that there is now connected signal
                 pass
             button_command_copy.clicked.connect(copy_command)
             # Display the Button at the correct position

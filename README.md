@@ -103,7 +103,6 @@ File Find isn't ready for Release yet Run from source or download pre-build macO
 ### Dependencies for building
 - [Python](https://python.org/) 3.9 or higher **(Python 3.12 does not work yet!)**
 - [PySide6](https://pypi.org/project/PySide6/) 6.4.1 or higher
-- [pyperclip](https://pypi.org/project/pyperclip/) 1.8.2 or higher
 - [nuitka](https://pypi.org/project/nuitka/) 2.0 or higher
 - **Only macOS:** [dmgbuild](https://pypi.org/project/dmgbuild/) 1.1 or higher
 
@@ -193,7 +192,8 @@ File Find isn't ready for Release yet Run from source or download pre-build macO
 ## FAQ
 Q: **What is File Find and how does it work?**
 
-A: File Find is an open-source macOS Utility, that makes it easy to find files. To search fill in the filters you need and leave the filters you don't need empty.
+A: File Find is an open-source Utility for macOS, Windows and Linux
+, that makes it easy to find files. To search fill in the filters you need and leave the filters you don't need empty.
 
 Q: **Why does File Find sometimes freeze?**
 

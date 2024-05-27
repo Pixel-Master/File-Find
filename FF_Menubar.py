@@ -13,14 +13,13 @@ import os
 from json import dump, load
 import gc
 import shutil
-from pyperclip import copy
 from subprocess import run
 from time import perf_counter, ctime
 from sys import platform
 
 # PySide6 Gui Imports
 from PySide6.QtCore import QThreadPool
-from PySide6.QtGui import QAction, QColor, QKeySequence
+from PySide6.QtGui import QAction, QColor, QKeySequence, QClipboard
 from PySide6.QtWidgets import QFileDialog, QListWidget, QTreeWidget
 
 # Projects Libraries
@@ -683,17 +682,20 @@ class MenuBar:
     # Copy file name to clipboard
     def copy_file(self):
         file = self.get_current_item()
-        copy(file)
+        clipboard = QClipboard()
+        clipboard.setText(file)
 
     # Copy file name to clipboard
     def copy_name(self):
         file = self.get_current_item()
-        copy(os.path.basename(file))
+        clipboard = QClipboard()
+        clipboard.setText(os.path.basename(file))
 
     # Copy path for Terminal
     def copy_path_for_terminal(self):
         file = self.get_current_item()
-        copy(FF_Files.convert_file_name_for_terminal(file))
+        clipboard = QClipboard()
+        clipboard.setText(FF_Files.convert_file_name_for_terminal(file))
 
     # Remove moved file from cache
     def remove_file_from_cache(self, file):

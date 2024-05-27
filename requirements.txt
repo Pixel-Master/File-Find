@@ -1,5 +1,4 @@
 setuptools>=69.5.1
 PySide6>=6.6.1
-pyperclip>=1.8.2
 nuitka>=2.0.0
 dmgbuild>=1.6.1; platform_system == "Darwin"
