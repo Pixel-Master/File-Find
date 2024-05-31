@@ -77,7 +77,7 @@ class SettingsWindow:
         # Define the Label
         exclude_label = QLabel("Always excluded files:", parent=self.Settings_Window)
         # Change Font
-        exclude_label.setFont(QFont("Arial", 15))
+        exclude_label.setFont(QFont(FF_Files.DEFAULT_FONT, FF_Files.SMALLER_FONT_SIZE))
         # Display the Label
         self.Settings_Layout.addWidget(exclude_label, 9, 0)
 
@@ -161,7 +161,7 @@ class SettingsWindow:
         # Define the Label
         ask_search_label = QLabel("Ask before deleting a file:", parent=self.Settings_Window)
         # Change Font
-        ask_search_label.setFont(QFont("Arial", 15))
+        ask_search_label.setFont(QFont(FF_Files.DEFAULT_FONT, FF_Files.SMALLER_FONT_SIZE))
         # Display the Label
         self.Settings_Layout.addWidget(ask_search_label, 0, 0)
         ask_search_label.adjustSize()
@@ -210,7 +210,7 @@ class SettingsWindow:
         filter_preset_label = QLabel("Filter Preset on launch:", parent=self.Settings_Window)
         filter_preset_label.setToolTip("The filter preset loaded at launch")
         # Change Font
-        filter_preset_label.setFont(QFont("Arial", 15))
+        filter_preset_label.setFont(QFont(FF_Files.DEFAULT_FONT, FF_Files.SMALLER_FONT_SIZE))
         # Display the Label
         self.Settings_Layout.addWidget(filter_preset_label, 1, 0)
 
@@ -301,7 +301,7 @@ class SettingsWindow:
         # Define the Label
         language_label = QLabel("Language:", parent=self.Settings_Window)
         # Change Font
-        language_label.setFont(QFont("Arial", 15))
+        language_label.setFont(QFont(FF_Files.DEFAULT_FONT, FF_Files.SMALLER_FONT_SIZE))
         # Display the Label
         self.Settings_Layout.addWidget(language_label, 2, 0)
 
@@ -320,7 +320,7 @@ class SettingsWindow:
         # Define the Label
         reset_label = QLabel("Reset File Find:", parent=self.Settings_Window)
         # Change Font
-        reset_label.setFont(QFont("Arial", 15))
+        reset_label.setFont(QFont(FF_Files.DEFAULT_FONT, FF_Files.SMALLER_FONT_SIZE))
         # Display the Label
         self.Settings_Layout.addWidget(reset_label, 4, 0)
         reset_label.adjustSize()
@@ -369,7 +369,7 @@ class SettingsWindow:
         # Define the Label
         cache_label = QLabel("Delete Cache automatically:", parent=self.Settings_Window)
         # Change Font
-        cache_label.setFont(QFont("Arial", 15))
+        cache_label.setFont(QFont(FF_Files.DEFAULT_FONT, FF_Files.SMALLER_FONT_SIZE))
         # Display the Label
         self.Settings_Layout.addWidget(cache_label, 5, 0)
 

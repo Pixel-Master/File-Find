@@ -264,7 +264,7 @@ class PopUps:
             title_label = QLabel(msg_info)
             title_label.setText(title)
             # Set font size
-            font = QFont("Arial", 15)
+            font = QFont(FF_Files.DEFAULT_FONT, FF_Files.SMALLER_FONT_SIZE)
             font.setBold(True)
             title_label.setFont(font)
             # Display
@@ -347,7 +347,7 @@ def welcome_popups(parent, force_popups=False):
                 parent=parent)
             PopUps.show_info_messagebox(
                 title="Welcome to File Find",
-                text="Welcome to File Find!\n\nSearch with the Find button.\n\n"
+                text="Welcome to File Find!\n\nSearch with the find button.\n\n"
                      "You can find all and settings in the settings menu.\n"
                      "(find it by going to File Find > Setting in the menubar)\n\n"
                      "If you press on the File Find icon in the menu bar and go to \"Searches:\","
@@ -379,9 +379,9 @@ def welcome_popups(parent, force_popups=False):
 
         # Showing welcome messages
         PopUps.show_info_messagebox(
-            title="Thanks For Upgrading File Find!",
-            text="Thanks For Upgrading File Find!\n\n"
-                 f"File Find is an open-source macOS Utility. \n\n"
+            title="Thanks for upgrading File Find!",
+            text="Thanks for upgrading File Find!\n\n"
+                 f"File Find is an open source Utility for finding files. \n\n"
                  f"Get new versions at: "
                  f"https://pixel-master.github.io/File-Find/"
                  f"\n\n\n"
