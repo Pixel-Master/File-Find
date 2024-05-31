@@ -27,12 +27,27 @@ FF_SETTINGS_VERSION = 1
 # Defining folder variables
 USER_FOLDER = os.path.expanduser("~")
 
+# On macOS
 if platform == "darwin":
     FF_LIB_FOLDER = os.path.join(USER_FOLDER, "Library", "Application Support", "File-Find")
+    TITLE_FONT_SIZE = 23
+    NORMAL_FONT_SIZE = 17
+    SMALLER_FONT_SIZE = 15
+# On Windows
 elif platform == "win32" or platform == "cygwin":
     FF_LIB_FOLDER = os.path.join(USER_FOLDER, "AppData", "Roaming", "File-Find")
+    TITLE_FONT_SIZE = 20
+    NORMAL_FONT_SIZE = 15
+    SMALLER_FONT_SIZE = 13
+# On Linux
 else:
     FF_LIB_FOLDER = os.path.join(USER_FOLDER, ".file-find")
+    TITLE_FONT_SIZE = 21
+    NORMAL_FONT_SIZE = 16
+    SMALLER_FONT_SIZE = 14
+
+# Default font is Arial
+DEFAULT_FONT = "Arial"
 
 CACHED_SEARCHES_FOLDER = os.path.join(FF_LIB_FOLDER, "Cached Searches")
 ASSETS_FOLDER = os.path.join(FF_LIB_FOLDER, "assets")

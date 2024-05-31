@@ -469,7 +469,7 @@ class DuplicatedUI:
         self.Bottom_Layout.addWidget(file_info_button)
 
         # Setting a Font
-        small_text_font = QFont("Arial", 17)
+        small_text_font = QFont(FF_Files.DEFAULT_FONT, FF_Files.NORMAL_FONT_SIZE)
         small_text_font.setBold(True)
 
         # Files found label

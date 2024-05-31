@@ -165,7 +165,7 @@ class CompareUi:
         label1 = QLabel(self.Compare_Window)
 
         # Defining the font
-        font1 = QFont("Arial", 23)
+        font1 = QFont(FF_Files.DEFAULT_FONT, FF_Files.TITLE_FONT_SIZE)
         font1.setBold(True)
 
         # Set the text, the font and the color
@@ -187,8 +187,8 @@ class CompareUi:
         label2.setText(text2_shortened)
 
         # Defining the font
-        font2 = QFont("Arial", 12)
-        font2.setBold(True)
+        font2 = QFont(FF_Files.DEFAULT_FONT, FF_Files.SMALLER_FONT_SIZE)
+        # font2.setBold(True)
         # Configure the font
         label2.setFont(font2)
 

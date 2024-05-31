@@ -275,7 +275,7 @@ class MainWindow:
         label_command_title.setText("Command:")
         label_command_title.setToolTip(
             "Terminal command:\nYou can paste this command into the Terminal app to search with the \"find\" tool")
-        label_command_title.setFont(QFont("Arial", 17))
+        label_command_title.setFont(QFont(FF_Files.DEFAULT_FONT, FF_Files.NORMAL_FONT_SIZE))
         self.Main_Layout.addWidget(label_command_title, 11, 0)
         label_command_title.hide()
 
@@ -300,7 +300,7 @@ class MainWindow:
         # Title of searching indicator
         search_status_title_label = QLabel(self.Root_Window)
         search_status_title_label.setText("Status:")
-        search_status_title_label.setFont(QFont("Arial", 17))
+        search_status_title_label.setFont(QFont(FF_Files.DEFAULT_FONT, FF_Files.NORMAL_FONT_SIZE))
         search_status_title_label.setToolTip(
             "Search Indicator:\n"
             "Indicates if searching and shows the numbers of active searches.\n"
@@ -312,7 +312,7 @@ class MainWindow:
         global search_status_label
         search_status_label = QLabel(self.Root_Window)
         search_status_label.setText("Inactive")
-        search_status_label.setFont(QFont("Arial", 17))
+        search_status_label.setFont(QFont(FF_Files.DEFAULT_FONT, FF_Files.NORMAL_FONT_SIZE))
         search_status_label.setStyleSheet(f"color: {FF_Files.GREEN_COLOR};")
         search_status_label.show()
         self.Main_Layout.addWidget(search_status_label, 12, 1)
@@ -740,7 +740,7 @@ class MainWindow:
         # Define the Label
         label = QLabel(name, parent=tab)
         # Change Font
-        label.setFont(QFont("Arial", 17))
+        label.setFont(QFont(FF_Files.DEFAULT_FONT, FF_Files.NORMAL_FONT_SIZE))
         # Hover tool tip
         label.setToolTip(f"{tooltip}")
         label.setToolTipDuration(-1)
@@ -815,7 +815,7 @@ class MainWindow:
         # Set the Text
         button.setText(text)
         # Set the font
-        font = QFont("Arial", font_size)
+        font = QFont(FF_Files.DEFAULT_FONT, font_size)
         font.setBold(True)
         button.setFont(font)
         # Set the Command

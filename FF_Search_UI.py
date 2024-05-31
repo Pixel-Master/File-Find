@@ -78,7 +78,7 @@ class SearchWindow:
         # Seconds needed Label
         seconds_text = QLabel(self.Search_Results_Window)
         # Setting a Font
-        small_text_font = QFont("Arial", 17)
+        small_text_font = QFont(FF_Files.DEFAULT_FONT, FF_Files.NORMAL_FONT_SIZE)
         small_text_font.setBold(True)
         seconds_text.setFont(small_text_font)
         # Displaying
