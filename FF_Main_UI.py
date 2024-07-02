@@ -1187,9 +1187,9 @@ class MainWindow:
         switch_tab_basic.triggered.connect(lambda: self.tabbed_widget.setCurrentIndex(0))
         switch_tab_basic.setShortcut("Ctrl+1")
         # File Content
-        switch_tab_file_content = QAction("Switch to tab File Content", self.Root_Window)
-        switch_tab_file_content.triggered.connect(lambda: self.tabbed_widget.setCurrentIndex(1))
-        switch_tab_file_content.setShortcut("Ctrl+2")
+        switch_tab_properties = QAction("Switch to tab Properties", self.Root_Window)
+        switch_tab_properties.triggered.connect(lambda: self.tabbed_widget.setCurrentIndex(1))
+        switch_tab_properties.setShortcut("Ctrl+2")
         # Advanced
         switch_tab_advanced = QAction("Switch to tab Advanced", self.Root_Window)
         switch_tab_advanced.triggered.connect(lambda: self.tabbed_widget.setCurrentIndex(2))
@@ -1199,7 +1199,7 @@ class MainWindow:
         switch_tab_sorting.triggered.connect(lambda: self.tabbed_widget.setCurrentIndex(3))
         switch_tab_sorting.setShortcut("Ctrl+4")
         # Add options to menu
-        tabs_menu.addActions([switch_tab_basic, switch_tab_file_content, switch_tab_advanced, switch_tab_sorting])
+        tabs_menu.addActions([switch_tab_basic, switch_tab_properties, switch_tab_advanced, switch_tab_sorting])
 
         # Search Status Menu
         global search_status_menu

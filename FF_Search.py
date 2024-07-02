@@ -229,6 +229,17 @@ class Search:
 
         logging.debug(f"{size_data = }, {data_file_size_min = }, {data_file_size_max = }")
 
+        # Loading excluded files
+        with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings")) as excluded_file:
+            data_excluded_files = load(excluded_file)["excluded_files"]
+
+        # Checking if the search scope is an excluded directory
+        excluded_files_block_search = False
+        for excluded_file in data_excluded_files:
+            if data_search_from_valid.startswith(excluded_file):
+                excluded_files_block_search = True
+                break
+
         # Fetching Errors
         # Testing if file ending, file groups or name contains are used together with name,
         # because if they do no file will be found
@@ -308,6 +319,20 @@ class Search:
                                                              "No files would be found, because no file type "
                                                              "category is selected.",
                                                              parent=None)
+
+        # If the search scope is an excluded file
+        elif excluded_files_block_search:
+            # Debug
+            logging.error("Directory Error! Search in directory is in an excluded directory")
+
+            # Show Popup
+            FF_Additional_UI.PopUps.show_critical_messagebox(
+                "Directory Error!",
+                "Directory Error!\n\n"
+                "The directory you searched in is in an excluded folder.\n\n"
+                "You can edit the excluded folders in the File Find Settings. \n(File Find > Preferences...)",
+                parent=None)
+
         # Start Searching
         else:
 
@@ -348,7 +373,7 @@ class Search:
                 lambda: self.searching(
                     data_name, data_in_name, data_filetype, data_file_size_min, data_file_size_max, data_library,
                     data_search_from_valid, data_search_for, data_content, unix_time_list, data_sort_by,
-                    data_reverse_sort, data_file_group, parent))
+                    data_reverse_sort, data_file_group, data_excluded_files, parent))
 
             # Debug
             logging.debug("Finished Setting up QThreadPool!")
@@ -356,7 +381,7 @@ class Search:
     # The search engine
     def searching(self, data_name, data_in_name, data_filetype, data_file_size_min, data_file_size_max, data_library,
                   data_search_from, data_search_for, data_content, data_time, data_sort_by, data_reverse_sort,
-                  data_file_group, parent):
+                  data_file_group, data_excluded_files, parent):
         # Debug
         logging.info("Starting Search...")
         self.ui_logger.update("Starting Search...")
@@ -402,12 +427,15 @@ class Search:
             logging.debug("Files and folders checking is NOT needed")
             data_search_for_needed = True
 
-        # Loading excluded files and checking if the need to be scanned
-        with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings")) as excluded_file:
-            data_excluded_files = load(excluded_file)["excluded_files"]
+        # Testing if one of the excluded folder is in the search scope, if not checking isn't necessary
+        exclude_file_in_scope = False
+        for excluded_test_file in data_excluded_files:
+            if excluded_test_file.startswith(data_search_from):
+                exclude_file_in_scope = True
+                break
 
-        # If data_excluded_files is an empty list
-        if not data_excluded_files:
+        # If data_excluded_files is an empty list or no file in the excluded list is in the search scope
+        if not data_excluded_files or not exclude_file_in_scope:
             # If the list is empty
             logging.debug("Excluded files checking is NOT needed")
             data_excluded_files_needed = False

@@ -10,8 +10,8 @@
 
 [![File Find build](https://img.shields.io/github/actions/workflow/status/Pixel-Master/File-Find/File-Find.yml?branch=main&label=File%20Find%20build%20status&logo=File%20Find&style=flat-square)](https://github.com/Pixel-Master/File-Find/actions/workflows/File-Find.yml)
 [![GPLv3 License](https://img.shields.io/badge/License-GPL%20v3-blue.svg?style=flat-square)](http://www.gnu.org/licenses/gpl-3.0.html) 
-[![GitLab last commit](https://img.shields.io/github/last-commit/Pixel-Master/File-Find.svg?style=flat-square)](https://github.com/Pixel-Master/File-Find/)
-[![GitHub stars](https://img.shields.io/github/stars/Pixel-Master/File-Find.svg?style=flat-square&label=Stars&color=yellow)](https://github.com/Pixel-Master/File-Find/)
+[![GitLab last commit](https://img.shields.io/github/last-commit/Pixel-Master/File-Find.svg?style=flat-square)](https://github.com/Pixel-Master/File-Find/commits)
+[![GitHub stars](https://img.shields.io/github/stars/Pixel-Master/File-Find.svg?style=flat-square&label=Stars&color=yellow)](https://Pixel-Master.github.io/File-Find/)
 [![GitLab forks](https://img.shields.io/github/forks/Pixel-Master/File-Find.svg?style=flat-square&label=Fork&color=red)](https://github.com/Pixel-Master/File-Find/forks/)
 
 #### Links: [GitHub](https://github.com/Pixel-Master/File-Find), [Website](https://pixel-master.github.io/File-Find)
@@ -29,7 +29,11 @@
 - [File Structure](#file-structure)
 
 ## Download
-File Find isn't ready for Release yet Run from source or download pre-build macOS, Windows or Linux Apps from the GitHub action Page.
+
+- [macOS](https://github.com/Pixel-Master/File-Find/releases/latest/download/File.Find.dmg)
+- [Windows](https://github.com/Pixel-Master/File-Find/releases/latest/download/File.Find.exe)
+
+File Find is still in beta. Build might be unstable. To get the newest version:
 - [Building from Source](#building-from-source)
 - [GitHub Action Page](https://github.com/Pixel-Master/File-Find/actions/workflows/File-Find.yml)
 

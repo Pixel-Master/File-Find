@@ -188,7 +188,6 @@ class CompareUi:
 
         # Defining the font
         font2 = QFont(FF_Files.DEFAULT_FONT, FF_Files.SMALLER_FONT_SIZE)
-        # font2.setBold(True)
         # Configure the font
         label2.setFont(font2)
 
