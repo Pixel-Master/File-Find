@@ -17,8 +17,8 @@ from time import time
 import hashlib
 
 # Versions
-VERSION: str = "4-july-24"
-VERSION_SHORT: str = "0.0-rc2"
+VERSION: str = "22-july-24"
+VERSION_SHORT: str = "0.0-rc3"
 # Versions of file formats
 FF_FILTER_VERSION = 1
 FF_SEARCH_VERSION = 1
@@ -43,7 +43,7 @@ elif platform == "win32" or platform == "cygwin":
 else:
     FF_LIB_FOLDER = os.path.join(USER_FOLDER, ".file-find")
     TITLE_FONT_SIZE = 21
-    NORMAL_FONT_SIZE = 16
+    NORMAL_FONT_SIZE = 15
     SMALLER_FONT_SIZE = 14
 
 # Default font is Arial
@@ -93,13 +93,14 @@ FILE_FORMATS = {"Image": ("png", "jpeg", "webp", "heic", "tiff", "gif", "tif", "
 
 # Standard content of Settings File
 # The Structure of the settings File
-STANDARD_SETTINGS = {"settings_version": FF_SETTINGS_VERSION,
-                     "first_version": f"{VERSION_SHORT}[{VERSION}]",
-                     "version": f"{VERSION_SHORT}[{VERSION}]",
-                     "excluded_files": [],
-                     "cache": "On Launch",
-                     "popup": {"FF_ver_welcome": False, "FF_welcome": True, "delete_question": False},
-                     "filter_preset_name": "Default"}
+DEFAULT_SETTINGS = {"settings_version": FF_SETTINGS_VERSION,
+                    "first_version": f"{VERSION_SHORT}[{VERSION}]",
+                    "version": f"{VERSION_SHORT}[{VERSION}]",
+                    "excluded_files": [],
+                    "cache": "On Launch",
+                    "popup": {"FF_ver_welcome": False, "FF_welcome": True, "delete_question": False},
+                    "filter_preset_name": "Default",
+                    "display_menu_bar_icon": True}
 
 # Color schemes
 RED_COLOR = "#b31b00"
@@ -271,16 +272,15 @@ def setup():
             else:
                 updated = False
 
-            # Checking if all settings exist
+            # Checking if all settings exist and updating version numbers
             settings["settings_version"] = FF_SEARCH_VERSION
-            settings["first_version"] = settings["first_version"]
             settings["version"] = f"{VERSION_SHORT}[{VERSION}]"
-            settings["excluded_files"] = settings["excluded_files"]
-            settings["cache"] = settings["cache"]
             settings["popup"] = {"FF_ver_welcome": settings["popup"]["FF_ver_welcome"],
                                  "FF_welcome": settings["popup"]["FF_welcome"],
                                  "delete_question": settings["popup"]["delete_question"]}
-            settings["filter_preset_name"] = settings["filter_preset_name"]
+
+            for settings_key in DEFAULT_SETTINGS:
+                settings[settings_key] = settings[settings_key]
 
             if updated:
                 settings["popup"]["FF_ver_welcome"] = True
@@ -290,10 +290,10 @@ def setup():
     # If the settings file doesn't exist or is too old, replacing it
     except (JSONDecodeError, UnicodeDecodeError, EOFError, FileNotFoundError, KeyError) as file_error:
         # Replacing the settings var
-        settings = STANDARD_SETTINGS
+        settings = DEFAULT_SETTINGS
 
         # Debug
-        logging.info(f"Resetting settings to: {STANDARD_SETTINGS}\n because of:\n{file_error}")
+        logging.info(f"Resetting settings to: {DEFAULT_SETTINGS}\n because of:\n{file_error}")
 
     with open(os.path.join(FF_LIB_FOLDER, "Settings"), "w") as excluded_dump_file:
         dump(settings, excluded_dump_file)

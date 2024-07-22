@@ -41,7 +41,8 @@ if __name__ == "__main__":
         def event(self, event: QEvent) -> bool:
             # Executed when an event is received.
 
-            # HANDLE FILEOPEN EVENT (TRIGGERED BY MACOS WHEN DOUBLE-CLICKING A FILE)
+            # Handle file-open events, when a .ffsearch or .fffilter file is opened from outside of file find
+            # e.g. from the OS with finder or file-explorer
             # Testing if the event is triggered by an opened file
             if event.type() == QEvent.Type.FileOpen:
                 # Getting the path of the file
@@ -58,6 +59,15 @@ if __name__ == "__main__":
                     # Debug
                     logging.info(f"Opening {path}...")
                     main_window.import_filters(path)
+
+            # If the application icon in the dock is pressed, the mai window should open
+            elif event.type() == QEvent.Type.ApplicationActivated:
+                try:
+                    # Show the window
+                    main_window.Root_Window.show()
+                except NameError:
+                    # If something happens this can fail without a big problem
+                    pass
 
             return super().event(event)
 

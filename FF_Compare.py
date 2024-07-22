@@ -70,7 +70,7 @@ class CompareUi:
 
         # Setting up the menu bar...
         menu_bar = FF_Menubar.MenuBar(parent=self.Compare_Window, window="compare",
-                                      listbox=None, )
+                                      listbox=None)
         logging.debug("Done building MenuBar\n")
 
         # Set up both list-boxes

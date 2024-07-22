@@ -113,7 +113,7 @@ class MenuBar:
             # Select an app to open the selected file
             delete_file_action = QAction("&Move selected file to trash", self.parent)
             delete_file_action.triggered.connect(self.delete_file)
-            delete_file_action.setShortcut("Ctrl+Delete")
+            delete_file_action.setShortcut("Ctrl+Backspace")
             self.tools_menu.addAction(delete_file_action)
 
             # Prompt the user to select a new location for the selected file
@@ -587,6 +587,7 @@ class MenuBar:
                                                                  self.parent)
         except AttributeError:
             FF_Additional_UI.PopUps.show_critical_messagebox("Error!", "Select a File!", self.parent)
+            logging.error("No file was selected when calling file info")
 
     # View the hashes
     def view_hashes(self):

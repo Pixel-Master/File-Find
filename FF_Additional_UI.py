@@ -15,11 +15,12 @@ from json import load, dump
 
 # PySide6 Gui Imports
 from PySide6.QtCore import Qt, Signal, QObject
-from PySide6.QtGui import QFont, QAction, QPixmap, QColor
-from PySide6.QtWidgets import QMessageBox, QComboBox, QDialog, QLabel, QVBoxLayout
+from PySide6.QtGui import QFont, QPixmap, QColor
+from PySide6.QtWidgets import QMessageBox, QComboBox, QLabel, QVBoxLayout, QWidget, QMainWindow
 
 # Projects Libraries
 import FF_Files
+import FF_Menubar
 
 # keeping a list of all created icons
 icons = set()
@@ -255,10 +256,14 @@ class PopUps:
             return msg_info
 
         else:
-            # Information
-            msg_info = QDialog(parent)
+            # Information popup large
+            msg_info = QMainWindow(parent)
+            # Central widget
+            central_widget = QWidget()
+            msg_info.setCentralWidget(central_widget)
+            # Layout
             layout = QVBoxLayout(msg_info)
-            msg_info.setLayout(layout)
+            central_widget.setLayout(layout)
 
             # Title
             title_label = QLabel(msg_info)
@@ -281,10 +286,7 @@ class PopUps:
             msg_info.setWindowTitle(title)
             msg_info.show()
 
-            # Close Window
-            close_action = QAction("&Close Window", msg_info)
-            close_action.triggered.connect(msg_info.hide)
-            close_action.setShortcut("Ctrl+W")
+            FF_Menubar.MenuBar(parent=msg_info, window="info_box", listbox=None)
 
             # Return the Value of the Message Box
             return msg_info

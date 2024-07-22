@@ -24,6 +24,7 @@ from PySide6.QtWidgets import QMainWindow, QLabel, QPushButton, QListWidget, QFi
 import FF_Additional_UI
 import FF_Files
 import FF_About_UI
+import FF_Main_UI
 
 
 # The class for the help window
@@ -157,19 +158,17 @@ class SettingsWindow:
         add_button = generate_button("+", add_file)
         self.Settings_Layout.addWidget(add_button, 12, 0, Qt.AlignmentFlag.AlignRight)
 
-        # Ask when searching
+        # Ask before deleting
         # Define the Label
-        ask_search_label = QLabel("Ask before deleting a file:", parent=self.Settings_Window)
+        ask_delete_label = QLabel("Ask before deleting a file:", parent=self.Settings_Window)
         # Change Font
-        ask_search_label.setFont(QFont(FF_Files.DEFAULT_FONT, FF_Files.SMALLER_FONT_SIZE))
+        ask_delete_label.setFont(QFont(FF_Files.DEFAULT_FONT, FF_Files.SMALLER_FONT_SIZE))
         # Display the Label
-        self.Settings_Layout.addWidget(ask_search_label, 0, 0)
-        ask_search_label.adjustSize()
-        ask_search_label.show()
+        self.Settings_Layout.addWidget(ask_delete_label, 0, 0)
+        ask_delete_label.adjustSize()
+        ask_delete_label.show()
 
-        # Push Button
         # Ask Checkbox
-        # Defining
         ask_delete_checkbox = QCheckBox(self.Settings_Window)
 
         # Open Event
@@ -231,10 +230,10 @@ class SettingsWindow:
             with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings")) as settings_preset_file:
                 settings = load(settings_preset_file)
                 # Modifying Settings
-                settings["filter_preset_name"] = FF_Files.STANDARD_SETTINGS["filter_preset_name"]
+                settings["filter_preset_name"] = FF_Files.DEFAULT_SETTINGS["filter_preset_name"]
 
             # Updating line edit
-            filter_line_edit.setText(FF_Files.STANDARD_SETTINGS["filter_preset_name"])
+            filter_line_edit.setText(FF_Files.DEFAULT_SETTINGS["filter_preset_name"])
 
             # Dump new settings
             with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "w") as settings_preset_file:
@@ -403,9 +402,55 @@ class SettingsWindow:
         combobox_cache.currentIndexChanged.connect(update_cache_settings)
 
         # Display
-        combobox_cache.show()
-        combobox_cache.adjustSize()
         self.Settings_Layout.addWidget(combobox_cache, 5, 1)
+
+        # Cache Settings
+        # Define the Label
+        menu_bar_icon_label = QLabel("Show File Find in the menu bar:", parent=self.Settings_Window)
+        # Change Font
+        menu_bar_icon_label.setFont(QFont(FF_Files.DEFAULT_FONT, FF_Files.SMALLER_FONT_SIZE))
+        # Display the Label
+        self.Settings_Layout.addWidget(menu_bar_icon_label, 6, 0)
+
+        # Ask Checkbox
+        menu_bar_icon_checkbox = QCheckBox(self.Settings_Window)
+
+        # Open Event
+        def menu_bar_icon_change():
+            # showing/hiding the icon
+            if menu_bar_icon_checkbox.isChecked():
+                FF_Main_UI.menu_bar_icon.show()
+            else:
+                FF_Main_UI.menu_bar_icon.hide()
+
+            # Saving the Settings and replacing the old settings with the new one
+            with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings")) as read_file:
+                # Loading Settings
+                settings = load(read_file)
+
+            # Changing Settings
+            settings["display_menu_bar_icon"] = menu_bar_icon_checkbox.isChecked()
+
+            logging.info(f"Changed PopUp Settings Menu bar Question:"
+                         f" Display menu bar icon {menu_bar_icon_checkbox.isChecked()}")
+            # Dumping new Settings
+            with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "w") as write_file:
+                dump(settings, write_file)
+
+        # Connecting the checkbox to the function above
+        menu_bar_icon_checkbox.toggled.connect(menu_bar_icon_change)
+
+        # Loading Settings
+        with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings")) as read_load_file:
+            # Loading Settings
+            menu_bar_icon_setting = load(read_load_file)["display_menu_bar_icon"]
+
+            # Changing Settings
+            if menu_bar_icon_setting:
+                menu_bar_icon_checkbox.setChecked(True)
+
+        # Display
+        self.Settings_Layout.addWidget(menu_bar_icon_checkbox, 6, 1)
 
         # Menu-bar
         menu_bar = self.Settings_Window.menuBar()

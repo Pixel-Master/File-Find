@@ -45,6 +45,7 @@ class MainWindow:
         self.BASE_WIDTH = 800
         self.BASE_HEIGHT = 370
         self.Root_Window.setBaseSize(self.BASE_WIDTH, self.BASE_HEIGHT)
+        self.Root_Window.resize(self.Root_Window.baseSize())
         # Display the Window
         self.Root_Window.show()
 
@@ -667,7 +668,7 @@ class MainWindow:
             # Disconnect the button set a new click event
             try:
                 button_command_copy.clicked.disconnect()
-            except (TypeError, RuntimeError):
+            except (TypeError, RuntimeError, RuntimeWarning):
                 # If this fails, that means that there is now connected signal
                 pass
             button_command_copy.clicked.connect(copy_command)
@@ -1140,7 +1141,13 @@ class MainWindow:
         # Show File Find window
         reopen_action = QAction("&Show File Find Window", self.Root_Window)
         reopen_action.setShortcut("Ctrl+D")
-        reopen_action.triggered.connect(self.Root_Window.show)
+
+        def reopen_window():
+            # Resize the window
+            self.Root_Window.resize(self.Root_Window.baseSize())
+            self.Root_Window.show()
+
+        reopen_action.triggered.connect(reopen_window)
         window_menu.addAction(reopen_action)
 
         # Hide File Find window
@@ -1160,26 +1167,6 @@ class MainWindow:
         search_without_cache_action.setShortcut("Ctrl+Shift+F")
         search_without_cache_action.triggered.connect(self.delete_cache_and_search)
         edit_menu.addAction(search_without_cache_action)
-
-        # Menu-bar icon
-        logging.debug("Constructing Menu-bar icon...")
-
-        # Menu for menu_bar_icon_menu
-        global menu_bar_icon_menu
-        menu_bar_icon_menu = QMenu(self.Root_Window)
-
-        # Add this icon to the menu bar
-        global menu_bar_icon
-        menu_bar_icon = QSystemTrayIcon(self.Root_Window)
-        # Icon
-        menu_bar_icon_icon = QIcon(os.path.join(FF_Files.ASSETS_FOLDER, "Menubar_icon_small.png"))
-        # Make it automatically turn dark if background is light and the other way around
-        menu_bar_icon_icon.setIsMask(True)
-        menu_bar_icon.setIcon(menu_bar_icon_icon)
-
-        # File Find Title
-        ff_title = QAction("&File Find", self.Root_Window)
-        ff_title.setDisabled(True)
 
         # Switch Tabs
         # Basic
@@ -1201,6 +1188,30 @@ class MainWindow:
         # Add options to menu
         tabs_menu.addActions([switch_tab_basic, switch_tab_properties, switch_tab_advanced, switch_tab_sorting])
 
+        # Building menu bar icon
+        return self.menu_bar_icon(about_action, reopen_action)
+
+    # Menu-bar icon
+    def menu_bar_icon(self, about_action, reopen_action):
+        logging.debug("Constructing Menu-bar icon...")
+
+        # Menu for menu_bar_icon_menu
+        global menu_bar_icon_menu
+        menu_bar_icon_menu = QMenu(self.Root_Window)
+
+        # Add this icon to the menu bar
+        global menu_bar_icon
+        menu_bar_icon = QSystemTrayIcon(self.Root_Window)
+        # Icon
+        menu_bar_icon_icon = QIcon(os.path.join(FF_Files.ASSETS_FOLDER, "Menubar_icon_small.png"))
+        # Make it automatically turn dark if background is light and the other way around
+        menu_bar_icon_icon.setIsMask(True)
+        menu_bar_icon.setIcon(menu_bar_icon_icon)
+
+        # File Find Title
+        ff_title = QAction("&File Find", self.Root_Window)
+        ff_title.setDisabled(True)
+
         # Search Status Menu
         global search_status_menu
         search_status_menu = QMenu("&Searches:", self.Root_Window)
@@ -1221,9 +1232,14 @@ class MainWindow:
         menu_bar_icon_menu.addAction(about_action)
         menu_bar_icon_menu.addAction(quit_action)
 
-        # Display the Icon
+        # Checking if the menu bar icon should be displayed
+        with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings")) as settings_file:
+            display_icon = load(settings_file)["display_menu_bar_icon"]
+
+        # Display the Icon if allowed
         menu_bar_icon.setContextMenu(menu_bar_icon_menu)
-        menu_bar_icon.show()
+        if display_icon:
+            menu_bar_icon.show()
 
         return menu_bar_icon
 
