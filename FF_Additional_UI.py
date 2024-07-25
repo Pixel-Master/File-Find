@@ -351,7 +351,7 @@ def welcome_popups(parent, force_popups=False):
                 title="Welcome to File Find",
                 text="Welcome to File Find!\n\nSearch with the find button.\n\n"
                      "You can find all and settings in the settings menu.\n"
-                     "(find it by going to File Find > Setting in the menubar)\n\n"
+                     "(find it by going to File Find > Setting in the menu-bar)\n\n"
                      "If you press on the File Find icon in the menu bar and go to \"Searches:\","
                      " you can see the state of all your active searches.",
                 parent=parent)

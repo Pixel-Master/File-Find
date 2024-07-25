@@ -30,12 +30,15 @@
 
 ## Download
 
-- [macOS](https://github.com/Pixel-Master/File-Find/releases/latest/download/File.Find.dmg)
-- [Windows](https://github.com/Pixel-Master/File-Find/releases/latest/download/File.Find.exe)
+- [macOS](https://github.com/Pixel-Master/File-Find/releases/latest/download/File-Find.dmg)
+- [Windows](https://github.com/Pixel-Master/File-Find/releases/latest/download/File-Find.exe)
+- [Linux](https://github.com/Pixel-Master/File-Find/releases/latest/download/File-Find.bin)
 
-File Find is still in beta. Build might be unstable. To get the newest version:
+
+Or you could:
+
 - [Building from Source](#building-from-source)
-- [GitHub Action Page](https://github.com/Pixel-Master/File-Find/actions/workflows/File-Find.yml)
+- [Beta builds from the GitHub Action Page](https://github.com/Pixel-Master/File-Find/actions/workflows/File-Find.yml)
 
 ## Features
 
@@ -92,18 +95,12 @@ File Find is still in beta. Build might be unstable. To get the newest version:
 ### Other
 	
 - Export search results as a **plain text file (.txt)** or as a reloadable **File Find Search (.FFSearch)**
-
+- Export your set filters as a .FFFilter file, load them again, share them or even set them as a default in the settings.
 - Compare two searches and search for differences
 
 
 
 ## Building from source
-
-### Note:
-
-###### File Find works on Linux or Windows, but currently only in beta. Please report any errors.
-
-
 ### Dependencies for building
 - [Python](https://python.org/) 3.9 or higher **(Python 3.12 does not work yet!)**
 - [PySide6](https://pypi.org/project/PySide6/) 6.4.1 or higher
@@ -241,7 +238,7 @@ A: **File Find does not connect to the Internet**, everything stays on your mach
 
 - `FF_About_UI.py` - This file contains the code for the About window
 
-- `FF_Menubar.py` - Menubar for the search results, compare and duplicated window
+- `FF_Menubar.py` - Menu-bar for the search results, compare and duplicated window
 
 - `FF_Settings.py` - Settings menu
 

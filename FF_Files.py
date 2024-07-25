@@ -17,8 +17,8 @@ from time import time
 import hashlib
 
 # Versions
-VERSION: str = "22-july-24"
-VERSION_SHORT: str = "0.0-rc3"
+VERSION: str = "24-july-2024"
+VERSION_SHORT: str = "1.0"
 # Versions of file formats
 FF_FILTER_VERSION = 1
 FF_SEARCH_VERSION = 1
@@ -453,7 +453,7 @@ def setup():
             b'2lK+\x10\xd325@\xbdI\x1d\x16\x06\x96\xad\xfd\x1f\xd20sKq\xd7\x9bv\x00\x00\x00\x00IEND\xaeB`\x82'
         )
 
-        # The menubar icon
+        # The menu-bar icon
         open(os.path.join(ASSETS_FOLDER, "Menubar_icon_small.png"), "wb").write(
             b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x002\x00\x00\x00-\x08\x06\x00\x00\x00\xec\xbf8\xff\x00\x00'
             b'\x00\tpHYs\x00\x00.#\x00\x00.#\x01x\xa5?v\x00\x00\x01\x03IDATh\xde\xedW\xcb\x0e\xc3 '
