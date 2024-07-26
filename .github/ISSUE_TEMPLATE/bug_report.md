@@ -20,12 +20,12 @@ Steps to reproduce the behavior:
 **Expected behavior**
 A clear and concise description of what you expected to happen.
 
-**Screenshots**
+**Screenshots** (optional)
 If possible, add screenshots to show what's wrong
 
 **Installation Information**
  - OS and Version: [e.g. macOS 12]
  - File Find Version (as seen in the about page) [e.g. ``1.0[25-july-2024]``]
 
-**Additional context**
+**Additional context** (optional)
 Add any other context about the problem here.
