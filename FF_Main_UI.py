@@ -12,7 +12,7 @@
 import logging
 import os
 from json import dump, load
-import sys
+from sys import platform
 
 # PySide6 Gui Imports
 from PySide6.QtCore import QSize, Qt, QDate
@@ -842,11 +842,11 @@ class MainWindow:
         # Check if "/" is at end of inputted path
         if check:
             # Going through all paths to look if auto-completion should be loaded
-            if path.endswith("/") and (sys.platform == "darwin" or sys.platform == "linux"):
+            if path.endswith("/") and (platform == "darwin" or platform == "linux"):
                 completer_paths = get_paths()
                 logging.debug("Changed QCompleter")
             # On Windows paths and with "\"
-            elif path.endswith("\\") and (sys.platform == "win32" or sys.platform == "cygwin"):
+            elif path.endswith("\\") and (platform == "win32" or platform == "cygwin"):
                 completer_paths = get_paths()
                 logging.debug("Changed QCompleter")
             else:
@@ -1202,11 +1202,21 @@ class MainWindow:
         # Add this icon to the menu bar
         global menu_bar_icon
         menu_bar_icon = QSystemTrayIcon(self.Root_Window)
+
         # Icon
-        menu_bar_icon_icon = QIcon(os.path.join(FF_Files.ASSETS_FOLDER, "Menubar_icon_small.png"))
-        # Make it automatically turn dark if background is light and the other way around
-        menu_bar_icon_icon.setIsMask(True)
-        menu_bar_icon.setIcon(menu_bar_icon_icon)
+        # On macOS
+        if platform == "darwin":
+            # Make it automatically turn dark if background is light and the other way around
+            # On macOS this doesn't depend on dark/light mode
+            menu_bar_icon_icon = QIcon(os.path.join(FF_Files.ASSETS_FOLDER, "Menubar_icon_small.png"))
+            # Only works on macOS
+            menu_bar_icon_icon.setIsMask(True)
+            menu_bar_icon.setIcon(menu_bar_icon_icon)
+        # On Windows and Linux
+        else:
+            # Have the icon change with dark mode
+            FF_Additional_UI.UIIcon(path=os.path.join(FF_Files.ASSETS_FOLDER, "Menubar_icon_small.png"),
+                                    icon_set_func=menu_bar_icon.setIcon)
 
         # File Find Title
         ff_title = QAction("&File Find", self.Root_Window)
@@ -1219,7 +1229,7 @@ class MainWindow:
 
         # Quit File Find
         quit_action = QAction("&Quit File Find", self.Root_Window)
-        quit_action.triggered.connect(sys.exit)
+        quit_action.triggered.connect(exit)
 
         # Constructing menu_bar_icon_menu
         menu_bar_icon_menu.addAction(ff_title)
