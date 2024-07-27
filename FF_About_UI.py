@@ -124,13 +124,13 @@ class AboutWindow:
             # Return the Label to move it
             return link
 
-        sourcecode = generate_link_button("Website", "https://pixel-master.github.io/File-Find/")
-        about_layout.addWidget(sourcecode, 7, 0)
+        update = generate_link_button("Update", "https://pixel-master.github.io/File-Find/download")
+        about_layout.addWidget(update, 7, 0)
 
-        update = generate_link_button("Update", "https://github.com/Pixel-Master/File-Find/releases")
-        about_layout.addWidget(update, 7, 1)
+        sourcecode = generate_link_button("Website and FaQ", "https://pixel-master.github.io/File-Find/")
+        about_layout.addWidget(sourcecode, 7, 1)
 
-        faq_link = generate_link_button("FaQ", "https://pixel-master.github.io/File-Find/#faq")
+        faq_link = generate_link_button("Source", "https://github.com/Pixel-Master/File-Find")
         about_layout.addWidget(faq_link, 7, 2)
 
         # Menu bar

@@ -87,7 +87,7 @@ class CompareUi:
         # Add items
         self.added_files_listbox.addItems(compared_searches.files_only_in_first_search)
         # Double-Clicking Event
-        self.added_files_listbox.doubleClicked.connect(menu_bar.open_in_finder)
+        self.added_files_listbox.doubleClicked.connect(menu_bar.double_clicking_item)
 
         # Removed files / files only in second search
 
@@ -102,7 +102,7 @@ class CompareUi:
         # Add items
         self.removed_files_listbox.addItems(compared_searches.files_only_in_second_search)
         # Double-Clicking Event
-        self.removed_files_listbox.doubleClicked.connect(menu_bar.open_in_finder)
+        self.removed_files_listbox.doubleClicked.connect(menu_bar.double_clicking_item)
 
         # Debug
         logging.debug("Done!")

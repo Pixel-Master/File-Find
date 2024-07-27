@@ -16,15 +16,15 @@ import shutil
 import sys
 
 # PySide6 Gui Imports
-from PySide6.QtGui import QFont, QAction, Qt
+from PySide6.QtGui import QFont, Qt
 from PySide6.QtWidgets import QMainWindow, QLabel, QPushButton, QListWidget, QFileDialog, QComboBox, \
     QMessageBox, QCheckBox, QWidget, QGridLayout, QSizePolicy, QSpacerItem, QLineEdit
 
 # Projects Libraries
 import FF_Additional_UI
 import FF_Files
-import FF_About_UI
 import FF_Main_UI
+import FF_Menubar
 
 
 # The class for the help window
@@ -191,20 +191,15 @@ class SettingsWindow:
         ask_delete_checkbox.toggled.connect(ask_delete_change)
 
         # Loading Settings
-        with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings")) as read_load_file:
-            # Loading Settings
-            ask_searching_settings = load(read_load_file)["popup"]["delete_question"]
-
-            # Changing Settings
-            if ask_searching_settings:
-                ask_delete_checkbox.setChecked(True)
+        if self.load_setting("popup")["delete_question"]:
+            ask_delete_checkbox.setChecked(True)
 
         # Display
         ask_delete_checkbox.show()
         ask_delete_checkbox.adjustSize()
         self.Settings_Layout.addWidget(ask_delete_checkbox, 0, 1)
 
-        # Language
+        # Filter Preset
         # Define the Label
         filter_preset_label = QLabel("Filter Preset on launch:", parent=self.Settings_Window)
         filter_preset_label.setToolTip("The filter preset loaded at launch")
@@ -226,18 +221,10 @@ class SettingsWindow:
         def reset_filter_preset():
             # Debug
             logging.info("Setting filter preset to default\n")
-            # Loading settings
-            with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings")) as settings_preset_file:
-                settings = load(settings_preset_file)
-                # Modifying Settings
-                settings["filter_preset_name"] = FF_Files.DEFAULT_SETTINGS["filter_preset_name"]
-
+            # Update settings
+            self.update_setting("filter_preset_name", FF_Files.DEFAULT_SETTINGS["filter_preset_name"])
             # Updating line edit
             filter_line_edit.setText(FF_Files.DEFAULT_SETTINGS["filter_preset_name"])
-
-            # Dump new settings
-            with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "w") as settings_preset_file:
-                dump(settings, settings_preset_file)
 
             try:
                 # Removing filter preset
@@ -279,16 +266,7 @@ class SettingsWindow:
             filter_line_edit.setText(os.path.basename(file_path))
 
             # Updating settings
-
-            # Loading settings
-            with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings")) as settings_preset_file:
-                settings = load(settings_preset_file)
-                # Modifying Settings
-                settings["filter_preset_name"] = os.path.basename(file_path)
-
-            # Dump new settings
-            with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "w") as settings_preset_file:
-                dump(settings, settings_preset_file)
+            self.update_setting("filter_preset_name", os.path.basename(file_path))
 
             # Debug
             logging.info(f"Set filter preset to {file_path}\n")
@@ -296,24 +274,28 @@ class SettingsWindow:
         select_preset_button = generate_button("Select .FFFilter Preset", select_preset, 150)
         self.Settings_Layout.addWidget(select_preset_button, 1, 3)
 
-        # Language
+        # Double-clicking
         # Define the Label
-        language_label = QLabel("Language:", parent=self.Settings_Window)
+        double_click_label = QLabel("Action when double-clicking:", parent=self.Settings_Window)
         # Change Font
-        language_label.setFont(QFont(FF_Files.DEFAULT_FONT, FF_Files.SMALLER_FONT_SIZE))
+        double_click_label.setFont(QFont(FF_Files.DEFAULT_FONT, FF_Files.SMALLER_FONT_SIZE))
         # Display the Label
-        self.Settings_Layout.addWidget(language_label, 2, 0)
+        self.Settings_Layout.addWidget(double_click_label, 2, 0)
 
         # Drop Down Menu
-        # Language Menu
+        # Double-Click Menu
         # Defining
-        combobox_language = QComboBox(self.Settings_Window)
+        combobox_double_click = QComboBox(self.Settings_Window)
         # Adding Options
-        combobox_language.addItems(["English"])
+        combobox_double_click.addItems(["View file in Finder/File Explorer", "Open file", "Info about file"])
+        combobox_double_click.setCurrentText(self.load_setting("double_click_action"))
         # Display
-        self.Settings_Layout.addWidget(combobox_language, 2, 1)
-
-        # Push Button
+        self.Settings_Layout.addWidget(combobox_double_click, 2, 1, 2, 2)
+        combobox_double_click.setFixedWidth(230)
+        # When changed, update settings
+        combobox_double_click.currentTextChanged.connect(
+            lambda: self.update_setting(setting_key="double_click_action",
+                                        new_value=combobox_double_click.currentText()))
 
         # Reset Settings
         # Define the Label
@@ -377,29 +359,12 @@ class SettingsWindow:
         # Defining
         combobox_cache = QComboBox(self.Settings_Window)
         # Adding Options
-        combobox_cache_items = ["On Launch", "after a Day", "after a Week", "Never"]
+        combobox_cache_items = ["on Launch", "after a Day", "after a Week", "Never"]
         combobox_cache.addItems(combobox_cache_items)
-        with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings")) as read_define_file:
-            combobox_cache.setCurrentText(load(read_define_file)["cache"])
+        combobox_cache.setCurrentText(self.load_setting("cache"))
 
-        # Updating on change
-        def update_cache_settings():
-            # Saving the Settings and replacing the old settings with the new one
-            with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings")) as read_file:
-                # Loading Settings
-                settings = load(read_file)
-
-            # Changing Settings
-            settings["cache"] = combobox_cache.currentText()
-
-            # Dumping new Settings
-            with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "w") as write_rile:
-                dump(settings, write_rile)
-
-            # Debug
-            logging.info(f"Changed Cache Settings to : {combobox_cache.currentText()}")
-
-        combobox_cache.currentIndexChanged.connect(update_cache_settings)
+        # Changing cache setting on update
+        combobox_cache.currentIndexChanged.connect(lambda: self.update_setting("cache", combobox_cache.currentText()))
 
         # Display
         self.Settings_Layout.addWidget(combobox_cache, 5, 1)
@@ -423,65 +388,54 @@ class SettingsWindow:
             else:
                 FF_Main_UI.menu_bar_icon.hide()
 
-            # Saving the Settings and replacing the old settings with the new one
-            with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings")) as read_file:
-                # Loading Settings
-                settings = load(read_file)
-
-            # Changing Settings
-            settings["display_menu_bar_icon"] = menu_bar_icon_checkbox.isChecked()
-
-            logging.info(f"Changed PopUp Settings Menu bar Question:"
-                         f" Display menu bar icon {menu_bar_icon_checkbox.isChecked()}")
-            # Dumping new Settings
-            with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "w") as write_file:
-                dump(settings, write_file)
+            # Update the setting
+            self.update_setting("display_menu_bar_icon", menu_bar_icon_checkbox.isChecked())
 
         # Connecting the checkbox to the function above
         menu_bar_icon_checkbox.toggled.connect(menu_bar_icon_change)
 
-        # Loading Settings
-        with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings")) as read_load_file:
-            # Loading Settings
-            menu_bar_icon_setting = load(read_load_file)["display_menu_bar_icon"]
-
-            # Changing Settings
-            if menu_bar_icon_setting:
-                menu_bar_icon_checkbox.setChecked(True)
+        # Loading Setting
+        menu_bar_icon_setting = self.load_setting("display_menu_bar_icon")
+        # Changing Settings
+        if menu_bar_icon_setting:
+            menu_bar_icon_checkbox.setChecked(True)
 
         # Display
         self.Settings_Layout.addWidget(menu_bar_icon_checkbox, 6, 1)
 
         # Menu-bar
-        menu_bar = self.Settings_Window.menuBar()
-
-        # Menus
-        window_menu = menu_bar.addMenu("&Window")
-        help_menu = menu_bar.addMenu("&Help")
-
-        # Close Window
-        close_action = QAction("&Close Window", self.Settings_Window)
-        close_action.triggered.connect(self.Settings_Window.hide)
-        close_action.setShortcut("Ctrl+W")
-        window_menu.addAction(close_action)
-
-        # About File Find
-        about_action = QAction("&About File Find", self.Settings_Window)
-        about_action.triggered.connect(lambda: FF_About_UI.AboutWindow(self.Settings_Window))
-        help_menu.addAction(about_action)
-
-        # Help
-        help_action = QAction("&About File Find", self.Settings_Window)
-        help_action.triggered.connect(lambda: FF_About_UI.AboutWindow(self.Settings_Window))
-        help_menu.addAction(help_action)
-
-        # Tutorial
-        tutorial_action = QAction("&Tutorial", self.Settings_Window)
-        tutorial_action.triggered.connect(lambda: FF_Additional_UI.welcome_popups(parent, force_popups=True))
-        help_menu.addAction(tutorial_action)
+        FF_Menubar.MenuBar(self.Settings_Window, "settings", None, )
 
         # Debug
         logging.info("Finished Setting up Help UI\n")
+
+    # Updating settings when they are changed
+    @staticmethod
+    def update_setting(setting_key, new_value):
+        # loading the settings
+        with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings")) as read_file:
+            # Loading Settings
+            settings = load(read_file)
+
+        # Changing Settings
+        settings[setting_key] = new_value
+
+        # Dumping new Settings
+        with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "w") as write_file:
+            dump(settings, write_file)
+
+        # Debug
+        logging.info(f"Changed {setting_key} setting to : {new_value}")
+
+    # Loading the value of setting, can be used everywhere
+    @staticmethod
+    def load_setting(setting_key):
+        # Loading Settings
+        with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings")) as read_file:
+            # Loading Settings with JSON
+            setting_value = load(read_file)[setting_key]
+
+        return setting_value
 
 
 settings_window_global = None

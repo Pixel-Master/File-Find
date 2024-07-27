@@ -356,7 +356,7 @@ class SearchWindow:
         self.result_listbox.setCurrentRow(0)
 
         # On double-click
-        self.result_listbox.itemDoubleClicked.connect(menu_bar.open_in_finder)
+        self.result_listbox.itemDoubleClicked.connect(menu_bar.double_clicking_item)
 
         # Update Seconds needed Label
         seconds_text.setText(

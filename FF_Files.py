@@ -18,7 +18,7 @@ import hashlib
 
 # Versions
 VERSION: str = "27-july-2024"
-VERSION_SHORT: str = "1.1-beta1"
+VERSION_SHORT: str = "1.1"
 # Versions of file formats
 FF_FILTER_VERSION = 1
 FF_SEARCH_VERSION = 1
@@ -97,10 +97,11 @@ DEFAULT_SETTINGS = {"settings_version": FF_SETTINGS_VERSION,
                     "first_version": f"{VERSION_SHORT}[{VERSION}]",
                     "version": f"{VERSION_SHORT}[{VERSION}]",
                     "excluded_files": [],
-                    "cache": "On Launch",
+                    "cache": "on Launch",
                     "popup": {"FF_ver_welcome": False, "FF_welcome": True, "delete_question": False},
                     "filter_preset_name": "Default",
-                    "display_menu_bar_icon": True}
+                    "display_menu_bar_icon": True,
+                    "double_click_action": "View file in Finder/File Explorer"}
 
 # Color schemes
 RED_COLOR = "#b31b00"
@@ -127,7 +128,7 @@ def cache_test(is_launching):
         logging.debug(f"{cache_settings = }")
 
     # Deleting Cache on Launch
-    if cache_settings == "On Launch" and is_launching:
+    if cache_settings.lower() == "on launch" and is_launching:
         logging.debug("Deleting Cache!")
         remove_cache()
 
@@ -280,7 +281,14 @@ def setup():
                                  "delete_question": settings["popup"]["delete_question"]}
 
             for settings_key in DEFAULT_SETTINGS:
-                settings[settings_key] = settings[settings_key]
+                try:
+                    settings[settings_key] = settings[settings_key]
+                # If a new setting was added
+                except KeyError:
+                    settings[settings_key] = DEFAULT_SETTINGS[settings_key]
+                    # Debug
+                    logging.info(f"Resetting {settings_key}"
+                                 f" setting to {DEFAULT_SETTINGS[settings_key]} because it didn't exist")
 
             if updated:
                 settings["popup"]["FF_ver_welcome"] = True

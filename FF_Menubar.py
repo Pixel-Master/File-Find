@@ -96,7 +96,7 @@ class MenuBar:
             self.tools_menu.addAction(open_terminal_action)
 
             # Show File in Finder Action
-            show_action = QAction("&Open selected file in Finder", self.parent)
+            show_action = QAction("&View selected file in Finder/File Explorer", self.parent)
             show_action.triggered.connect(self.open_in_finder)
             show_action.setShortcut("Ctrl+Shift+O")
             self.tools_menu.addAction(show_action)
@@ -734,3 +734,22 @@ class MenuBar:
             return self.listbox.currentItem().text(0)
         else:
             return self.listbox.currentItem().text()
+
+    # When an item is double-clicked
+    def double_clicking_item(self):
+        # Loading Setting
+        action = FF_Settings.SettingsWindow.load_setting("double_click_action")
+
+        # Action according to the set option
+        if action == "View file in Finder/File Explorer":
+            self.open_in_finder()
+        elif action == "Open file":
+            self.open_file()
+        elif action == "Info about file":
+            self.file_info()
+        else:
+            logging.error("Select option for double_click_action is NOT valid. Resetting it.\n")
+            # Resetting it because the option isn't valid
+            FF_Settings.SettingsWindow.update_setting("double_click_action",
+                                                      FF_Files.DEFAULT_SETTINGS["double_click_action"])
+

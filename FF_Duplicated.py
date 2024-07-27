@@ -428,7 +428,7 @@ class DuplicatedUI:
         def open_double_clicked(item):
             # Only if subdirectory is clicked
             if item.text(0) != os.path.basename(item.text(0)):
-                menu_bar.open_in_finder()
+                menu_bar.double_clicking_item()
 
         self.Duplicated_Tree.itemDoubleClicked.connect(open_double_clicked)
 
