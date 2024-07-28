@@ -13,6 +13,7 @@ import logging
 import os
 from json import dump, load
 from sys import platform
+import sys
 
 # PySide6 Gui Imports
 from PySide6.QtCore import QSize, Qt, QDate
@@ -1229,7 +1230,7 @@ class MainWindow:
 
         # Quit File Find
         quit_action = QAction("&Quit File Find", self.Root_Window)
-        quit_action.triggered.connect(exit)
+        quit_action.triggered.connect(sys.exit)
 
         # Constructing menu_bar_icon_menu
         menu_bar_icon_menu.addAction(ff_title)
