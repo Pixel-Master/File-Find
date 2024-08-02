@@ -17,12 +17,13 @@ from time import time
 import hashlib
 
 # Versions
-VERSION: str = "27-july-2024"
-VERSION_SHORT: str = "1.1"
+VERSION: str = "31-july-2024"
+VERSION_SHORT: str = "1.1.1"
 # Versions of file formats
 FF_FILTER_VERSION = 1
 FF_SEARCH_VERSION = 1
 FF_SETTINGS_VERSION = 1
+FF_CACHE_VERSION = 1
 
 # Defining folder variables
 USER_FOLDER = os.path.expanduser("~")

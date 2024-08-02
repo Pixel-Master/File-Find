@@ -129,14 +129,12 @@ class LoadSearch:
                                      f"{load_file}.FFCache".replace("/", "-"))):
 
                     # Dictionary which is going to be dumped into the cache file
-                    dump_dict = {"found_path_set": saved_file_content["matched_list"],
-                                 "type_dict": {},
-                                 "low_basename_dict": {}}
+                    dump_dict = {"VERSION": FF_Files.FF_CACHE_VERSION,
+                                 "found_path_set": saved_file_content["matched_list"],
+                                 "type_dict": {}}
 
-                    # Calculating basename and types
+                    # Getting types
                     for cache_file in saved_file_content["matched_list"]:
-                        dump_dict["low_basename_dict"][cache_file] = os.path.basename(cache_file)
-
                         if os.path.isdir(cache_file):
                             dump_dict["type_dict"][cache_file] = "folder"
                         else:
@@ -480,8 +478,8 @@ class Search:
         # Update the menu-bar status
         self.ui_logger.update("Scanning...")
 
-        '''Checking, if Cache File exist, if not it goes through every file in the directory and saves it. If It
-        exist it loads the Cache File in to found_path_set '''
+        '''Checking, if a Cache File exist, if not it goes through every file in the directory and saves it. If a
+        cache does exist it loads found_path_set from the cache file'''
         if os.path.exists(
                 os.path.join(FF_Files.CACHED_SEARCHES_FOLDER, data_search_from.replace("/", "-") + ".FFCache")):
             # Debug
@@ -493,14 +491,12 @@ class Search:
                                    data_search_from.replace("/", "-") + ".FFCache")) as search_results:
                 load_input = load(search_results)
                 found_path_set = set(load_input["found_path_set"])
-                low_basename_dict = load_input["low_basename_dict"]
                 type_dict = load_input["type_dict"]
 
         else:
 
             # Creates empty lists for the files
             found_path_set: set = set()
-            low_basename_dict: dict = {}
             type_dict: dict = {}
 
             used_cached = False
@@ -509,15 +505,13 @@ class Search:
             # Saving every file to found_path_set and the type (file or folder) to found_path_dict
             for (roots, dirs, files) in os.walk(data_search_from):
                 for file in files:
-                    # Saving type and basename to the dictionaries
-                    low_basename_dict[os.path.join(roots, file)] = file.lower()
+                    # Saving types to the dictionaries
                     type_dict[os.path.join(roots, file)] = "file"
                     # Saving the path to a list for fast access
                     found_path_set.add(os.path.join(roots, file))
 
                 for directory in dirs:
-                    # Saving type and basename to the dictionaries
-                    low_basename_dict[os.path.join(roots, directory)] = directory.lower()
+                    # Saving types to the dictionaries
                     type_dict[os.path.join(roots, directory)] = "folder"
 
                     # Saving the path to a list for fast access
@@ -543,7 +537,7 @@ class Search:
 
             # Scan every file
             for name_file in found_path_set:
-                if not fnmatch(low_basename_dict[name_file], data_name):
+                if not fnmatch(os.path.basename(name_file).lower(), data_name):
                     copy_found_path_set.remove(name_file)
 
         # Making the copy and the original the same
@@ -552,11 +546,11 @@ class Search:
         # Name contains
         logging.info("Indexing Name contains...")
         self.ui_logger.update("Indexing Name contains...")
-        if data_in_name != "":
 
+        if data_in_name != "":
             # Scan every file
             for name_contains_file in found_path_set:
-                if not (data_in_name in low_basename_dict[name_contains_file]):
+                if not (data_in_name in os.path.basename(name_contains_file).lower()):
                     copy_found_path_set.remove(name_contains_file)
 
         # Making the copy and the original the same
@@ -565,11 +559,11 @@ class Search:
         # Filetype
         logging.info("Indexing file ending...")
         self.ui_logger.update("Indexing file ending...")
-        if data_filetype != "":
 
+        if data_filetype != "":
             # Scan every file
             for filetype_file in found_path_set:
-                if not low_basename_dict[filetype_file].endswith(f".{data_filetype}"):
+                if not filetype_file.lower().endswith(f".{data_filetype}"):
                     copy_found_path_set.remove(filetype_file)
 
         # Making the copy and the original the same
@@ -635,9 +629,9 @@ class Search:
         # Filter some unnecessary System Files
         logging.info("Removing dump files...")
         self.ui_logger.update("Removing dump files...")
-        for system_file in found_path_set:
 
-            basename = low_basename_dict[system_file]
+        for system_file in found_path_set:
+            basename = os.path.basename(system_file).lower()
             if basename in (".ds_store", ".localized", "desktop.ini", "thumbs.db"):
                 copy_found_path_set.remove(system_file)
 
@@ -829,7 +823,6 @@ class Search:
                 # Dumping with pickle
                 dump({
                     "found_path_set": list(original_found_path_set),
-                    "low_basename_dict": low_basename_dict,
                     "type_dict": type_dict}, result_file)
 
         else:
@@ -843,7 +836,7 @@ class Search:
         time_total = perf_counter() - time_before_start
 
         # Cleaning Memory
-        del type_dict, found_path_set, low_basename_dict, original_found_path_set
+        del type_dict, found_path_set, original_found_path_set
 
         # Debug
         logging.info("Finished Searching!")

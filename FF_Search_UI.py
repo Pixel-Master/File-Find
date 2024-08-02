@@ -169,8 +169,6 @@ class SearchWindow:
 
                 self.matched_list = matched_list_without_deleted_files.copy()
 
-                # del matched_list_without_deleted_files
-
                 # Loading cache to update it
                 with open(
                         os.path.join(

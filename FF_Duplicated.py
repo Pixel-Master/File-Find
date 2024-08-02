@@ -11,7 +11,6 @@
 # Imports
 import logging
 import os
-from json import load
 from sys import platform
 from time import perf_counter, time, ctime
 import difflib
@@ -224,7 +223,6 @@ class DuplicatedSettings:
             QThreadPool(self.Duplicated_Settings).start(
                 lambda: FindDuplicated(
                     criteria=criteria,
-                    search_path=search_path,
                     matched_list=matched_list,
                     finished_signal=finished_event_class))
 
@@ -535,7 +533,7 @@ class DuplicatedUI:
 
 # Algorithms to find duplicated files
 class FindDuplicated:
-    def __init__(self, criteria: dict, search_path, matched_list, finished_signal):
+    def __init__(self, criteria: dict, matched_list, finished_signal):
         # Debug
         logging.info("Searching for duplicated files...")
         logging.info(f"{criteria = }")
@@ -546,15 +544,7 @@ class FindDuplicated:
         # Saving time
         time_dict = {"start_time": perf_counter()}
 
-        # Loading cache
-        # Creating file
-        with open(
-                os.path.join(FF_Files.CACHED_SEARCHES_FOLDER, search_path.replace("/", "-") + ".FFCache")) as load_file:
-            # Loading file basename
-            file_dict = load(load_file)
-
-            found_path_set = matched_list
-            low_basename_dict = file_dict["low_basename_dict"]
+        found_path_set = matched_list
 
         # Content checking always requires size checking
         if criteria["content"]["activated"]:
@@ -577,7 +567,7 @@ class FindDuplicated:
 
                 for file in found_path_set:
                     # Get the basename, ignoring case
-                    low_basename = low_basename_dict[file]
+                    low_basename = os.path.basename(file).lower()
 
                     if low_basename not in exists_already:
                         # Add the file to the dictionaries
@@ -596,7 +586,7 @@ class FindDuplicated:
                 # Iterating through all files
                 for file in found_path_set:
                     # Get the basename, ignoring case
-                    low_basename = low_basename_dict[file]
+                    low_basename = os.path.basename(file).lower()
                     # If low_basename isn't already in exist already_text if there is something in the allowed range
                     if low_basename not in exists_already:
 

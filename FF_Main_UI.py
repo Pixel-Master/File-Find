@@ -549,11 +549,13 @@ class MainWindow:
         # Opens the File dialogue and changes the current working dir into the returned value
         def open_dialog():
             search_from = QFileDialog.getExistingDirectory(dir=FF_Files.SELECTED_DIR)
-            try:
-                FF_Files.SELECTED_DIR = search_from
-                self.edit_directory.setText(search_from)
-            except OSError:
-                pass
+            # If a dir was selected
+            if search_from != "":
+                try:
+                    FF_Files.SELECTED_DIR = search_from
+                    self.edit_directory.setText(search_from)
+                except OSError:
+                    pass
 
         browse_path_button = self.generate_edit_button(open_dialog, self.basic_search_widget, text="Browse")
         browse_path_button.setFixedWidth(80)
