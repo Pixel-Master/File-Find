@@ -17,7 +17,7 @@ from time import time
 import hashlib
 
 # Versions
-VERSION: str = "31-july-2024"
+VERSION: str = "8-aug-2024"
 VERSION_SHORT: str = "1.1.1"
 # Versions of file formats
 FF_FILTER_VERSION = 1

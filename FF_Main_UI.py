@@ -11,6 +11,7 @@
 # Imports
 import logging
 import os
+from unicodedata import normalize
 from json import dump, load
 from sys import platform
 import sys
@@ -837,7 +838,9 @@ class MainWindow:
             paths = []
             for list_folder in os.listdir(path):
                 if os.path.isdir(os.path.join(FF_Files.SELECTED_DIR, list_folder)):
-                    paths.append(os.path.join(FF_Files.SELECTED_DIR, list_folder))
+                    # Normalising the unicode form to deal with special characters (e.g. ä, ö, ü) on macOS
+                    normalised_path = normalize("NFC", os.path.join(FF_Files.SELECTED_DIR, list_folder))
+                    paths.append(normalised_path)
 
             # Returns the list
             return paths

@@ -11,6 +11,7 @@
 # Imports
 import logging
 import os
+from unicodedata import normalize
 from fnmatch import fnmatch
 from json import dump, load
 from sys import platform
@@ -394,6 +395,22 @@ class Search:
         data_name = data_name.lower()
         data_in_name = data_in_name.lower()
         data_filetype = data_filetype.lower()
+
+        ''' 
+        There are multiple possibilities in unicode on how to display some characters (for example ä, ü, ö).
+        A decomposed form NFD (normal form D) ä = a + ¨ 
+        and a composed one NFC (normal form C) ä = ä
+        On macos the filesystem returns the names for files created locally as NFD while everyone else does NFC.
+        It is possible to place NFC characters in macOS file names. But not for a normal user.
+        
+        If you have problems on macOS with composed/decomposed unicode character remove the four lines of code below.
+        '''
+
+        # Normalising arguments (see above)
+        if platform == "darwin":
+            data_name = normalize("NFD", data_name)
+            data_in_name = normalize("NFD", data_in_name)
+            data_filetype = normalize("NFD", data_filetype)
 
         # Checking if created time checking is needed
         if data_time["c_date_from"] == self.DEFAULT_TIME_INPUT["c_date_from"] and \
