@@ -133,7 +133,7 @@ class SearchWindow:
             try:
                 logging.info("Reload...")
                 time_before_reload = perf_counter()
-                removed_list = []
+                self.removed_list = []
                 # Creating a copy so that the list doesn't run out of index
                 matched_list_without_deleted_files = self.matched_list.copy()
 
@@ -146,19 +146,18 @@ class SearchWindow:
                         matched_list_without_deleted_files.remove(matched_file)
                         logging.debug(f"File Does Not exist: {matched_file}")
                         # Adding file to removed_list to later remove it from cache
-                        removed_list.append(matched_file)
+                        self.removed_list.append(matched_file)
 
                 # Debug
-                logging.info(f"Reloaded found Files and removed {len(removed_list)} in"
+                logging.info(f"Reloaded found Files and removed {len(self.removed_list)} in"
                              f" {round(perf_counter() - time_before_reload, 3)} sec.")
                 FF_Additional_UI.PopUps.show_info_messagebox(
                     "Reloaded!",
-                    f"Reloaded found Files and removed {len(removed_list)}"
+                    f"Reloaded found Files and removed {len(self.removed_list)}"
                     f" in {round(perf_counter() - time_before_reload, 3)} sec.",
                     self.Search_Results_Window)
                 # UI
                 objects_text.setText(f"Files found: {len(self.matched_list)}")
-                objects_text.adjustSize()
 
                 # Update internal list
                 self.matched_list = matched_list_without_deleted_files.copy()
@@ -179,7 +178,7 @@ class SearchWindow:
                         different_cache_file = False
 
                     # Removing all deleted files from cache
-                    for removed_file in removed_list:
+                    for removed_file in self.removed_list:
                         try:
                             cached_file["found_path_set"].remove(removed_file)
                             if different_cache_file:
@@ -199,7 +198,7 @@ class SearchWindow:
                 QThreadPool(self.Search_Results_Window).start(modify_cache)
 
                 # Delete variables out of memory
-                del removed_list
+                del self.removed_list
                 gc.collect()
             except FileNotFoundError:
                 FF_Additional_UI.PopUps.show_info_messagebox("Cache File not Found!",
