@@ -1,6 +1,6 @@
 # This source file is a part of File Find made by Pixel-Master
 #
-# Copyright 2022-2024 Pixel-Master
+# Copyright 2022-2025 Pixel-Master
 #
 # This software is licensed under the "GPLv3" License as described in the "LICENSE" file,
 # which should be included with this package. The terms are also available at
@@ -38,13 +38,15 @@ import FF_Settings
 class MenuBar:
 
     def __init__(
-            self, parent, window, listbox, matched_list=None, search_path=None, save_search=None, reload_files=None):
+            self, parent, window, listbox, matched_list=None, search_path=None, save_search=None, reload_files=None,
+    cache_file_path=None):
         logging.debug("Setting up menu-bar...")
 
         self.parent = parent
         self.listbox: QListWidget | QTreeWidget = listbox
         self.search_path = search_path
         self.window = window
+        self.cache_file_path =cache_file_path
 
         # Menu-bar
         self.menu_bar = self.parent.menuBar()
@@ -692,27 +694,37 @@ class MenuBar:
         clipboard = QClipboard()
         clipboard.setText(os.path.basename(file))
 
+        # TODO. remove
+        # QThreadPool(self.parent).start(lambda: run(["qlmanage", "-p", file]))
+
     # Copy path for Terminal
     def copy_path_for_terminal(self):
         file = self.get_current_item()
         clipboard = QClipboard()
-        clipboard.setText(FF_Files.convert_file_name_for_terminal(file))
+        clipboard.setText(file.replace(" ", r"\ "))
 
     # Remove moved file from cache
     def remove_file_from_cache(self, file):
-        with open(os.path.join(
-                FF_Files.CACHED_SEARCHES_FOLDER,
-                self.search_path.replace("/", "-") + ".FFCache")) as search_file:
+        with open(FF_Files.path_to_cache_file(self.search_path)) as search_file:
             cached_files = load(search_file)
+
 
         cached_files["found_path_set"].remove(file)
 
-        with open(
-                os.path.join(
-                    FF_Files.CACHED_SEARCHES_FOLDER,
-                    self.search_path.replace("/", "-") + ".FFCache"), "w") as search_file:
+        with open(FF_Files.path_to_cache_file(self.search_path), "w") as search_file:
             dump(cached_files, search_file)
 
+        # If there is a cache file from a higher directory
+        if self.cache_file_path != FF_Files.path_to_cache_file(self.search_path):
+            with open(self.cache_file_path) as upper_search_file:
+                cached_files = load(upper_search_file)
+
+            cached_files["found_path_set"].remove(file)
+
+            with open(self.cache_file_path, "w") as upper_search_file:
+                dump(cached_files, upper_search_file)
+
+        del cached_files
         # Debug
         logging.info("Removed file from cache")
 
@@ -752,4 +764,3 @@ class MenuBar:
             # Resetting it because the option isn't valid
             FF_Settings.SettingsWindow.update_setting("double_click_action",
                                                       FF_Files.DEFAULT_SETTINGS["double_click_action"])
-

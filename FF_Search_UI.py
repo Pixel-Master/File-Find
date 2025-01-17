@@ -1,6 +1,6 @@
 # This source file is a part of File Find made by Pixel-Master
 #
-# Copyright 2022-2024 Pixel-Master
+# Copyright 2022-2025 Pixel-Master
 #
 # This software is licensed under the "GPLv3" License as described in the "LICENSE" file,
 # which should be included with this package. The terms are also available at
@@ -12,11 +12,11 @@
 import logging
 import os
 from json import dump, load
-from sys import platform
 from time import perf_counter, ctime, time
+import gc
 
 # PySide6 Gui Imports
-from PySide6.QtCore import QSize, Qt
+from PySide6.QtCore import QSize, Qt, QThreadPool, QTimer
 from PySide6.QtGui import QFont, QIcon
 from PySide6.QtWidgets import QMainWindow, QLabel, QPushButton, QFileDialog, \
     QListWidget, QMenu, QWidget, QGridLayout, QHBoxLayout
@@ -31,7 +31,7 @@ import FF_Menubar
 
 
 class SearchWindow:
-    def __init__(self, time_dict, matched_list, search_path, parent):
+    def __init__(self, time_dict, matched_list, search_path, cache_file_path, parent):
         # Debug
         logging.info("Setting up Search UI...")
 
@@ -98,37 +98,19 @@ class SearchWindow:
         # Display the Listbox
         self.result_listbox.show()
 
+        self.search_opened_time = time()
+
         # Show more time info's
         def show_time_stats():
             # Debug
             logging.debug("Displaying time stats.")
 
-            # Getting the creation time of the cache file
-            # On Windows and Linux
-            # (On Linux this currently returns the modification date,
-            # because it's impossible to access with pure python)
-            if platform == "win32" or platform == 'cygwin' or platform == "linux":
-                cache_created_time = ctime(
-                    os.path.getctime(
-                        os.path.join(FF_Files.CACHED_SEARCHES_FOLDER, search_path.replace("/", "-") + ".FFCache")))
+            # Getting the creation time of the cache file which is stored separately
+            with open(FF_Files.path_to_cache_file(search_path, True)) as time_file:
+                # Load time
+                cache_created_time = ctime(load(time_file)["c_time"])
 
-            # On Mac
-            elif platform == "darwin":
-                cache_created_time = ctime(
-                    os.stat(
-                        os.path.join(FF_Files.CACHED_SEARCHES_FOLDER,
-                                     search_path.replace("/", "-") + ".FFCache")).st_birthtime)
-            # If platform is unknown
-            else:
-                cache_created_time = f"Unrecognised platform: {platform}"
-                # Debug
-                logging.error(f"Unrecognised platform: {platform}")
-
-            # Modified time
-            cache_modified_time = ctime(
-                os.path.getmtime(
-                    os.path.join(FF_Files.CACHED_SEARCHES_FOLDER, search_path.replace("/", "-") + ".FFCache")))
-            search_opened_time = ctime(time())
+            search_opened_time = ctime(self.search_opened_time)
 
             # Displaying infobox with time info
             FF_Additional_UI.PopUps.show_info_messagebox(
@@ -143,9 +125,8 @@ class SearchWindow:
                 f""
                 f"Timestamps:\n"
                 f"Cache created: {cache_created_time}\n"
-                f"Cache updated: {cache_modified_time}\n"
                 f"Search opened: {search_opened_time}",
-                self.Search_Results_Window)
+                self.Search_Results_Window, large=True)
 
         # Reloads File, check all collected files, if they still exist
         def reload_files():
@@ -167,27 +148,7 @@ class SearchWindow:
                         # Adding file to removed_list to later remove it from cache
                         removed_list.append(matched_file)
 
-                self.matched_list = matched_list_without_deleted_files.copy()
-
-                # Loading cache to update it
-                with open(
-                        os.path.join(
-                            FF_Files.CACHED_SEARCHES_FOLDER,
-                            search_path.replace("/", "-") + ".FFCache")) as search_file:
-
-                    cached_file: dict[list, dict, dict] = load(search_file)
-
-                # Removing all deleted files from cache
-                for removed_file in removed_list:
-                    try:
-                        cached_file["found_path_set"].remove(removed_file)
-                    except (KeyError, ValueError):
-                        # File was already removed from cache
-                        pass
-
-                with open(os.path.join(FF_Files.CACHED_SEARCHES_FOLDER, search_path.replace("/", "-") + ".FFCache"),
-                          "w") as search_file:
-                    dump(cached_file, search_file)
+                # Debug
                 logging.info(f"Reloaded found Files and removed {len(removed_list)} in"
                              f" {round(perf_counter() - time_before_reload, 3)} sec.")
                 FF_Additional_UI.PopUps.show_info_messagebox(
@@ -199,8 +160,47 @@ class SearchWindow:
                 objects_text.setText(f"Files found: {len(self.matched_list)}")
                 objects_text.adjustSize()
 
+                # Update internal list
+                self.matched_list = matched_list_without_deleted_files.copy()
+
+                def modify_cache():
+                    # Loading cache to update it
+                    with open(cache_file_path) as search_file:
+                        cached_file: dict[list, dict, dict] = load(search_file)
+
+                    # Testing if the cache file from the specified directory was used as to also update the used cache
+                    if cache_file_path != FF_Files.path_to_cache_file(search_path):
+
+                        different_cache_file = True
+                        # Loading cache to update it
+                        with open(FF_Files.path_to_cache_file(search_path)) as upper_search_file:
+                            cached_home_file: dict[list, dict, dict] = load(upper_search_file)
+                    else:
+                        different_cache_file = False
+
+                    # Removing all deleted files from cache
+                    for removed_file in removed_list:
+                        try:
+                            cached_file["found_path_set"].remove(removed_file)
+                            if different_cache_file:
+                                cached_home_file["found_path_set"].remove(removed_file)
+                        except (KeyError, ValueError):
+                            # File was already removed from cache
+                            pass
+
+                    with open(FF_Files.path_to_cache_file(search_path),"w") as search_file:
+                        dump(cached_file, search_file)
+
+                    # Loading the cache file from the higher directory
+                    if different_cache_file:
+                        with open(cache_file_path, "w") as upper_search_file:
+                            dump(cached_home_file, upper_search_file)
+
+                QThreadPool(self.Search_Results_Window).start(modify_cache)
+
                 # Delete variables out of memory
-                del cached_file, removed_list
+                del removed_list
+                gc.collect()
             except FileNotFoundError:
                 FF_Additional_UI.PopUps.show_info_messagebox("Cache File not Found!",
                                                              "Cache File was deleted, couldn't Update Cache!",
@@ -356,29 +356,38 @@ class SearchWindow:
         # On double-click
         self.result_listbox.itemDoubleClicked.connect(menu_bar.double_clicking_item)
 
-        # Update Seconds needed Label
-        seconds_text.setText(
-            f"Time needed: {round(time_dict['time_total'] + (perf_counter() - time_dict['time_before_building']), 3)}s")
-        seconds_text.adjustSize()
+        # If there was no file found and the list is empty
+        if not self.matched_list:
+            self.result_listbox.setDisabled(True)
+            self.result_listbox.addItem("No file of directory found")
 
-        # Time building UI
-        time_dict["time_building"] = perf_counter() - time_dict['time_before_building']
+        def finish():
+            # Update Seconds needed Label
+            seconds_text.setText(
+                f"Time needed: {round(time_dict['time_total'] + (perf_counter() - time_dict['time_before_building']), 3)}s")
+            seconds_text.adjustSize()
 
-        time_dict["time_total"] = time_dict["time_total"] + time_dict["time_building"]
+            # Time building UI
+            time_dict["time_building"] = perf_counter() - time_dict['time_before_building']
 
-        # Debug
-        logging.info(f"\nSeconds needed:\n"
-                     f"Scanning: {time_dict['time_searching']}\n"
-                     f"Indexing: {time_dict['time_indexing']}\n"
-                     f"Sorting: {time_dict['time_sorting']}\n"
-                     f"Building UI: {time_dict['time_building']}\n"
-                     f"Total: {time_dict['time_total']}")
+            time_dict["time_total"] = time_dict["time_total"] + time_dict["time_building"]
 
-        # Push Notification
-        FF_Main_UI.menu_bar_icon.showMessage("File Find - Search finished!", f"Your Search finished!\nin {search_path}",
-                                             QIcon(os.path.join(FF_Files.ASSETS_FOLDER, "Find_button_img_small.png")),
-                                             100000)
-        # Update Search indicator
-        FF_Main_UI.MainWindow.update_search_status_label()
+            # Debug
+            logging.info(f"\nSeconds needed:\n"
+                         f"Scanning: {time_dict['time_searching']}\n"
+                         f"Indexing: {time_dict['time_indexing']}\n"
+                         f"Sorting: {time_dict['time_sorting']}\n"
+                         f"Building UI: {time_dict['time_building']}\n"
+                         f"Total: {time_dict['time_total']}")
 
-        logging.info("Finished Building Search-Results-UI!\n")
+            # Push Notification
+            FF_Main_UI.menu_bar_icon.showMessage("File Find - Search finished!", f"Your Search finished!\nin {search_path}",
+                                                 QIcon(os.path.join(FF_Files.ASSETS_FOLDER, "Find_button_img_small.png")),
+                                                 100000)
+            # Update Search indicator
+            FF_Main_UI.MainWindow.update_search_status_label()
+
+            logging.info("Finished Building Search-Results-UI!\n")
+
+        # Adding the finish function to the Qt event loop
+        QTimer.singleShot(0, finish)

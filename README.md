@@ -102,7 +102,7 @@ Or you could:
 
 ## Building from source
 ### Dependencies for building
-- [Python](https://python.org/) 3.9 or higher **(Python 3.12 does not work yet!)**
+- [Python](https://python.org/) 3.9 or higher **(Python 3.13 does not work yet!)**
 - [PySide6](https://pypi.org/project/PySide6/) 6.4.1 or higher
 - [nuitka](https://pypi.org/project/nuitka/) 2.0 or higher
 - **Only macOS:** [dmgbuild](https://pypi.org/project/dmgbuild/) 1.1 or higher
@@ -113,9 +113,9 @@ Or you could:
 
 1. Install Python:
     
-    Download the installer: [here](https://www.python.org/ftp/python/3.11.6/python-3.11.6-macos11.pkg) or use
+    Download the installer: [here](https://www.python.org/ftp/python/3.12.7/python-3.12.7-macos11.pkg) or use
 
-    Homebrew: `brew install python@3.11`
+    Homebrew: `brew install python@3.12`
 
 
 2. Clone the File Find repository: `git clone https://github.com/Pixel-Master/File-Find.git`
@@ -142,7 +142,7 @@ Or you could:
     
     With your favourite packet-manager
 
-    E.g.: `sudo apt install python3.11`
+    E.g.: `sudo apt install python3.12`
 
 
 2. Clone the File Find repository with git: `git clone https://github.com/Pixel-Master/File-Find.git`
@@ -167,7 +167,7 @@ Or you could:
 
 1. Install Python:
     
-    Download the installer: [here](https://www.python.org/ftp/python/3.11.8/python-3.11.8-amd64.exe)
+    Download the installer: [here](https://www.python.org/ftp/python/3.12.7/python-3.12.7-amd64.exe)
 
 
 2. Clone the File Find repository with git: `git clone https://github.com/Pixel-Master/File-Find.git`

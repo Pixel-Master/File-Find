@@ -1,6 +1,6 @@
 # This source file is a part of File Find made by Pixel-Master
 #
-# Copyright 2022-2024 Pixel-Master
+# Copyright 2022-2025 Pixel-Master
 #
 # This software is licensed under the "GPLv3" License as described in the "LICENSE" file,
 # which should be included with this package. The terms are also available at
@@ -12,6 +12,9 @@
 import logging
 import os
 from json import load, dump
+from subprocess import run
+from sys import platform
+from time import time, ctime
 
 # PySide6 Gui Imports
 from PySide6.QtCore import Qt, Signal, QObject
@@ -315,7 +318,7 @@ def welcome_popups(parent, force_popups=False):
     # Debug
     logging.debug("Testing for PopUps...")
 
-    # Loading already displayed Popups with pickle
+    # Loading already displayed Popups with json
     with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings")) as settings_file:
         settings = load(settings_file)
         popup_dict = settings["popup"]
@@ -325,9 +328,10 @@ def welcome_popups(parent, force_popups=False):
         logging.info("Showing Welcomes PopUp...")
 
         # Asking if tutorial is necessary
-        question_popup = QMessageBox(text="Would you like to have a short tutorial?\n\n"
-                                          "By going to Help > Tutorial, you can get it later.", parent=parent)
+        question_popup = QMessageBox(parent=parent)
 
+        question_popup.setText("Would you like to have a short tutorial?\n\n"
+                                          "By going to Help > Tutorial, you can get it later.")
         question_popup.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
         # Entering the mainloop
         question_popup.exec()
@@ -385,11 +389,47 @@ def welcome_popups(parent, force_popups=False):
             text="Thanks for upgrading File Find!\n\n"
                  f"File Find is an open source Utility for finding files. \n\n"
                  f"Get new versions at: "
-                 f"https://pixel-master.github.io/File-Find/"
+                 f"https://pixel-master.github.io/File-Find/download"
                  f"\n\n\n"
                  "File Find version: "
-                 f"{FF_Files.VERSION_SHORT}[{FF_Files.VERSION}]",
+                 f"{FF_Files.VERSION_SHORT} [{FF_Files.VERSION}]",
             parent=parent)
+
+    # If last update notice is older than 40 weeks, inform about possibility of a new update
+    # time() returns time since the epoch in seconds
+    elif popup_dict["last_update_notice"] < (time() - (FF_Files.SECONDS_OF_A_WEEK * 40)):
+        # Debug
+        logging.info(f"Showing update notice as last notice was on:"
+                     f" {ctime(popup_dict['last_update_notice'])}")
+
+        # Show question
+        if (QMessageBox.information(
+                parent,
+                "Looking for updates?",
+                "Looking for updates?\n\n"
+                f"It has been more the half a year since you last checked for updates.\n\n"
+                f"Download new versions at: "
+                f"https://pixel-master.github.io/File-Find/download"
+                f"\n\n\n"
+                "Your current File Find version: "
+                f"{FF_Files.VERSION_SHORT} [{FF_Files.VERSION}]",
+                QMessageBox.StandardButton.Cancel | QMessageBox.StandardButton.Open)
+
+                == QMessageBox.StandardButton.Open):
+
+            # Open the download link
+            if platform == "darwin":
+                run(["open", "https://pixel-master.github.io/File-Find/download"])
+            elif platform == "win32" or platform == "cygwin":
+                run(["start", "https://pixel-master.github.io/File-Find/download"], shell=True)
+            elif platform == "linux":
+                run(["xdg-open", "https://pixel-master.github.io/File-Find/download"])
+
+            # Resetting time since last notice
+            popup_dict["last_update_notice"] = time()
+
+            # Debug
+            logging.debug(f"Reset time since last_update_notice to {ctime(time())}")
 
     # Setting PopUp File
     popup_dict["FF_ver_welcome"] = False

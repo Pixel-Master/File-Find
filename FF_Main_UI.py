@@ -1,6 +1,6 @@
 # This source file is a part of File Find made by Pixel-Master
 #
-# Copyright 2022-2024 Pixel-Master
+# Copyright 2022-2025 Pixel-Master
 #
 # This software is licensed under the "GPLv3" License as described in the "LICENSE" file,
 # which should be included with this package. The terms are also available at
@@ -351,6 +351,9 @@ class MainWindow:
         self.complete_path(FF_Files.SELECTED_DIR, check=False)
         # Resize and place on screen
         self.basic_search_widget_layout.addWidget(self.edit_directory, 3, 2)
+        # If app is sandboxed
+        if FF_Files.IS_SANDBOXED:
+            self.edit_directory.setReadOnly(True)
 
         # File contains
         self.edit_file_contains = self.generate_filter_entry(self.properties_widget)
@@ -605,7 +608,7 @@ class MainWindow:
                 f"Reverse results: {rb_reverse_sort_yes.isChecked()}\n")
 
         # Start Search with args locally
-        def search_entry():
+        def search_entry(new_cache_file=False):
             # Debug
             logging.debug("User clicked Find")
 
@@ -631,6 +634,7 @@ class MainWindow:
                 data_sort_by=self.combobox_sorting.currentText(),
                 data_reverse_sort=rb_reverse_sort_yes.isChecked(),
                 data_file_group=self.combobox_file_types.all_checked_items(),
+                new_cache_file=new_cache_file,
                 parent=self.Root_Window)
 
         # Saves the function in a different var
@@ -685,9 +689,9 @@ class MainWindow:
         # Menu when Right-clicking
         context_menu = QMenu(self.Root_Window)
 
-        # Search and delete cache for selected folder action
-        action_search_without_cache = QAction("Search and delete cache for selected folder", self.Root_Window)
-        action_search_without_cache.triggered.connect(self.delete_cache_and_search)
+        # Search and create new cache for selected folder action
+        action_search_without_cache = QAction("Search and create new cache for selected folder", self.Root_Window)
+        action_search_without_cache.triggered.connect(self.create_cache_and_search)
         context_menu.addAction(action_search_without_cache)
 
         # Separator
@@ -838,7 +842,7 @@ class MainWindow:
             paths = []
             for list_folder in os.listdir(path):
                 if os.path.isdir(os.path.join(FF_Files.SELECTED_DIR, list_folder)):
-                    # Normalising the unicode form to deal with special characters (e.g. ä, ö, ü) on macOS
+                    # Normalising the Unicode form to deal with special characters (e.g. ä, ö, ü) on macOS
                     normalised_path = normalize("NFC", os.path.join(FF_Files.SELECTED_DIR, list_folder))
                     paths.append(normalised_path)
 
@@ -1168,10 +1172,10 @@ class MainWindow:
         search_action.triggered.connect(self.search_entry)
         edit_menu.addAction(search_action)
 
-        # Search and delete cache for selected folder action
-        search_without_cache_action = QAction("Search and delete cache for selected folder", self.Root_Window)
+        # Search and create new cache for selected folder action
+        search_without_cache_action = QAction("Search and create new cache for selected folder", self.Root_Window)
         search_without_cache_action.setShortcut("Ctrl+Shift+F")
-        search_without_cache_action.triggered.connect(self.delete_cache_and_search)
+        search_without_cache_action.triggered.connect(self.create_cache_and_search)
         edit_menu.addAction(search_without_cache_action)
 
         # Switch Tabs
@@ -1286,18 +1290,11 @@ class MainWindow:
             search_status_label.setStyleSheet(f"color: {FF_Files.RED_COLOR};")
             search_status_label.adjustSize()
 
-    # Search without using the cache
-    def delete_cache_and_search(self):
-        logging.info("Deleting cache and search..")
-        # Delete cache File
-        cache_file_name = self.edit_directory.text().replace("/", "-")
-        try:
-            os.remove(os.path.join(FF_Files.CACHED_SEARCHES_FOLDER, f"{cache_file_name}.FFCache"))
-            logging.info("Deleted cache successfully")
-        except FileNotFoundError:
-            logging.debug("Cache file doesn't exist")
+    # Search with a new cache
+    def create_cache_and_search(self):
+        logging.info("Searching with a new cache file..")
         # Search
-        self.search_entry()
+        self.search_entry(new_cache_file=True)
 
 
 class SearchUpdate:
@@ -1325,5 +1322,8 @@ class SearchUpdate:
     def update(self, text: str):
         self.search_status.setText(text)
 
+    def close(self):
+        self.search_status_menu.removeAction(self.search_status)
+        self.search_status_menu.removeAction(self.search_path)
 
 global menu_bar_icon_menu, search_status_menu, menu_bar_icon, search_status_label

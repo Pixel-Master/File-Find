@@ -1,6 +1,6 @@
 # This build script is a part of File Find made by Pixel-Master
 #
-# Copyright 2022-2024 Pixel-Master
+# Copyright 2022-2025 Pixel-Master
 #
 # This software is licensed under the "GPLv3" License as described in the "LICENSE" file,
 # which should be included with this package. The terms are also available at
@@ -80,7 +80,7 @@ def main():
                            "File Find needs to access your file-system in order to search it",
                        "LSApplicationCategoryType": "public.app-category.utilities",
                        "LSUIElement": False,
-                       "NSHumanReadableCopyright": "Copyright © 2022–2024 Pixel Master. Some rights reserved.",
+                       "NSHumanReadableCopyright": "Copyright © 2022–2025 Pixel Master. Some rights reserved.",
                        "NSSupportsSuddenTermination": False,
                        "CFBundleInfoDictionaryVersion": "6.0",
                        "NSHighResolutionCapable": True}, fp=plist)

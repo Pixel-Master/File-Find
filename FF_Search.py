@@ -1,6 +1,6 @@
 # This source file is a part of File Find made by Pixel-Master
 #
-# Copyright 2022-2023 Pixel-Master
+# Copyright 2022-2025 Pixel-Master
 #
 # This software is licensed under the "GPLv3" License as described in the "LICENSE" file,
 # which should be included with this package. The terms are also available at
@@ -11,6 +11,7 @@
 # Imports
 import logging
 import os
+import time
 from unicodedata import normalize
 from fnmatch import fnmatch
 from json import dump, load
@@ -125,9 +126,7 @@ class LoadSearch:
                              f" local version: {FF_Files.FF_SEARCH_VERSION}")
 
                 # If the cache doesn't exist
-                if not os.path.exists(
-                        os.path.join(FF_Files.CACHED_SEARCHES_FOLDER,
-                                     f"{load_file}.FFCache".replace("/", "-"))):
+                if not os.path.exists(FF_Files.path_to_cache_file(load_file)):
 
                     # Dictionary which is going to be dumped into the cache file
                     dump_dict = {"VERSION": FF_Files.FF_CACHE_VERSION,
@@ -155,7 +154,7 @@ class LoadSearch:
                                              "time_sorting": 0,
                                              "time_building": 0,
                                              "time_total": 0},
-                                            saved_file_content["matched_list"], load_file, parent])
+                                            saved_file_content["matched_list"], load_file, load_file, parent])
 
 
 # The Search Engine
@@ -163,7 +162,7 @@ class Search:
     def __init__(self, data_name, data_in_name, data_filetype, data_file_size_min, data_file_size_max,
                  data_file_size_min_unit, data_file_size_max_unit, data_library,
                  data_search_for, data_search_from_valid, data_search_from_unchecked, data_content, data_date_edits,
-                 data_sort_by, data_reverse_sort, data_file_group, parent: QWidget):
+                 data_sort_by, data_reverse_sort, data_file_group, parent: QWidget, new_cache_file=False):
         # Debug
         logging.debug("Converting Date-times...")
 
@@ -355,24 +354,83 @@ class Search:
 
             # Creating Qt Signal
             class SignalClass(QObject):
+                # Logging point for menu-bar
+                starting = Signal()
+                scanning = Signal()
+                indexing = Signal()
+                indexing_name = Signal()
+                indexing_name_contains = Signal()
+                indexing_file_extension = Signal()
+                indexing_system_files = Signal()
+                indexing_files_folders = Signal()
+                indexing_file_groups = Signal()
+                indexing_dump_files = Signal()
+                indexing_excluded = Signal()
+                indexing_c_date = Signal()
+                indexing_m_date = Signal()
+                indexing_file_size = Signal()
+                indexing_file_content = Signal()
+                sorting_name = Signal()
+                sorting_size = Signal()
+                sorting_c_date = Signal()
+                sorting_m_date = Signal()
+                sorting_path = Signal()
+                sorting_reversed = Signal()
+                caching = Signal()
+                building_ui = Signal()
+
+
                 finished = Signal()
+                waiting = Signal()
 
             # Defining thread
             self.thread = QThreadPool(parent)
 
             # Setup Qt6 Signal
             self.signals = SignalClass()
+            # Displaying "Please Wait"
+            self.signals.waiting.connect(lambda: FF_Main_UI.MainWindow.update_search_status_label(ui_building=True))
             # Debug
             self.signals.finished.connect(lambda: logging.info("Finished Search Thread!\n"))
             # Launching UI
             self.signals.finished.connect(lambda: FF_Search_UI.SearchWindow(*SEARCH_OUTPUT))
+
+            # Connecting the menu-bar log to the signals
+            self.signals.starting.connect(lambda: self.ui_logger.update("Starting Search..."))
+            self.signals.scanning.connect(lambda: self.ui_logger.update("Scanning..."))
+            self.signals.indexing.connect(lambda: self.ui_logger.update("Indexing..."))
+            self.signals.indexing_name.connect(lambda: self.ui_logger.update("Indexing Name..."))
+            self.signals.indexing_name_contains.connect(lambda: self.ui_logger.update("Indexing Name contains..."))
+            self.signals.indexing_file_extension.connect(lambda: self.ui_logger.update("Indexing file extension..."))
+            self.signals.indexing_system_files.connect(lambda: self.ui_logger.update("Indexing System Files..."))
+            self.signals.indexing_files_folders.connect(
+                lambda: self.ui_logger.update("Indexing exclude or include folders or files ..."))
+            self.signals.indexing_file_groups.connect(lambda: self.ui_logger.update("Filtering for file groups..."))
+            self.signals.indexing_dump_files.connect(lambda: self.ui_logger.update("Removing dump files..."))
+            self.signals.indexing_excluded.connect(lambda: self.ui_logger.update("Filtering excluded files..."))
+            self.signals.indexing_c_date.connect(lambda: self.ui_logger.update("Indexing date created..."))
+            self.signals.indexing_m_date.connect(lambda: self.ui_logger.update("Indexing date modified..."))
+            self.signals.indexing_file_size.connect(lambda: self.ui_logger.update("Indexing file size..."))
+            self.signals.indexing_file_content.connect(lambda: self.ui_logger.update("Indexing file contains..."))
+            self.signals.sorting_name.connect(lambda: self.ui_logger.update("Sorting results by name..."))
+            self.signals.sorting_size.connect(lambda: self.ui_logger.update("Sorting results by size..."))
+            self.signals.sorting_c_date.connect(lambda: self.ui_logger.update("Sorting results by creation date..."))
+            self.signals.sorting_m_date.connect(lambda:
+                                                self.ui_logger.update("Sorting results by modification date..."))
+            self.signals.sorting_path.connect(lambda: self.ui_logger.update("Sorting results by path..."))
+            self.signals.sorting_reversed.connect(lambda: self.ui_logger.update("Reversing results..."))
+            self.signals.caching.connect(lambda: self.ui_logger.update("Caching search results..."))
+            self.signals.building_ui.connect(lambda: self.ui_logger.update("Building UI..."))
+            self.signals.finished.connect(lambda: self.ui_logger.close())
+
+
 
             # Starting the Thread
             self.thread.start(
                 lambda: self.searching(
                     data_name, data_in_name, data_filetype, data_file_size_min, data_file_size_max, data_library,
                     data_search_from_valid, data_search_for, data_content, unix_time_list, data_sort_by,
-                    data_reverse_sort, data_file_group, data_excluded_files, parent))
+                    data_reverse_sort, data_file_group, data_excluded_files, new_cache_file, parent))
 
             # Debug
             logging.debug("Finished Setting up QThreadPool!")
@@ -380,10 +438,10 @@ class Search:
     # The search engine
     def searching(self, data_name, data_in_name, data_filetype, data_file_size_min, data_file_size_max, data_library,
                   data_search_from, data_search_for, data_content, data_time, data_sort_by, data_reverse_sort,
-                  data_file_group, data_excluded_files, parent):
+                  data_file_group, data_excluded_files, new_cache_file, parent):
         # Debug
         logging.info("Starting Search...")
-        self.ui_logger.update("Starting Search...")
+        self.signals.starting.emit()
 
         # Saving time before scanning
         time_before_start = perf_counter()
@@ -493,30 +551,74 @@ class Search:
         # Debug
         logging.info("Starting Scanning...")
         # Update the menu-bar status
-        self.ui_logger.update("Scanning...")
+        self.signals.scanning.emit()
 
-        '''Checking, if a Cache File exist, if not it goes through every file in the directory and saves it. If a
-        cache does exist it loads found_path_set from the cache file'''
-        if os.path.exists(
-                os.path.join(FF_Files.CACHED_SEARCHES_FOLDER, data_search_from.replace("/", "-") + ".FFCache")):
+        '''Checking, if a Cache File exists in any fitting directory'''
+        newest_fitting_cache_file = None
+        newest_fitting_cache_file_c_date = 0
+
+        for cache_file in os.listdir(FF_Files.CACHED_SEARCHES_FOLDER):
+            # Looks if there is a cache file for a higher directory
+            if data_search_from.replace(os.sep, "-").startswith(cache_file.removesuffix(".FFCache")):
+                # Date created from separate file
+                with open(os.path.join(FF_Files.CACHE_METADATA_FOLDER, cache_file)) as time_file:
+                    cache_file_c_date = load(time_file)["c_time"]
+
+                # Looks if it is newer
+                if cache_file_c_date > newest_fitting_cache_file_c_date:
+                    newest_fitting_cache_file_c_date = cache_file_c_date
+                    newest_fitting_cache_file = os.path.join(FF_Files.CACHED_SEARCHES_FOLDER, cache_file)
+
+        # If there is a fitting cache file or user requested new cache file to be created
+        if newest_fitting_cache_file is not None and not new_cache_file:
             # Debug
-            logging.info("Scanning using cached Data..")
+            logging.info(f"Scanning using cached data from {newest_fitting_cache_file}"
+                         f" created at {time.ctime(newest_fitting_cache_file_c_date)}")
 
-            used_cached = True
+            used_cache = True
             # Load cache
-            with open(os.path.join(FF_Files.CACHED_SEARCHES_FOLDER,
-                                   data_search_from.replace("/", "-") + ".FFCache")) as search_results:
+            with open(newest_fitting_cache_file) as search_results:
                 load_input = load(search_results)
-                found_path_set = set(load_input["found_path_set"])
-                type_dict = load_input["type_dict"]
 
+                # If the found cache file is form the same directory as which was searched
+                if newest_fitting_cache_file == FF_Files.path_to_cache_file(data_search_from):
+                    # Debug
+                    logging.debug("Cache file from the same directory as search")
+
+                    found_path_set = set(load_input["found_path_set"])
+                    type_dict = load_input["type_dict"]
+
+
+                # If it's a cache file from an upper dir
+                else:
+                    # Debug
+                    logging.debug("Cache file from an higher directory, sorting out unnecessary files")
+
+                    found_path_set = set(load_input["found_path_set"])
+                    type_dict = load_input["type_dict"]
+
+                    keep_time = time.perf_counter()
+
+                    # Remove irrelevant paths
+                    for found_item in found_path_set.copy():
+                        if not found_item.startswith(data_search_from):
+                            found_path_set.remove(found_item)
+                            del type_dict[found_item]
+
+                    # Remove the path itself
+                    found_path_set.remove(data_search_from)
+                    del type_dict[data_search_from]
+
+                    logging.debug(f"Sorting out unnecessary files took {perf_counter() - keep_time} sec.")
+
+        # If there is no newer cache file
         else:
 
             # Creates empty lists for the files
             found_path_set: set = set()
             type_dict: dict = {}
 
-            used_cached = False
+            used_cache = False
 
             # Going through every file and every folder using the os.walk() method
             # Saving every file to found_path_set and the type (file or folder) to found_path_dict
@@ -540,7 +642,7 @@ class Search:
         # Debug
         logging.info("Starting Indexing...")
         # Update the menu-bar status
-        self.ui_logger.update("Indexing...")
+        self.signals.indexing.emit()
 
         # Creating a copy because items can't be removed while iterating over a set
         copy_found_path_set = found_path_set.copy()
@@ -549,7 +651,7 @@ class Search:
         # Applies filters, when they don't match the function remove them from the found_path_dict
         # Name
         logging.info("Indexing Name...")
-        self.ui_logger.update("Indexing Name...")
+        self.signals.indexing_name.emit()
         if data_name != "":
 
             # Scan every file
@@ -562,7 +664,7 @@ class Search:
 
         # Name contains
         logging.info("Indexing Name contains...")
-        self.ui_logger.update("Indexing Name contains...")
+        self.signals.indexing_name_contains.emit()
 
         if data_in_name != "":
             # Scan every file
@@ -574,8 +676,8 @@ class Search:
         found_path_set = copy_found_path_set.copy()
 
         # Filetype
-        logging.info("Indexing file ending...")
-        self.ui_logger.update("Indexing file ending...")
+        logging.info("Indexing file extension...")
+        self.signals.indexing_file_extension.emit()
 
         if data_filetype != "":
             # Scan every file
@@ -588,7 +690,7 @@ class Search:
 
         # Search in System Files
         logging.info("Indexing System Files...")
-        self.ui_logger.update("Indexing System Files...")
+        self.signals.indexing_system_files.emit()
         if not data_library:
 
             # Scan every file
@@ -602,7 +704,7 @@ class Search:
 
         # Exclude or Include Folders or Files
         logging.info("Indexing Exclude or Include Folders or Files...")
-        self.ui_logger.update("Indexing Exclude or Include Folders or Files...")
+        self.signals.indexing_files_folders.emit()
         if data_search_for_needed:
 
             # Checks for File
@@ -620,7 +722,7 @@ class Search:
         found_path_set = copy_found_path_set.copy()
         # Filter some unnecessary System Files
         logging.info("Filtering for file groups...")
-        self.ui_logger.update("Filtering for file groups...")
+        self.signals.indexing_file_groups.emit()
 
         # if "other" files is activated
         if allowed_filetypes is not None:
@@ -645,7 +747,7 @@ class Search:
 
         # Filter some unnecessary System Files
         logging.info("Removing dump files...")
-        self.ui_logger.update("Removing dump files...")
+        self.signals.indexing_dump_files.emit()
 
         for system_file in found_path_set:
             basename = os.path.basename(system_file).lower()
@@ -657,7 +759,7 @@ class Search:
 
         # Excluded Files
         logging.info("Filtering excluded files...")
-        self.ui_logger.update("Filtering excluded files...")
+        self.signals.indexing_excluded.emit()
         if data_excluded_files_needed:
             for test_file in found_path_set:
                 for excluded_file in data_excluded_files:
@@ -670,7 +772,7 @@ class Search:
         # Checking for Date Created
         # Checking if File Date is between Filter Dates
         logging.info("Indexing Date created...")
-        self.ui_logger.update("Indexing Date created...")
+        self.signals.indexing_c_date.emit()
         if data_c_time_needed:
 
             # On Windows and Linux
@@ -715,8 +817,8 @@ class Search:
         found_path_set = copy_found_path_set.copy()
 
         # Checking for Date Modified
-        logging.info("Indexing Date modified...")
-        self.ui_logger.update("Indexing Date modified...")
+        logging.info("Indexing date modified...")
+        self.signals.indexing_m_date.emit()
         if data_m_time_needed:
 
             # Looping through every file
@@ -737,7 +839,7 @@ class Search:
 
         # File Size
         logging.info("Indexing file size...")
-        self.ui_logger.update("Indexing file size...")
+        self.signals.indexing_file_size.emit()
         if data_file_size_min != "" and data_file_size_max != "":
 
             # Looping through every file
@@ -751,7 +853,7 @@ class Search:
 
         # File contains
         logging.info("Indexing file contains...")
-        self.ui_logger.update("Indexing file contains...")
+        self.signals.indexing_file_content.emit()
         if data_content != "":
 
             # Looping through every file
@@ -788,17 +890,17 @@ class Search:
         # Sorting
         if data_sort_by == "File Name":
             logging.info("Sorting list by name...")
-            self.ui_logger.update("Sorting list by name...")
+            self.signals.sorting_name.emit()
             found_path_list.sort(key=Sort.name, reverse=data_reverse_sort)
 
         elif data_sort_by == "File Size":
             logging.info("Sorting list by size...")
-            self.ui_logger.update("Sorting list by size...")
+            self.signals.sorting_size.emit()
             found_path_list.sort(key=Sort.size, reverse=not data_reverse_sort)
 
         elif data_sort_by == "Date Created":
             logging.info(f"Sorting list by creation date on {platform}...")
-            self.ui_logger.update("Sorting list by creation date...")
+            self.signals.sorting_c_date.emit()
 
             # On Windows and Linux
             # (On Linux this currently returns the modification date,
@@ -812,41 +914,64 @@ class Search:
 
         elif data_sort_by == "Date Modified":
             logging.info("Sorting list by modification date...")
-            self.ui_logger.update("Sorting list by modification date...")
+            self.signals.sorting_m_date.emit()
             found_path_list.sort(key=Sort.m_date, reverse=not data_reverse_sort)
 
         elif data_sort_by == "Path":
             logging.info("Sorting list by path...")
-            self.ui_logger.update("Sorting list by path...")
+            self.signals.sorting_path.emit()
             found_path_list.sort(key=lambda sort_file: sort_file.lower(), reverse=data_reverse_sort)
 
         else:
             logging.info("Skipping Sorting")
-            self.ui_logger.update("Skipping Sorting...")
             if data_reverse_sort:
                 logging.debug("Reversing Results...")
+                self.signals.sorting_reversed.emit()
                 found_path_list = list(reversed(found_path_list))
 
-        # Caching Results with pickle
-        # Testing if cache file exist, if it doesn't exist it caches scanned files
-        if not used_cached:
+        # Caching Results with json
+        # Testing if cache file exist, if it doesn't or isn't from the exact directory exist it caches scanned files
+        if not used_cache or newest_fitting_cache_file != FF_Files.path_to_cache_file(data_search_from):
             # Debug and menu-bar log
             logging.info("Caching Search Results...")
-            self.ui_logger.update("Caching Search Results...")
+            self.signals.caching.emit()
 
             # Creating file
-            with open(os.path.join(FF_Files.CACHED_SEARCHES_FOLDER, data_search_from.replace("/", "-") + ".FFCache"),
-                      "w") as result_file:
-                # Dumping with pickle
+            with open(FF_Files.path_to_cache_file(data_search_from), "w") as result_file:
+                # Dumping with json
                 dump({
                     "found_path_set": list(original_found_path_set),
                     "type_dict": type_dict}, result_file)
+
+
+            # Saving the cache creation time in a separate file for faster access
+            with open(FF_Files.path_to_cache_file(data_search_from, True),"w") as time_write_file:
+                if used_cache:
+                    # Determining the number of parent directories by splitting the path with the default separator
+                    # and then getting the length of the list. Dividing by then so to only add fractions of a seconds
+                    # to the c_time as to not get ranked over newer caches. Doing this so the already specialized cache
+                    # gets used preferably
+                    c_time_adjust = len(data_search_from.split(os.sep)) / 10
+                    logging.debug(f"Cache time {newest_fitting_cache_file_c_date} + adjuster: {c_time_adjust} "
+                                  f"= {newest_fitting_cache_file_c_date + c_time_adjust}")
+
+                    # Used old cache, use old time
+                    dump({"c_time": newest_fitting_cache_file_c_date + c_time_adjust,
+                          "cache_version":FF_Files.FF_CACHE_VERSION,
+                          "original_cache_file": FF_Files.path_to_cache_file(data_search_from)}, time_write_file)
+
+                else:
+                    logging.debug("Created brand new cache..")
+                    # New cache created
+                    dump({"c_time": time.time()}, time_write_file)
+                    newest_fitting_cache_file = FF_Files.path_to_cache_file(data_search_from)
+
 
         else:
             logging.info("Cache file already exist, skipping caching...")
 
         # Updating search status indicator
-        FF_Main_UI.MainWindow.update_search_status_label(ui_building=True)
+        self.signals.waiting.emit()
 
         # Calculating time
         time_after_sorting = perf_counter() - (time_after_indexing + time_after_searching + time_before_start)
@@ -857,7 +982,7 @@ class Search:
 
         # Debug
         logging.info("Finished Searching!")
-        self.ui_logger.update("Building UI...")
+        self.signals.building_ui.emit()
 
         # The parameter passed on to the UI builder
         global SEARCH_OUTPUT
@@ -865,7 +990,7 @@ class Search:
                           "time_searching": time_after_searching,
                           "time_indexing": time_after_indexing,
                           "time_sorting": time_after_sorting},
-                         found_path_list, data_search_from, parent]
+                         found_path_list, data_search_from, newest_fitting_cache_file, parent]
 
         # Updating Thread count
         global ACTIVE_SEARCH_THREADS
@@ -897,6 +1022,6 @@ class Search:
 
 
 # Global Variables for Search Threads
-SEARCH_OUTPUT: [{str: float}, list, str, QWidget] = []
+SEARCH_OUTPUT: [{str: float}, list, str, str, QWidget] = []
 
 ACTIVE_SEARCH_THREADS: int = 0

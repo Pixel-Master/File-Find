@@ -1,6 +1,6 @@
 # This source file is a part of File Find made by Pixel-Master
 #
-# Copyright 2022-2024 Pixel-Master
+# Copyright 2022-2025 Pixel-Master
 #
 # This software is licensed under the "GPLv3" License as described in the "LICENSE" file,
 # which should be included with this package. The terms are also available at
@@ -89,7 +89,7 @@ class AboutWindow:
         author_label = QLabel(about_window)
         # Font and Text
         author_label.setText(
-            "Created by Pixel Master, Copyright © 2022–2024 Pixel Master.\nLicensed under the GNU GPLv3")
+            "Created by Pixel Master, Copyright © 2022–2025 Pixel Master.\nLicensed under the GNU GPLv3")
         author_label.setFont(QFont(FF_Files.DEFAULT_FONT, FF_Files.SMALLER_FONT_SIZE))
         # The command and tooltip
         author_label.setToolTip(f"Version: {FF_Files.VERSION_SHORT} Extended Version: {FF_Files.VERSION}")

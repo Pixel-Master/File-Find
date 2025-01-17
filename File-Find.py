@@ -1,6 +1,6 @@
 # This source file is a part of File Find made by Pixel-Master
 #
-# Copyright 2022-2024 Pixel-Master
+# Copyright 2022-2025 Pixel-Master
 #
 # This software is licensed under the "GPLv3" License as described in the "LICENSE" file,
 # which should be included with this package. The terms are also available at
@@ -34,6 +34,12 @@ if __name__ == "__main__":
 
     logging.info(f"Launching File Find with Version {FF_Files.VERSION_SHORT}[{FF_Files.VERSION}]...\n")
     logging.info(f"Launching on \"{platform}\", User Path: {FF_Files.USER_FOLDER}...\n")
+
+    # If app is sandboxed on macOS, certain things are not possible
+    if FF_Files.IS_SANDBOXED:
+        logging.info("App is sandboxed, certain features are not available")
+    else:
+        logging.info("App is NOT sandboxed, all features are available")
 
     # Creating QApplication
     class CreateApp(QApplication):

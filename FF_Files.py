@@ -1,6 +1,6 @@
 # This source file is a part of File Find made by Pixel-Master
 #
-# Copyright 2022-2024 Pixel-Master
+# Copyright 2022- 2025 Pixel-Master
 #
 # This software is licensed under the "GPLv3" License as described in the "LICENSE" file,
 # which should be included with this package. The terms are also available at
@@ -17,17 +17,16 @@ from time import time
 import hashlib
 
 # Versions
-VERSION: str = "8-aug-2024"
-VERSION_SHORT: str = "1.1.1"
+VERSION: str = "17-jan-2025"
+VERSION_SHORT: str = "1.1.2"
 # Versions of file formats
 FF_FILTER_VERSION = 1
 FF_SEARCH_VERSION = 1
 FF_SETTINGS_VERSION = 1
-FF_CACHE_VERSION = 1
+FF_CACHE_VERSION = 2
 
-# Defining folder variables
+# Defining folder variables and font sizes
 USER_FOLDER = os.path.expanduser("~")
-
 # On macOS
 if platform == "darwin":
     FF_LIB_FOLDER = os.path.join(USER_FOLDER, "Library", "Application Support", "File-Find")
@@ -47,13 +46,17 @@ else:
     NORMAL_FONT_SIZE = 15
     SMALLER_FONT_SIZE = 14
 
-# Default font is Arial
-DEFAULT_FONT = "Arial"
-
 CACHED_SEARCHES_FOLDER = os.path.join(FF_LIB_FOLDER, "Cached Searches")
+CACHE_METADATA_FOLDER = os.path.join(FF_LIB_FOLDER, "Cache Metadata")
 ASSETS_FOLDER = os.path.join(FF_LIB_FOLDER, "assets")
 
 SELECTED_DIR = USER_FOLDER
+
+# If app is sandboxed on macOS
+IS_SANDBOXED = False
+
+# Default font is Arial
+DEFAULT_FONT = "Arial"
 
 # Hash for the assets folder in the library dir
 TARGET_ASSETS_FOLDER_HASH = "eb391462d1d9ad75cc63f8eca37a01abc3bbb3bd7af90b6eb86a7fee6eec9cc8"
@@ -97,9 +100,14 @@ FILE_FORMATS = {"Image": ("png", "jpeg", "webp", "heic", "tiff", "gif", "tif", "
 DEFAULT_SETTINGS = {"settings_version": FF_SETTINGS_VERSION,
                     "first_version": f"{VERSION_SHORT}[{VERSION}]",
                     "version": f"{VERSION_SHORT}[{VERSION}]",
+                    "cache_version": FF_CACHE_VERSION,
                     "excluded_files": [],
                     "cache": "on Launch",
-                    "popup": {"FF_ver_welcome": False, "FF_welcome": True, "delete_question": False},
+                    "popup":
+                        {"FF_ver_welcome": False,
+                         "FF_welcome": True,
+                         "delete_question": False,
+                         "last_update_notice": time()},
                     "filter_preset_name": "Default",
                     "display_menu_bar_icon": True,
                     "double_click_action": "View file in Finder/File Explorer"}
@@ -115,8 +123,19 @@ def remove_cache():
     logging.debug("Starting cleaning Cache..")
     for file in os.listdir(CACHED_SEARCHES_FOLDER):
         os.remove(os.path.join(CACHED_SEARCHES_FOLDER, file))
+    for file in os.listdir(CACHE_METADATA_FOLDER):
+        os.remove(os.path.join(CACHE_METADATA_FOLDER, file))
     logging.info("Cleared Cache successfully!\n")
 
+# Convert a file path to the corresponding cache file or metadata
+def path_to_cache_file(path, metadata=False):
+    if not metadata:
+        return os.path.join(CACHED_SEARCHES_FOLDER, path.replace(os.sep, "-") + ".FFCache")
+    # If instead ask for metadata
+    elif metadata:
+        return os.path.join(CACHE_METADATA_FOLDER, path.replace(os.sep, "-") + ".FFCache")
+    else:
+        logging.fatal("Wrong arguments used with the convert_path_to_cache_file() function in FF_Files.py")
 
 # Test if Cache should be deleted
 def cache_test(is_launching):
@@ -136,57 +155,36 @@ def cache_test(is_launching):
     # Deleting Cache after a Day
     elif cache_settings == "after a Day":
 
-        # Looping through every file in CACHED_SEARCHES_FOLDER
-        # On Windows and Linux
-        # (On Linux this currently returns the modification date,
-        # because it's impossible to access with pure python)
-        if platform == "win32" or platform == "cygwin" or platform == "linux":
+        # Looping through every file in CACHED_SEARCHES_FOLDER and getting separately stored creation tie
+        # Iterating through all files in the cache folder
+        for file in os.listdir(CACHED_SEARCHES_FOLDER):
+            try:
+                with open(os.path.join(CACHE_METADATA_FOLDER, file)) as time_file:
+                    # Load creation time
+                    cache_created_time = load(time_file)["c_time"]
+            except JSONDecodeError:
+                continue
 
-            # Iterating through all files in the cache folder
-            for file in os.listdir(CACHED_SEARCHES_FOLDER):
-                if os.path.getctime(os.path.join(CACHED_SEARCHES_FOLDER, file)) <= time() - SECONDS_OF_A_DAY:
-                    logging.debug(f"Deleting Cache for File: {file}")
-                    os.remove(os.path.join(CACHED_SEARCHES_FOLDER, file))
-        # On Mac
-        elif platform == "darwin":
-
-            # Iterating through all files in the cache folder
-            for file in os.listdir(CACHED_SEARCHES_FOLDER):
-                if os.stat(os.path.join(CACHED_SEARCHES_FOLDER, file)).st_birthtime <= time() - SECONDS_OF_A_DAY:
-                    logging.debug(f"Deleting Cache for File: {file}")
-                    os.remove(os.path.join(CACHED_SEARCHES_FOLDER, file))
-
-        # If platform is unknown
-        else:
-            # Debug
-            logging.error(f"While trying to test cache, unrecognised platform: {platform}")
+            if cache_created_time < time() - SECONDS_OF_A_WEEK:
+                logging.debug(f"Deleting Cache for dir: {file} because it's older than a week")
+                os.remove(os.path.join(CACHED_SEARCHES_FOLDER, file))
 
     # Deleting Cache after a Week
     elif cache_settings == "after a Week":
 
-        # Looping through every file in CACHED_SEARCHES_FOLDER
-        # On Windows and Linux
-        # (On Linux this currently returns the modification date,
-        # because it's impossible to access with pure python)
-        if platform == "win32" or platform == 'cygwin' or platform == "linux":
+        # Looping through every file in CACHED_SEARCHES_FOLDER and getting separately stored creation tie
+        # Iterating through all files in the cache folder
+        for file in os.listdir(CACHED_SEARCHES_FOLDER):
+            try:
+                with open(os.path.join(CACHE_METADATA_FOLDER, file), "w") as time_file:
+                    # Load time
+                    cache_created_time = load(time_file)["c_time"]
+            except JSONDecodeError:
+                continue
 
-            # Iterating through all files in the cache folder
-            for file in os.listdir(CACHED_SEARCHES_FOLDER):
-                if os.path.getctime(os.path.join(CACHED_SEARCHES_FOLDER, file)) <= time() - SECONDS_OF_A_WEEK:
-                    logging.debug(f"Deleting Cache for File: {file}")
-                    os.remove(os.path.join(CACHED_SEARCHES_FOLDER, file))
-        # On Mac
-        elif platform == "darwin":
-
-            # Iterating through all files in the cache folder
-            for file in os.listdir(CACHED_SEARCHES_FOLDER):
-                if os.stat(os.path.join(CACHED_SEARCHES_FOLDER, file)).st_birthtime <= time() - SECONDS_OF_A_WEEK:
-                    logging.debug(f"Deleting Cache for File: {file}")
-                    os.remove(os.path.join(CACHED_SEARCHES_FOLDER, file))
-        # If platform is unknown
-        else:
-            # Debug
-            logging.error(f"While trying to test cache, unrecognised platform: {platform}")
+            if cache_created_time < time() - SECONDS_OF_A_DAY:
+                logging.debug(f"Deleting Cache for dir: {file} because it's older than a week")
+                os.remove(os.path.join(CACHED_SEARCHES_FOLDER, file))
 
     # Skipping
     else:
@@ -205,6 +203,7 @@ def get_file_size(file: str) -> int:
                 try:
                     if not os.path.islink(file):
                         file_size_list_obj += os.path.getsize(os.path.join(path, file))
+
                 except (FileNotFoundError, ValueError):
                     continue
     elif os.path.isfile(file):
@@ -218,13 +217,6 @@ def get_file_size(file: str) -> int:
         return -2
     else:
         return file_size_list_obj
-
-
-# Used for converting file names so that they can be used in the terminal
-# e.g.: "/Users/admin/Test File" = "/Users/admin/Test\ File"
-def convert_file_name_for_terminal(name):
-    return name.replace(" ", r"\ ")
-
 
 # Convert File Size to a String
 def conv_file_size(byte_size: int, decimal_places=2) -> str:
@@ -258,6 +250,7 @@ def setup():
 
     # Creating necessary directories
     os.makedirs(CACHED_SEARCHES_FOLDER, exist_ok=True)
+    os.makedirs(CACHE_METADATA_FOLDER, exist_ok=True)
     os.makedirs(ASSETS_FOLDER, exist_ok=True)
 
     # Setting up Settings File
@@ -273,17 +266,33 @@ def setup():
                 updated = True
             else:
                 updated = False
+            # Checking cache version
+            try:
+                if settings["cache_version"] != FF_CACHE_VERSION:
+                    remove_cache()
+            except KeyError:
+                remove_cache()
 
             # Checking if all settings exist and updating version numbers
-            settings["settings_version"] = FF_SEARCH_VERSION
+            settings["settings_version"] = FF_SETTINGS_VERSION
             settings["version"] = f"{VERSION_SHORT}[{VERSION}]"
-            settings["popup"] = {"FF_ver_welcome": settings["popup"]["FF_ver_welcome"],
-                                 "FF_welcome": settings["popup"]["FF_welcome"],
-                                 "delete_question": settings["popup"]["delete_question"]}
+
+            # Replace missing popup settings
+            for pop_up_setting in DEFAULT_SETTINGS["popup"]:
+                try:
+                    settings["popup"][pop_up_setting] = settings["popup"][pop_up_setting]
+
+                # If a new setting was added
+                except KeyError:
+                    settings["popup"][pop_up_setting] = DEFAULT_SETTINGS["popup"][pop_up_setting]
+                    # Debug
+                    logging.info(f"Resetting {pop_up_setting}"
+                                 f" setting to {DEFAULT_SETTINGS[pop_up_setting]} because it didn't exist")
 
             for settings_key in DEFAULT_SETTINGS:
                 try:
                     settings[settings_key] = settings[settings_key]
+
                 # If a new setting was added
                 except KeyError:
                     settings[settings_key] = DEFAULT_SETTINGS[settings_key]
@@ -296,7 +305,7 @@ def setup():
 
             logging.info(f"Settings: {settings}")
 
-    # If the settings file doesn't exist or is too old, replacing it
+    # If the settings file doesn't exist or is too old or broken, replace it
     except (JSONDecodeError, UnicodeDecodeError, EOFError, FileNotFoundError, KeyError) as file_error:
         # Replacing the settings var
         settings = DEFAULT_SETTINGS

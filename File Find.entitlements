@@ -16,6 +16,8 @@
 	<true/>
 	<key>com.apple.security.assets.movies.read-only</key>
 	<true/>
+	<key>com.apple.security.network.client</key>
+	<true/>
 	<key>com.apple.security.personal-information.addressbook</key>
 	<true/>
 	<key>com.apple.security.personal-information.calendars</key>
@@ -23,8 +25,6 @@
 	<key>com.apple.security.files.bookmarks.app-scope</key>
 	<true/>
 	<key>com.apple.security.files.bookmarks.document-scope</key>
-	<true/>
-	<key>com.apple.security.temporary-exception.files.home-relative-path.read-only</key>
 	<true/>
 </dict>
 </plist>
