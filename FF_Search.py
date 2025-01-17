@@ -225,7 +225,7 @@ class Search:
         except ValueError:
             size_data = "invalid"
 
-        logging.debug(f"{size_data = }, {data_file_size_min = }, {data_file_size_max = }")
+        logging.debug(f"{size_data=}, {data_file_size_min=}, {data_file_size_max=}")
 
         # Loading excluded files
         with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings")) as excluded_file:
@@ -379,7 +379,6 @@ class Search:
                 caching = Signal()
                 building_ui = Signal()
 
-
                 finished = Signal()
                 waiting = Signal()
 
@@ -423,8 +422,6 @@ class Search:
             self.signals.building_ui.connect(lambda: self.ui_logger.update("Building UI..."))
             self.signals.finished.connect(lambda: self.ui_logger.close())
 
-
-
             # Starting the Thread
             self.thread.start(
                 lambda: self.searching(
@@ -460,7 +457,7 @@ class Search:
         and a composed one NFC (normal form C) ä = ä
         On macos the filesystem returns the names for files created locally as NFD while everyone else does NFC.
         It is possible to place NFC characters in macOS file names. But not for a normal user.
-        
+
         If you have problems on macOS with composed/decomposed unicode character remove the four lines of code below.
         '''
 
@@ -587,7 +584,6 @@ class Search:
 
                     found_path_set = set(load_input["found_path_set"])
                     type_dict = load_input["type_dict"]
-
 
                 # If it's a cache file from an upper dir
                 else:
@@ -943,9 +939,8 @@ class Search:
                     "found_path_set": list(original_found_path_set),
                     "type_dict": type_dict}, result_file)
 
-
             # Saving the cache creation time in a separate file for faster access
-            with open(FF_Files.path_to_cache_file(data_search_from, True),"w") as time_write_file:
+            with open(FF_Files.path_to_cache_file(data_search_from, True), "w") as time_write_file:
                 if used_cache:
                     # Determining the number of parent directories by splitting the path with the default separator
                     # and then getting the length of the list. Dividing by then so to only add fractions of a seconds
@@ -957,7 +952,7 @@ class Search:
 
                     # Used old cache, use old time
                     dump({"c_time": newest_fitting_cache_file_c_date + c_time_adjust,
-                          "cache_version":FF_Files.FF_CACHE_VERSION,
+                          "cache_version": FF_Files.FF_CACHE_VERSION,
                           "original_cache_file": FF_Files.path_to_cache_file(data_search_from)}, time_write_file)
 
                 else:
@@ -965,7 +960,6 @@ class Search:
                     # New cache created
                     dump({"c_time": time.time()}, time_write_file)
                     newest_fitting_cache_file = FF_Files.path_to_cache_file(data_search_from)
-
 
         else:
             logging.info("Cache file already exist, skipping caching...")

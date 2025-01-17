@@ -39,14 +39,14 @@ class MenuBar:
 
     def __init__(
             self, parent, window, listbox, matched_list=None, search_path=None, save_search=None, reload_files=None,
-    cache_file_path=None):
+            cache_file_path=None):
         logging.debug("Setting up menu-bar...")
 
         self.parent = parent
         self.listbox: QListWidget | QTreeWidget = listbox
         self.search_path = search_path
         self.window = window
-        self.cache_file_path =cache_file_path
+        self.cache_file_path = cache_file_path
 
         # Menu-bar
         self.menu_bar = self.parent.menuBar()
@@ -653,13 +653,13 @@ class MenuBar:
 
                 hash_thread_pool.waitForDone()
                 sha1_hash = hash_list["sha1"]
-                logging.debug(f"{sha1_hash = }")
+                logging.debug(f"{sha1_hash=}")
 
                 md5_hash = hash_list["md5"]
-                logging.debug(f"{md5_hash = }")
+                logging.debug(f"{md5_hash=}")
 
                 sha256_hash = hash_list["sha256"]
-                logging.debug(f"{sha256_hash = }")
+                logging.debug(f"{sha256_hash=}")
 
                 # Time Feedback
                 final_time = perf_counter() - saved_time
@@ -707,7 +707,6 @@ class MenuBar:
     def remove_file_from_cache(self, file):
         with open(FF_Files.path_to_cache_file(self.search_path)) as search_file:
             cached_files = load(search_file)
-
 
         cached_files["found_path_set"].remove(file)
 

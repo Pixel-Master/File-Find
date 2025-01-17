@@ -331,7 +331,7 @@ def welcome_popups(parent, force_popups=False):
         question_popup = QMessageBox(parent=parent)
 
         question_popup.setText("Would you like to have a short tutorial?\n\n"
-                                          "By going to Help > Tutorial, you can get it later.")
+                               "By going to Help > Tutorial, you can get it later.")
         question_popup.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
         # Entering the mainloop
         question_popup.exec()

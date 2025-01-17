@@ -536,7 +536,7 @@ class FindDuplicated:
     def __init__(self, criteria: dict, matched_list, finished_signal):
         # Debug
         logging.info("Searching for duplicated files...")
-        logging.info(f"{criteria = }")
+        logging.info(f"{criteria=}")
 
         # Global variables
         global duplicated_dict, time_dict, duplicated_parent_file_path_dict
@@ -556,7 +556,7 @@ class FindDuplicated:
         # Sort by name
         if criteria["name"]["activated"]:
             # Debug
-            logging.debug(f"Grouping by name, {criteria['name']['match_percentage'] = }")
+            logging.debug(f"Grouping by name, {criteria['name']['match_percentage']=}")
 
             exists_already = set()
             duplicated_name_dict = {}
@@ -628,7 +628,7 @@ class FindDuplicated:
         # Group by size
         if criteria["size"]["activated"]:
             # Debug
-            logging.debug(f"Grouping by size, {criteria['size']['match_percentage'] = }")
+            logging.debug(f"Grouping by size, {criteria['size']['match_percentage']=}")
 
             exists_already = set()
             duplicated_size_dict = {}
@@ -660,7 +660,7 @@ class FindDuplicated:
                 lower_allowed_divergence_factor = criteria["size"]["match_percentage"] / 100
                 upper_allowed_divergence_factor = 1 + (1 - lower_allowed_divergence_factor)
 
-                logging.info(f"{lower_allowed_divergence_factor = }, {upper_allowed_divergence_factor = }")
+                logging.info(f"{lower_allowed_divergence_factor=}, {upper_allowed_divergence_factor=}")
 
                 for file in found_path_set:
 
@@ -708,7 +708,7 @@ class FindDuplicated:
             # If content is activated size is ALWAYS checked first
             if criteria["content"]["activated"]:
                 # Debug
-                logging.debug(f"Grouping by content, {criteria['content']['match_percentage'] = }")
+                logging.debug(f"Grouping by content, {criteria['content']['match_percentage']=}")
 
                 # Getting file that have a chance of being duplicated
                 duplicated_files = set()

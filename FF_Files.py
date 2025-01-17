@@ -127,6 +127,7 @@ def remove_cache():
         os.remove(os.path.join(CACHE_METADATA_FOLDER, file))
     logging.info("Cleared Cache successfully!\n")
 
+
 # Convert a file path to the corresponding cache file or metadata
 def path_to_cache_file(path, metadata=False):
     if not metadata:
@@ -137,6 +138,7 @@ def path_to_cache_file(path, metadata=False):
     else:
         logging.fatal("Wrong arguments used with the convert_path_to_cache_file() function in FF_Files.py")
 
+
 # Test if Cache should be deleted
 def cache_test(is_launching):
     logging.debug("Testing if cache should be deleted..")
@@ -145,7 +147,7 @@ def cache_test(is_launching):
     with open(os.path.join(FF_LIB_FOLDER, "Settings")) as settings_file:
         # Taking the item four because it is the Cache Setting
         cache_settings = load(settings_file)["cache"]
-        logging.debug(f"{cache_settings = }")
+        logging.debug(f"{cache_settings=}")
 
     # Deleting Cache on Launch
     if cache_settings.lower() == "on launch" and is_launching:
@@ -217,6 +219,7 @@ def get_file_size(file: str) -> int:
         return -2
     else:
         return file_size_list_obj
+
 
 # Convert File Size to a String
 def conv_file_size(byte_size: int, decimal_places=2) -> str:
@@ -327,7 +330,7 @@ def setup():
             file_content = hash_file.read() + file_content + file.encode()
     assets_folder_hash = hashlib.sha256(file_content).hexdigest()
 
-    logging.debug(f"{assets_folder_hash = }")
+    logging.debug(f"{assets_folder_hash=}")
 
     # Check if calculated hash and target hash are equal
     if assets_folder_hash != TARGET_ASSETS_FOLDER_HASH:

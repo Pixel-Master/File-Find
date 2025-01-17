@@ -187,7 +187,7 @@ class SearchWindow:
                             # File was already removed from cache
                             pass
 
-                    with open(FF_Files.path_to_cache_file(search_path),"w") as search_file:
+                    with open(FF_Files.path_to_cache_file(search_path), "w") as search_file:
                         dump(cached_file, search_file)
 
                     # Loading the cache file from the higher directory
