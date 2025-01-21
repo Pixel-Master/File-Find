@@ -106,7 +106,7 @@ class SearchWindow:
             logging.debug("Displaying time stats.")
 
             # Getting the creation time of the cache file which is stored separately
-            with open(FF_Files.path_to_cache_file(search_path, True)) as time_file:
+            with open(FF_Files.get_metadata_file_from_cache_file(cache_file_path)) as time_file:
                 # Load time
                 cache_created_time = ctime(load(time_file)["c_time"])
 
@@ -124,86 +124,10 @@ class SearchWindow:
                 f"Total: {round(time_dict['time_total'] + time_dict['time_building'], 3)}s\n\n\n"
                 f""
                 f"Timestamps:\n"
-                f"Cache created: {cache_created_time}\n"
-                f"Search opened: {search_opened_time}",
+                f"Cache (basis for search results) created:\n{cache_created_time}\n"
+                f"Search opened:\n{search_opened_time}",
                 self.Search_Results_Window, large=True)
 
-        # Reloads File, check all collected files, if they still exist
-        def reload_files():
-            try:
-                logging.info("Reload...")
-                time_before_reload = perf_counter()
-                self.removed_list = []
-                # Creating a copy so that the list doesn't run out of index
-                matched_list_without_deleted_files = self.matched_list.copy()
-
-                for matched_file in self.matched_list:
-                    if os.path.exists(matched_file):
-                        continue
-                    else:
-                        # Remove file from widget if it doesn't exist
-                        self.result_listbox.takeItem(matched_list_without_deleted_files.index(matched_file))
-                        matched_list_without_deleted_files.remove(matched_file)
-                        logging.debug(f"File Does Not exist: {matched_file}")
-                        # Adding file to removed_list to later remove it from cache
-                        self.removed_list.append(matched_file)
-
-                # Debug
-                logging.info(f"Reloaded found Files and removed {len(self.removed_list)} in"
-                             f" {round(perf_counter() - time_before_reload, 3)} sec.")
-                FF_Additional_UI.PopUps.show_info_messagebox(
-                    "Reloaded!",
-                    f"Reloaded found Files and removed {len(self.removed_list)}"
-                    f" in {round(perf_counter() - time_before_reload, 3)} sec.",
-                    self.Search_Results_Window)
-                # UI
-                objects_text.setText(f"Files found: {len(self.matched_list)}")
-
-                # Update internal list
-                self.matched_list = matched_list_without_deleted_files.copy()
-
-                def modify_cache():
-                    # Loading cache to update it
-                    with open(cache_file_path) as search_file:
-                        cached_file: dict[list, dict, dict] = load(search_file)
-
-                    # Testing if the cache file from the specified directory was used as to also update the used cache
-                    if cache_file_path != FF_Files.path_to_cache_file(search_path):
-
-                        different_cache_file = True
-                        # Loading cache to update it
-                        with open(FF_Files.path_to_cache_file(search_path)) as upper_search_file:
-                            cached_home_file: dict[list, dict, dict] = load(upper_search_file)
-                    else:
-                        different_cache_file = False
-
-                    # Removing all deleted files from cache
-                    for removed_file in self.removed_list:
-                        try:
-                            cached_file["found_path_set"].remove(removed_file)
-                            if different_cache_file:
-                                cached_home_file["found_path_set"].remove(removed_file)
-                        except (KeyError, ValueError):
-                            # File was already removed from cache
-                            pass
-
-                    with open(FF_Files.path_to_cache_file(search_path), "w") as search_file:
-                        dump(cached_file, search_file)
-
-                    # Loading the cache file from the higher directory
-                    if different_cache_file:
-                        with open(cache_file_path, "w") as upper_search_file:
-                            dump(cached_home_file, upper_search_file)
-
-                QThreadPool(self.Search_Results_Window).start(modify_cache)
-
-                # Delete variables out of memory
-                del self.removed_list
-                gc.collect()
-            except FileNotFoundError:
-                FF_Additional_UI.PopUps.show_info_messagebox("Cache File not Found!",
-                                                             "Cache File was deleted, couldn't Update Cache!",
-                                                             self.Search_Results_Window)
 
         # Save Search
         def save_search():
@@ -226,8 +150,9 @@ class SearchWindow:
             window="search",
             matched_list=self.matched_list,
             search_path=search_path,
-            reload_files=reload_files,
-            save_search=save_search)
+            file_count_text=objects_text,
+            save_search=save_search,
+            cache_file_path=cache_file_path)
 
         # Debug
         logging.info("Finished Setting up menu-bar")
@@ -284,7 +209,7 @@ class SearchWindow:
 
         # Reload Action
         options_menu_reload_action = options_menu.addAction("&Reload")
-        options_menu_reload_action.triggered.connect(reload_files)
+        options_menu_reload_action.triggered.connect(menu_bar.reload_files)
         # Save Action
         options_menu_save_action = options_menu.addAction("&Save Search")
         options_menu_save_action.triggered.connect(save_search)
@@ -294,14 +219,16 @@ class SearchWindow:
         options_menu_compare_action = options_menu.addAction(
             "&Compare to other Search...")
         options_menu_compare_action.triggered.connect(
-            lambda: FF_Compare.CompareSearches(self.matched_list, search_path, self.Search_Results_Window))
+            lambda: FF_Compare.CompareSearches(self.matched_list, search_path, cache_file_path,
+                                               self.Search_Results_Window))
         # Separator
         options_menu.addSeparator()
         # Duplicated Action
         options_menu_duplicated_action = options_menu.addAction(
             "&Find duplicated...")
         options_menu_duplicated_action.triggered.connect(
-            lambda: FF_Duplicated.DuplicatedSettings(self.Search_Results_Window, search_path, self.matched_list))
+            lambda: FF_Duplicated.DuplicatedSettings(self.Search_Results_Window, search_path, self.matched_list,
+                                                     cache_file_path))
 
         # More Options Button
         options_button = generate_button(
@@ -321,7 +248,8 @@ class SearchWindow:
         # Compare Button
         compare_button = generate_button(
             None,
-            lambda: FF_Compare.CompareSearches(self.matched_list, search_path, self.Search_Results_Window),
+            lambda: FF_Compare.CompareSearches(self.matched_list, search_path, cache_file_path,
+                                               self.Search_Results_Window),
             icon=os.path.join(FF_Files.ASSETS_FOLDER, "Compare_files_img_small.png"))
         # Icon size
         compare_button.setIconSize(QSize(50, 50))
@@ -335,7 +263,8 @@ class SearchWindow:
         # Duplicated Button
         duplicated_button = generate_button(
             None,
-            lambda: FF_Duplicated.DuplicatedSettings(self.Search_Results_Window, search_path, self.matched_list),
+            lambda: FF_Duplicated.DuplicatedSettings(self.Search_Results_Window, search_path, self.matched_list,
+                                                     cache_file_path),
             icon=os.path.join(FF_Files.ASSETS_FOLDER, "Duplicated_files_img_small.png"))
         # Icon size
         duplicated_button.setIconSize(QSize(50, 50))

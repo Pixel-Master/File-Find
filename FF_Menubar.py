@@ -10,6 +10,7 @@
 import hashlib
 import logging
 import os
+import time
 from json import dump, load
 import gc
 import shutil
@@ -38,7 +39,7 @@ import FF_Settings
 class MenuBar:
 
     def __init__(
-            self, parent, window, listbox, matched_list=None, search_path=None, save_search=None, reload_files=None,
+            self, parent, window, listbox, matched_list=None, search_path=None, save_search=None, file_count_text=None,
             cache_file_path=None):
         logging.debug("Setting up menu-bar...")
 
@@ -47,6 +48,8 @@ class MenuBar:
         self.search_path = search_path
         self.window = window
         self.cache_file_path = cache_file_path
+        self.matched_list = matched_list
+        self.file_count_text = file_count_text
 
         # Menu-bar
         self.menu_bar = self.parent.menuBar()
@@ -67,7 +70,7 @@ class MenuBar:
 
             # Reload and Remove Deleted Files
             reload_action = QAction("&Reload and Remove Deleted Files", self.parent)
-            reload_action.triggered.connect(reload_files)
+            reload_action.triggered.connect(self.reload_files)
             reload_action.setShortcut("Ctrl+R")
             self.tools_menu.addAction(reload_action)
 
@@ -191,13 +194,14 @@ class MenuBar:
         if window == "search":
             # Compare Search
             compare_action = QAction("&Compare to other Search...", self.parent)
-            compare_action.triggered.connect(lambda: FF_Compare.CompareSearches(matched_list, search_path, self.parent))
+            compare_action.triggered.connect(lambda: FF_Compare.CompareSearches(
+                matched_list, search_path, cache_file_path, self.parent))
             compare_action.setShortcut("Ctrl+N")
 
             # Find duplicated
             duplicated_action = QAction("&Find duplicated files...", self.parent)
             duplicated_action.triggered.connect(
-                lambda: FF_Duplicated.DuplicatedSettings(parent, search_path, matched_list))
+                lambda: FF_Duplicated.DuplicatedSettings(parent, search_path, matched_list, cache_file_path))
             duplicated_action.setShortcut("Ctrl+D")
 
             # Separator for visual indent
@@ -326,8 +330,8 @@ class MenuBar:
             if FF_Additional_UI.PopUps.show_delete_question(self.parent, selected_file):
 
                 try:
-                    # Try to move the file to trash
-                    shutil.move(selected_file, new_location)
+                    # Try to move the file to trash and add a date for uniqueness
+                    shutil.move(selected_file, new_location + ctime(time.time()))
 
                 except FileNotFoundError:
 
@@ -392,6 +396,38 @@ class MenuBar:
         except AttributeError:
             # If no file is selected
             FF_Additional_UI.PopUps.show_critical_messagebox("Error!", "Select a File!", self.parent)
+
+    # TODO: Marks a file
+    def mark_file(self, color):
+        # Selecting the highlighted item of the listbox
+        if self.window == "compare" or self.window == "search":
+            logging.debug(f"Marking {self.get_listbox().currentItem().text()} {color}")
+
+            # Change the color to the desired color
+            self.get_listbox().item(
+                self.get_listbox().currentRow()).setBackground(QColor(color))
+
+            # Change font color to white if peccary
+            QColor(color).lightness()
+            self.get_listbox().item(self.get_listbox().currentRow()).setForeground(QColor("white"))
+
+
+        else:
+            logging.debug(f"Marking {self.get_listbox().currentItem().text(0)} {color}")
+
+            # Icon
+            # Set the icon
+            icon = FF_Additional_UI.UIIcon(
+                os.path.join(FF_Files.ASSETS_FOLDER, "trash_icon_small.png"),
+                icon_set_func=lambda x: self.get_listbox().currentItem().setIcon(0, x),
+                turn_auto=False)
+
+            icon.turn_dark()
+
+            # Change the color to red
+            self.get_listbox().currentItem().setBackground(0, QColor(FF_Files.RED_COLOR))
+            # Change font color to white
+            self.get_listbox().currentItem().setForeground(0, QColor("white"))
 
     # Open a file with the standard app
     def open_file(self):
@@ -694,7 +730,7 @@ class MenuBar:
         clipboard = QClipboard()
         clipboard.setText(os.path.basename(file))
 
-        # TODO. remove
+        # TODO: remove
         # QThreadPool(self.parent).start(lambda: run(["qlmanage", "-p", file]))
 
     # Copy path for Terminal
@@ -763,3 +799,81 @@ class MenuBar:
             # Resetting it because the option isn't valid
             FF_Settings.SettingsWindow.update_setting("double_click_action",
                                                       FF_Files.DEFAULT_SETTINGS["double_click_action"])
+
+
+    # Reloads File, check all collected files, if they still exist
+    def reload_files(self):
+        try:
+            logging.info("Reload...")
+            time_before_reload = perf_counter()
+            removed_list = []
+            # Creating a copy so that the list doesn't run out of index
+            matched_list_without_deleted_files = self.matched_list.copy()
+
+            for matched_file in self.matched_list:
+                if os.path.exists(matched_file):
+                    continue
+                else:
+                    # Remove file from widget if it doesn't exist
+                    self.get_listbox().takeItem(matched_list_without_deleted_files.index(matched_file))
+                    matched_list_without_deleted_files.remove(matched_file)
+                    # Adding file to removed_list to later remove it from cache
+                    removed_list.append(matched_file)
+
+            # Debug
+            logging.info(f"Reloaded found Files and removed {len(removed_list)} in"
+                         f" {round(perf_counter() - time_before_reload, 3)} sec.")
+            FF_Additional_UI.PopUps.show_info_messagebox(
+                "Reloaded!",
+                f"Reloaded found Files and removed {len(removed_list)}"
+                f" in {round(perf_counter() - time_before_reload, 3)} sec.",
+                self.parent)
+            # UI
+            self.file_count_text.setText(f"Files found: {len(self.matched_list)}")
+
+            # Update internal list
+            self.matched_list = matched_list_without_deleted_files.copy()
+
+            def modify_cache():
+                # Loading cache to update it
+                with open(self.cache_file_path) as search_file:
+                    cached_file: dict[list, dict, dict] = load(search_file)
+
+                # Testing if the cache file from the specified directory was used as to also update the used cache
+                if self.cache_file_path != FF_Files.path_to_cache_file(self.search_path):
+
+                    different_cache_file = True
+                    # Loading cache to update it
+                    with open(FF_Files.path_to_cache_file(self.search_path)) as upper_search_file:
+                        cached_home_file: dict[list, dict, dict] = load(upper_search_file)
+                else:
+                    different_cache_file = False
+
+                # Removing all deleted files from cache
+                for removed_file in removed_list:
+                    try:
+                        cached_file["found_path_set"].remove(removed_file)
+                        if different_cache_file:
+                            cached_home_file["found_path_set"].remove(removed_file)
+                    except (KeyError, ValueError):
+                        # File was already removed from cache
+                        pass
+
+                with open(FF_Files.path_to_cache_file(self.search_path), "w") as search_file:
+                    dump(cached_file, search_file)
+
+                # Loading the cache file from the higher directory
+                if different_cache_file:
+                    with open(self.cache_file_path, "w") as upper_search_file:
+                        dump(cached_home_file, upper_search_file)
+
+                gc.collect()
+
+            QThreadPool(self.parent).start(modify_cache)
+
+            # Delete variables out of memory
+            del removed_list
+        except FileNotFoundError:
+            FF_Additional_UI.PopUps.show_info_messagebox("Cache File not Found!",
+                                                         "Cache File was deleted, couldn't Update Cache!",
+                                                         self.parent)

@@ -27,6 +27,7 @@
   - [On Windows](#on-windows)
 - [FAQ](#faq)
 - [File Structure](#file-structure)
+- [Contributing](#contributing)
 
 ## Download
 
@@ -258,3 +259,37 @@ A: **File Find does not connect to the Internet**, everything stays on your mach
 
 - `File Find.entitlements` - This is an entitlement file, which can be used to sandbox an app on macOS. Tough sandboxing is currently not supported.
 
+## Contributing
+
+If you don't want to use GitHub or want to write privately, email me: [pixel_master.1@proton.me](mailto:pixel_master.1@proton.me)
+
+### Bug reports
+
+If you found an unwanted behavior which you would classify as a bug. Make sure you can reliably reproduce the bug.
+
+It is advised to use the Bug report template, this includes 
+Include:
+* If you think it would be helpful (it is in most cases) the log, access it by quitting the app and:
+  * _On macOS_: Open Terminal.app and paste `/Applications/File\ Find.app/Contents/MacOS/File-Find` into it, copy and paste the output into your bug report. Make sure that the log **does not include confidential information** such as your username.
+  * _On Windows_: Open cmd or Terminal and paste `C:\path\to\File-Find.exe > output.txt 2>&1` and run reproduce the bug. The log will be stored in output.txt on your user directory. copy and paste the output into your bug report. Make sure that the log **does not include confidential information** such as your username.
+  * _On Linux_: Open Console and paste `/path/to/File-Find.bin` into it, copy and paste the output into your bug report. Make sure that the log **does not include confidential information** such as your username.
+* Step-by-Step guide on how to reproduce the bug
+* Expected behavior
+* Screenshot (only necessary with UI-Related bugs, always welcome)
+* Installation Information
+  * OS and Version: [e.g. macOS 12]
+  * File Find Version (as seen in the about page) [e.g. 1.0 [25-july-2024]]
+* Additional information
+
+### Feature Request
+
+New functionality is  wished
+
+* Is the feature request related to a problem?
+* The solution you'd like, clearly and 
+* How elaborate will the implementation be? (estimation)
+* Alternatives (optional)
+
+### Pull Request
+
+It is best if you create an Issue or ask me before you spent your time fixing an Issue or developing something new.

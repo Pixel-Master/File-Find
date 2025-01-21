@@ -12,6 +12,7 @@
 import logging
 import os
 from sys import platform
+from json import load
 from time import perf_counter, time, ctime
 import difflib
 import gc
@@ -25,6 +26,7 @@ from PySide6.QtCore import Qt, QSize, Signal, QObject, QThreadPool
 from PySide6.QtGui import QFont, QAction
 
 # Projects Libraries
+import FF_Main_UI
 import FF_Menubar
 import FF_Additional_UI
 import FF_Files
@@ -36,7 +38,7 @@ global duplicated_dict, time_dict, duplicated_parent_file_path_dict
 
 
 class DuplicatedSettings:
-    def __init__(self, parent, search_path, matched_list):
+    def __init__(self, parent, search_path, matched_list, cache_file):
         # Debug
         logging.info("Setting up Duplicated UI...")
 
@@ -193,8 +195,16 @@ class DuplicatedSettings:
         self.button_box = QDialogButtonBox(parent=self.Duplicated_Settings)
         self.button_box.setStandardButtons(QDialogButtonBox.StandardButton.Cancel | QDialogButtonBox.StandardButton.Ok)
 
+
         # Connect events
         def start_duplicated():
+            # Update search status label
+            FF_Search.ACTIVE_SEARCH_THREADS += 1
+            FF_Main_UI.MainWindow.update_search_status_label()
+            # Initialising the ui logger
+            self.ui_logger = FF_Main_UI.SearchUpdate(search_path)
+            # Update the logger
+            self.ui_logger.update("Finding duplicated files...")
 
             # Default criteria
             criteria = {
@@ -210,7 +220,7 @@ class DuplicatedSettings:
             class Events(QObject):
                 finished = Signal()
 
-            finished_event_class = Events()
+            self.event_class = Events()
 
             if self.mode_selector_combobox.currentText() == self.duplicated_mode_display_name_dict["name"]:
                 criteria["name"]["activated"] = True
@@ -219,17 +229,26 @@ class DuplicatedSettings:
             elif self.mode_selector_combobox.currentText() == self.duplicated_mode_display_name_dict["content"]:
                 criteria["content"]["activated"] = True
 
+            # Connect UI to finished signal
+            self.event_class.finished.connect(
+                lambda: DuplicatedUI(
+                    parent, search_path, criteria, duplicated_dict, duplicated_parent_file_path_dict, time_dict,
+                    cache_file))
+
+            self.event_class.finished.connect(
+                lambda: logging.debug("Received finish finish signal"))
+
+            # Closing the menu bar logger
+            self.event_class.finished.connect(self.ui_logger.close)
+
             # Starting Thread
             QThreadPool(self.Duplicated_Settings).start(
                 lambda: FindDuplicated(
                     criteria=criteria,
                     matched_list=matched_list,
-                    finished_signal=finished_event_class))
+                    signals=self.event_class))
 
-            # Connect UI to finished signal
-            finished_event_class.finished.connect(
-                lambda: DuplicatedUI(
-                    parent, search_path, criteria, duplicated_dict, duplicated_parent_file_path_dict, time_dict))
+
 
         # Launch search algorithm
         self.button_box.button(
@@ -286,7 +305,7 @@ class DuplicatedUI:
             self,
             parent,
             match_path,
-            criteria, matched_dict: dict, matched_parent_file_path_dict: dict, time_needed_dict: dict):
+            criteria, matched_dict: dict, matched_parent_file_path_dict: dict, time_needed_dict: dict, cache_file: str):
         # Debug
         logging.info("Setting up Duplicated UI...")
         # Saving time
@@ -420,7 +439,8 @@ class DuplicatedUI:
 
         # Setup menu bar
         menu_bar = FF_Menubar.MenuBar(
-            parent=self.Duplicated_Window, window="duplicated", listbox=self.Duplicated_Tree, search_path=match_path)
+            parent=self.Duplicated_Window, window="duplicated", listbox=self.Duplicated_Tree, search_path=match_path,
+            cache_file_path=cache_file)
 
         # If item is double-clicked
         def open_double_clicked(item):
@@ -509,6 +529,11 @@ class DuplicatedUI:
             # Debug
             logging.debug("Displaying time stats.")
 
+            # Getting the creation time of the cache file which is stored separately
+            with open(FF_Files.get_metadata_file_from_cache_file(cache_file)) as time_file:
+                # Load time
+                cache_created_time = ctime(load(time_file)["c_time"])
+
             # Displaying infobox with time info
             FF_Additional_UI.PopUps.show_info_messagebox(
                 "Time Stats",
@@ -520,12 +545,18 @@ class DuplicatedUI:
                 f"Total: {round(time_needed_dict['time_after_building_ui'] - time_needed_dict['start_time'], 3)}s\n\n\n"
                 ""
                 f"Timestamps:\n"
-                f"Search opened: {ctime(time_stamp)}s",
-                self.Duplicated_Window)
+                f"Cache (basis for search results) created:\n{cache_created_time}\n"
+                f"Window opened:\n{ctime(time_stamp)}s",
+                large=True,
+                parent=self.Duplicated_Window)
 
         # Optimize label
         total_time = time_needed_dict["time_after_building_ui"] - time_needed_dict["start_time"]
         time_text.setText(f"Time needed: {round(total_time, 3)}s")
+
+        # Update search status label
+        FF_Search.ACTIVE_SEARCH_THREADS -= 1
+        FF_Main_UI.MainWindow.update_search_status_label()
 
         # Collect garbage
         gc.collect()
@@ -533,7 +564,7 @@ class DuplicatedUI:
 
 # Algorithms to find duplicated files
 class FindDuplicated:
-    def __init__(self, criteria: dict, matched_list, finished_signal):
+    def __init__(self, criteria: dict, matched_list, signals):
         # Debug
         logging.info("Searching for duplicated files...")
         logging.info(f"{criteria=}")
@@ -817,9 +848,10 @@ class FindDuplicated:
                 # Finalize
                 duplicated_parent_file_path_dict = duplicated_size_parent_file_path_dict
                 duplicated_dict = duplicated_size_dict
-
+        # Debug
+        logging.info("Finished grouping, launching UI...")
         # Launch UI
-        finished_signal.finished.emit()
+        signals.finished.emit()
 
         gc.collect()
 

@@ -154,7 +154,8 @@ class LoadSearch:
                                              "time_sorting": 0,
                                              "time_building": 0,
                                              "time_total": 0},
-                                            saved_file_content["matched_list"], load_file, load_file, parent])
+                                            saved_file_content["matched_list"], load_file,
+                                            FF_Files.path_to_cache_file(load_file), parent])
 
 
 # The Search Engine
@@ -451,9 +452,9 @@ class Search:
         data_in_name = data_in_name.lower()
         data_filetype = data_filetype.lower()
 
-        ''' 
+        '''
         There are multiple possibilities in unicode on how to display some characters (for example ä, ü, ö).
-        A decomposed form NFD (normal form D) ä = a + ¨ 
+        A decomposed form NFD (normal form D) ä = a + ¨
         and a composed one NFC (normal form C) ä = ä
         On macos the filesystem returns the names for files created locally as NFD while everyone else does NFC.
         It is possible to place NFC characters in macOS file names. But not for a normal user.
@@ -946,7 +947,7 @@ class Search:
                     # and then getting the length of the list. Dividing by then so to only add fractions of a seconds
                     # to the c_time as to not get ranked over newer caches. Doing this so the already specialized cache
                     # gets used preferably
-                    c_time_adjust = len(data_search_from.split(os.sep)) / 10
+                    c_time_adjust = data_search_from.count(os.sep) / 10
                     logging.debug(f"Cache time {newest_fitting_cache_file_c_date} + adjuster: {c_time_adjust} "
                                   f"= {newest_fitting_cache_file_c_date + c_time_adjust}")
 

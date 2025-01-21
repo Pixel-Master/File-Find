@@ -359,12 +359,23 @@ class SettingsWindow:
         # Defining
         combobox_cache = QComboBox(self.Settings_Window)
         # Adding Options
-        combobox_cache_items = ["on Launch", "after a Day", "after a Week", "Never"]
+        combobox_cache_items = ["on Launch", "after two hours", "after a Day", "after a Week", "Never"]
         combobox_cache.addItems(combobox_cache_items)
         combobox_cache.setCurrentText(self.load_setting("cache"))
 
+        def cache_setting_changed():
+            self.update_setting("cache", combobox_cache.currentText())
+            # Warn the user if he sets it to never
+            if combobox_cache.currentText() == "Never":
+                FF_Additional_UI.PopUps.show_info_messagebox(
+                    "Are you sure?",
+                    "If the automatic clean time is \"Never\", the cache, on which the search results rely will "
+                    "NEVER be updated automatically. \n\nThis means that the results won't be up to date. \n\n"
+                    "You can still clear the cache manually by going to \"Tools > Clear Cache\" in the menu bar.",
+                    self.Settings_Window)
+
         # Changing cache setting on update
-        combobox_cache.currentIndexChanged.connect(lambda: self.update_setting("cache", combobox_cache.currentText()))
+        combobox_cache.currentIndexChanged.connect(cache_setting_changed)
 
         # Display
         self.Settings_Layout.addWidget(combobox_cache, 5, 1)

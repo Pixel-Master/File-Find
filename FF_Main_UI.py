@@ -1035,7 +1035,7 @@ class MainWindow:
             return
 
         # Debug
-        logging.info(f"Exporting all filters to {export_path}, with {FF_Files.FF_FILTER_VERSION = }...")
+        logging.info(f"Exporting all filters to {export_path}, with {FF_Files.FF_FILTER_VERSION=}...")
         # Making user folder compatible
         directory = self.edit_directory.text()
         directory = directory.replace(FF_Files.USER_FOLDER, "USER_FOLDER")
@@ -1276,7 +1276,7 @@ class MainWindow:
         logging.debug(f"Updating search status label, active searches: {FF_Search.ACTIVE_SEARCH_THREADS}")
         # If there are no active searches
         if FF_Search.ACTIVE_SEARCH_THREADS == 0:
-            search_status_label.setText("Inactive")
+            search_status_label.setText("Idle")
             search_status_label.setStyleSheet(f"color: {FF_Files.GREEN_COLOR};")
             search_status_label.adjustSize()
 
@@ -1286,7 +1286,7 @@ class MainWindow:
 
         # If there are ongoing searches updating label
         else:
-            search_status_label.setText(f"Searching ({FF_Search.ACTIVE_SEARCH_THREADS}) ...")
+            search_status_label.setText(f"Active ({FF_Search.ACTIVE_SEARCH_THREADS}) ...")
             search_status_label.setStyleSheet(f"color: {FF_Files.RED_COLOR};")
             search_status_label.adjustSize()
 
@@ -1325,5 +1325,6 @@ class SearchUpdate:
     def close(self):
         self.search_status_menu.removeAction(self.search_status)
         self.search_status_menu.removeAction(self.search_path)
+
 
 global menu_bar_icon_menu, search_status_menu, menu_bar_icon, search_status_label

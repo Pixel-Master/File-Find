@@ -139,9 +139,15 @@ def path_to_cache_file(path, metadata=False):
         logging.fatal("Wrong arguments used with the convert_path_to_cache_file() function in FF_Files.py")
 
 
+# Takes a path to a cache file and returns the path to the metadata file
+def get_metadata_file_from_cache_file(cache_file):
+    return CACHE_METADATA_FOLDER + (cache_file.removeprefix(CACHED_SEARCHES_FOLDER))
+
+
 # Test if Cache should be deleted
 def cache_test(is_launching):
     logging.debug("Testing if cache should be deleted..")
+    allowed_time_difference = None
 
     # Loading Settings File
     with open(os.path.join(FF_LIB_FOLDER, "Settings")) as settings_file:
@@ -154,9 +160,23 @@ def cache_test(is_launching):
         logging.debug("Deleting Cache!")
         remove_cache()
 
+    elif cache_settings.lower() == "after two hours":
+        # Two hours are 7'200 seconds
+        allowed_time_difference = 7200
+
     # Deleting Cache after a Day
     elif cache_settings == "after a Day":
+        allowed_time_difference = SECONDS_OF_A_DAY
 
+    # Deleting Cache after a Week
+    elif cache_settings == "after a Week":
+        allowed_time_difference = SECONDS_OF_A_WEEK
+
+    # Skipping
+    else:
+        logging.debug("Skipping deleting...")
+
+    if cache_settings.lower() in ("after a Week", "after a Day", "after two hours"):
         # Looping through every file in CACHED_SEARCHES_FOLDER and getting separately stored creation tie
         # Iterating through all files in the cache folder
         for file in os.listdir(CACHED_SEARCHES_FOLDER):
@@ -167,30 +187,11 @@ def cache_test(is_launching):
             except JSONDecodeError:
                 continue
 
-            if cache_created_time < time() - SECONDS_OF_A_WEEK:
-                logging.debug(f"Deleting Cache for dir: {file} because it's older than a week")
+            if cache_created_time < time() - allowed_time_difference:
+                logging.debug(f"Deleting Cache for dir: {file} because it's older than the allowed time difference,"
+                              f" {allowed_time_difference=}sec.")
                 os.remove(os.path.join(CACHED_SEARCHES_FOLDER, file))
 
-    # Deleting Cache after a Week
-    elif cache_settings == "after a Week":
-
-        # Looping through every file in CACHED_SEARCHES_FOLDER and getting separately stored creation tie
-        # Iterating through all files in the cache folder
-        for file in os.listdir(CACHED_SEARCHES_FOLDER):
-            try:
-                with open(os.path.join(CACHE_METADATA_FOLDER, file), "w") as time_file:
-                    # Load time
-                    cache_created_time = load(time_file)["c_time"]
-            except JSONDecodeError:
-                continue
-
-            if cache_created_time < time() - SECONDS_OF_A_DAY:
-                logging.debug(f"Deleting Cache for dir: {file} because it's older than a week")
-                os.remove(os.path.join(CACHED_SEARCHES_FOLDER, file))
-
-    # Skipping
-    else:
-        logging.debug("Skipping deleting...")
 
     logging.debug("Finished Cache Testing!\n")
 

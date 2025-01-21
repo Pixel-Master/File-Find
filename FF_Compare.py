@@ -27,7 +27,7 @@ import FF_Menubar
 
 # The window
 class CompareUi:
-    def __init__(self, path_of_first_search, parent):
+    def __init__(self, path_of_first_search, cache_file, parent):
         # Debug
         logging.info("Setting up the Compare_Window")
 
@@ -70,7 +70,7 @@ class CompareUi:
 
         # Setting up the menu bar...
         menu_bar = FF_Menubar.MenuBar(parent=self.Compare_Window, window="compare",
-                                      listbox=None)
+                                      listbox=None, cache_file_path=cache_file)
         logging.debug("Done building MenuBar\n")
 
         # Set up both list-boxes
@@ -110,13 +110,15 @@ class CompareUi:
         # Labels
         # Added files
         self.added_files_label1, self.added_files_label2 = self.generate_title_label(
-            text="Added Files", text2=path_of_first_search, color=FF_Files.GREEN_COLOR)
+            text="Added Files", text2=path_of_first_search, color=FF_Files.GREEN_COLOR,
+            length_of_list=len(compared_searches.files_only_in_first_search))
         self.Compare_Layout.addWidget(self.added_files_label1, 0, 0)
         self.Compare_Layout.addWidget(self.added_files_label2, 1, 0)
 
         # Removed files
         self.removed_files_label1, self.removed_files_label2 = self.generate_title_label(
-            text="Removed Files", text2=compared_searches.path_of_second_search[0], color=FF_Files.RED_COLOR)
+            text="Removed Files", text2=compared_searches.path_of_second_search[0], color=FF_Files.RED_COLOR,
+        length_of_list=len(compared_searches.files_only_in_second_search))
         self.Compare_Layout.addWidget(self.removed_files_label1, 0, 1)
         self.Compare_Layout.addWidget(self.removed_files_label2, 1, 1)
 
@@ -160,7 +162,7 @@ class CompareUi:
         return button
 
     # Function for generating the added / removed files labels
-    def generate_title_label(self, text, text2, color) -> tuple[QLabel, QLabel]:
+    def generate_title_label(self, text, text2, color, length_of_list) -> tuple[QLabel, QLabel]:
         # Label 1
         label1 = QLabel(self.Compare_Window)
 
@@ -182,7 +184,7 @@ class CompareUi:
 
         # Shorten the text string to only include the first to the 30th
         # and the last ten character if the string is longer then 43 characters
-        text2_shortened = f"Files only in:\n{FF_Files.display_path(text2)}"
+        text2_shortened = f"{length_of_list} files only in:\n{FF_Files.display_path(text2)}"
         # Set the label to the shortened string
         label2.setText(text2_shortened)
 
@@ -196,7 +198,7 @@ class CompareUi:
 
 # The engine
 class CompareSearches:
-    def __init__(self, files_of_first_search: list, path_of_first_search, parent):
+    def __init__(self, files_of_first_search: list, path_of_first_search, cache_file, parent):
         # Debug
         logging.debug("User pressed Compare Search")
 
@@ -207,7 +209,7 @@ class CompareSearches:
 
             self.signals = SignalsClass()
             # Connecting the signal to the user-interface class
-            self.signals.finished.connect(lambda: CompareUi(path_of_first_search, parent))
+            self.signals.finished.connect(lambda: CompareUi(path_of_first_search, cache_file, parent))
 
             # Thread
             comparing_thread = QThreadPool(parent)
