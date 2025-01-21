@@ -18,3 +18,5 @@ A clear and concise description of any alternative solutions or features you've 
 
 **Additional context** (optional)
 Add any other context or screenshots about the feature request here.
+
+**How elaborate will the implementation be?** (estimation)
