@@ -20,8 +20,14 @@ Steps to reproduce the behavior:
 **Expected behavior**
 A clear and concise description of what you expected to happen.
 
-**Screenshots** (optional)
+**Screenshots** (optional, mandatory with UI-related Bugs)
 If possible, add screenshots to show what's wrong
+
+**Log file** (If you think it would be helpful (it is in most cases))
+Access it by quitting the app and:
+  * _On macOS_: Open Terminal.app and paste `/Applications/File\ Find.app/Contents/MacOS/File-Find` into it, copy and paste the output into your bug report. Make sure that the log **does not include confidential information** such as your username.
+  * _On Windows_: Open cmd or Terminal and paste `C:\path\to\File-Find.exe > output.txt 2>&1` and run reproduce the bug. The log will be stored in output.txt on your user directory. copy and paste the output into your bug report. Make sure that the log **does not include confidential information** such as your username.
+  * _On Linux_: Open Console and paste `/path/to/File-Find.bin` into it, copy and paste the output into your bug report. Make sure that the log **does not include confidential information** such as your username.
 
 **Installation Information**
  - OS and Version: [e.g. macOS 12]
