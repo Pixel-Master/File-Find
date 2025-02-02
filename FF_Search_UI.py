@@ -13,13 +13,12 @@ import logging
 import os
 from json import dump, load
 from time import perf_counter, ctime, time
-import gc
 
 # PySide6 Gui Imports
-from PySide6.QtCore import QSize, Qt, QThreadPool, QTimer
+from PySide6.QtCore import QSize, Qt, QTimer
 from PySide6.QtGui import QFont, QIcon
 from PySide6.QtWidgets import QMainWindow, QLabel, QPushButton, QFileDialog, \
-    QListWidget, QMenu, QWidget, QGridLayout, QHBoxLayout
+    QListWidget, QMenu, QWidget, QGridLayout, QHBoxLayout, QScrollArea
 
 # Projects Libraries
 import FF_Additional_UI
@@ -91,13 +90,20 @@ class SearchWindow:
         # Displaying
         self.Search_Results_Layout.addWidget(objects_text, 0, 2)
 
-        # Listbox
+        '''Creating a QScrollArea in which the QListWidget is put. This is because QListWidget.setUniformItemSizes(True)
+        allows for insane speed gains (up to 100x), but it makes all item the same size (if they are too long it will
+        cut them of) so to profit from the speed gains but at the same time not cutting of the file paths, the
+         QListWidget (takes care of vertical scrolling)
+        is put into a QScrollArea, which takes care of the horizontal scrolling.'''
+        self.result_area = QScrollArea(self.Search_Results_Window)
+        # List widget for displaying all found files
         self.result_listbox = QListWidget(self.Search_Results_Window)
         # Place
-        self.Search_Results_Layout.addWidget(self.result_listbox, 1, 0, 9, 6)
-        # Display the Listbox
-        self.result_listbox.show()
+        self.Search_Results_Layout.addWidget(self.result_area, 1, 0, 9, 6)
+        # Place the Listbox in the area
+        self.result_area.setWidget(self.result_listbox)
 
+        # Store the time
         self.search_opened_time = time()
 
         # Show more time info's
@@ -127,7 +133,6 @@ class SearchWindow:
                 f"Cache (basis for search results) created:\n{cache_created_time}\n"
                 f"Search opened:\n{search_opened_time}",
                 self.Search_Results_Window, large=True)
-
 
         # Save Search
         def save_search():
@@ -275,24 +280,52 @@ class SearchWindow:
         # Add to Layout
         self.Search_Results_Layout.addWidget(duplicated_button, 0, 4)
 
-        # Adding every object from matched_list to self.result_listbox
+        # Adding every object from matched_list to self.result_listview
         logging.debug("Adding Files to Listbox...")
-        self.result_listbox.addItems(self.matched_list)
-        # Setting the row
-        self.result_listbox.setCurrentRow(0)
-
-        # On double-click
-        self.result_listbox.itemDoubleClicked.connect(menu_bar.double_clicking_item)
-
         # If there was no file found and the list is empty
         if not self.matched_list:
             self.result_listbox.setDisabled(True)
             self.result_listbox.addItem("No file of directory found")
+        else:
+            # If there is at least one file
+            self.result_listbox.addItems(self.matched_list)
+            # Setting the row to the first
+            self.result_listbox.setCurrentRow(0)
 
+        # Improvements for a faster QListWidget
+        '''Created a QScrollArea in which the QListWidget was put. This is because QListWidget.setUniformItemSizes(True)
+            allows for insane speed gains (up to 100x), but it makes all item the same length (if they are too long it
+            will cut them of) so to profit from the speed gains but at the same time not cutting of the file paths, the
+            QListWidget (takes care of vertical scrolling) is put into a QScrollArea, which takes care of
+            the horizontal scrolling. QScrollArea.setWidgetResizable() takes care of the dynamic height,
+            the minimum size is set to 15px times the number of characters of the longest string. All scrollbars
+            except the horizontal of the scroll area are disabled, the vertical scrollbar gets overlapped onto the
+            ScrollArea in the main layout. (A bit of a dirty solution)'''
+        self.result_area.setWidgetResizable(True)
+        self.result_listbox.setUniformItemSizes(True)
+        try:
+            # Get the longest file, fails if there is no item, and then multiply by font size to get the length
+            self.result_listbox.setMinimumWidth(
+                len(max(self.matched_list, key=len)) * self.result_listbox.font().pointSize())
+        except ValueError:
+            pass
+        # Setting all the Scrollbars
+        self.result_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        self.result_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.result_listbox.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        # Moving the Scrollbar into the right place, so it's always visible
+        self.Search_Results_Layout.addWidget(self.result_listbox.verticalScrollBar(), 1, 0, 9, 6,
+                                             Qt.AlignmentFlag.AlignRight)
+
+        # Action, user choice, on double click
+        self.result_listbox.itemDoubleClicked.connect(menu_bar.double_clicking_item)
+
+        # The final action run when the UI is build, to measure time properly
         def finish():
             # Update Seconds needed Label
             seconds_text.setText(
-                f"Time needed: {round(time_dict['time_total'] + (perf_counter() - time_dict['time_before_building']), 3)}s")
+                f"Time needed: {
+                round(time_dict['time_total'] + (perf_counter() - time_dict['time_before_building']), 3)}s")
             seconds_text.adjustSize()
 
             # Time building UI
@@ -309,13 +342,14 @@ class SearchWindow:
                          f"Total: {time_dict['time_total']}")
 
             # Push Notification
-            FF_Main_UI.menu_bar_icon.showMessage("File Find - Search finished!", f"Your Search finished!\nin {search_path}",
-                                                 QIcon(os.path.join(FF_Files.ASSETS_FOLDER, "Find_button_img_small.png")),
-                                                 100000)
+            FF_Main_UI.menu_bar_icon.showMessage(
+                "File Find - Search finished!", f"Your Search finished!\nin {search_path}",
+                QIcon(os.path.join(FF_Files.ASSETS_FOLDER, "Find_button_img_small.png")),
+                100000)
             # Update Search indicator
             FF_Main_UI.MainWindow.update_search_status_label()
 
             logging.info("Finished Building Search-Results-UI!\n")
 
-        # Adding the finish function to the Qt event loop
+        # Adding the finish function to the Qt event loop so it measures the time correctly
         QTimer.singleShot(0, finish)

@@ -311,12 +311,12 @@ class MainWindow:
         search_status_title_label.show()
         self.Main_Layout.addWidget(search_status_title_label, 12, 0)
 
-        # Label to indicate if searching
+        # Custom label to indicate if searching
         global search_status_label
-        search_status_label = QLabel(self.Root_Window)
-        search_status_label.setText("Inactive")
+        search_status_label = FF_Additional_UI.ColoredLabel("Idle", self.Root_Window,
+                                                            FF_Files.GREEN_LIGHT_THEME_COLOR,
+                                                            FF_Files.GREEN_DARK_THEME_COLOR)
         search_status_label.setFont(QFont(FF_Files.DEFAULT_FONT, FF_Files.NORMAL_FONT_SIZE))
-        search_status_label.setStyleSheet(f"color: {FF_Files.GREEN_COLOR};")
         search_status_label.show()
         self.Main_Layout.addWidget(search_status_label, 12, 1)
         self.Main_Layout.addItem(QSpacerItem(600, 0, hData=QSizePolicy.Policy.Maximum), 12, 2)
@@ -342,18 +342,9 @@ class MainWindow:
         self.advanced_search_widget_layout.addWidget(self.edit_file_extension, 0, 2, 1, 5)
 
         # Edit for displaying the Path
-        self.edit_directory = self.generate_filter_entry(self.basic_search_widget)
-        # Set text and tooltip to display the directory
-        self.edit_directory.setText(FF_Files.SELECTED_DIR)
-        # Execute the validate_dir function if text is changed
-        self.edit_directory.textChanged.connect(self.validate_dir)
-        # Loading Completions
-        self.complete_path(FF_Files.SELECTED_DIR, check=False)
+        self.edit_directory = FF_Additional_UI.DirectoryEntry(self.basic_search_widget)
         # Resize and place on screen
         self.basic_search_widget_layout.addWidget(self.edit_directory, 3, 2)
-        # If app is sandboxed
-        if FF_Files.IS_SANDBOXED:
-            self.edit_directory.setReadOnly(True)
 
         # File contains
         self.edit_file_contains = self.generate_filter_entry(self.properties_widget)
@@ -834,79 +825,7 @@ class MainWindow:
         # Return the Button
         return button
 
-    # Auto complete paths
-    def complete_path(self, path, check=True):
-
-        # Adds all folders in path into paths
-        def get_paths():
-            paths = []
-            for list_folder in os.listdir(path):
-                if os.path.isdir(os.path.join(FF_Files.SELECTED_DIR, list_folder)):
-                    # Normalising the Unicode form to deal with special characters (e.g. ä, ö, ü) on macOS
-                    normalised_path = normalize("NFC", os.path.join(FF_Files.SELECTED_DIR, list_folder))
-                    paths.append(normalised_path)
-
-            # Returns the list
-            return paths
-
-        # Check if "/" is at end of inputted path
-        if check:
-            # Going through all paths to look if auto-completion should be loaded
-            if path.endswith("/") and (platform == "darwin" or platform == "linux"):
-                completer_paths = get_paths()
-                logging.debug("Changed QCompleter")
-            # On Windows paths and with "\"
-            elif path.endswith("\\") and (platform == "win32" or platform == "cygwin"):
-                completer_paths = get_paths()
-                logging.debug("Changed QCompleter")
-            else:
-                return
-
-        # If executed at launch skip check because home path doesn't end with a "/"
-        else:
-            completer_paths = get_paths()
-            logging.debug("Changed QCompleter")
-
-        # Set the saved list as Completer
-        directory_line_edit_completer = QCompleter(completer_paths, parent=self.Root_Window)
-        self.edit_directory.setCompleter(directory_line_edit_completer)
-
-    # Validate Paths in the directory box
-    def validate_dir(self):
-        # Debug
-        logging.debug(f"Directory Path changed to: {self.edit_directory.text()}")
-
-        # Get the text
-        check_path = self.edit_directory.text()
-
-        # If User pressed "Cancel"
-        if check_path == "":
-            return
-
-        # Changing Tool-Tip
-        self.edit_directory.setToolTip(self.edit_directory.text())
-
-        # Testing if path is folder
-        if os.path.isdir(check_path):
-            # Changing Path
-            logging.debug(f"Path: {check_path} valid")
-            FF_Files.SELECTED_DIR = check_path
-
-            # Change color
-            self.edit_directory.setStyleSheet("")
-
-            # Updating Completions
-            self.complete_path(check_path)
-
-        else:
-            # Debug
-            logging.debug(f"Path: {check_path} invalid")
-
-            # Change color
-            self.edit_directory.setStyleSheet(f"color: {FF_Files.RED_COLOR};")
-
-            # Resetting all filters
-
+    # Resetting all filters
     def reset_filters(self):
         if os.path.exists(os.path.join(FF_Files.FF_LIB_FOLDER, "Default.FFFilter")):
             # Debug
@@ -1252,13 +1171,9 @@ class MainWindow:
         menu_bar_icon_menu.addAction(about_action)
         menu_bar_icon_menu.addAction(quit_action)
 
-        # Checking if the menu bar icon should be displayed
-        with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings")) as settings_file:
-            display_icon = load(settings_file)["display_menu_bar_icon"]
-
         # Display the Icon if allowed
         menu_bar_icon.setContextMenu(menu_bar_icon_menu)
-        if display_icon:
+        if FF_Settings.SettingsWindow.load_setting("display_menu_bar_icon"):
             menu_bar_icon.show()
 
         return menu_bar_icon
@@ -1277,7 +1192,7 @@ class MainWindow:
         # If there are no active searches
         if FF_Search.ACTIVE_SEARCH_THREADS == 0:
             search_status_label.setText("Idle")
-            search_status_label.setStyleSheet(f"color: {FF_Files.GREEN_COLOR};")
+            search_status_label.change_color(FF_Files.GREEN_LIGHT_THEME_COLOR, FF_Files.GREEN_DARK_THEME_COLOR)
             search_status_label.adjustSize()
 
         # While the UI is being build, you cannot use File Find
@@ -1287,7 +1202,7 @@ class MainWindow:
         # If there are ongoing searches updating label
         else:
             search_status_label.setText(f"Active ({FF_Search.ACTIVE_SEARCH_THREADS}) ...")
-            search_status_label.setStyleSheet(f"color: {FF_Files.RED_COLOR};")
+            search_status_label.change_color(FF_Files.RED_LIGHT_THEME_COLOR, FF_Files.RED_DARK_THEME_COLOR)
             search_status_label.adjustSize()
 
     # Search with a new cache

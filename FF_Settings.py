@@ -97,19 +97,15 @@ class SettingsWindow:
         # Place
         self.Settings_Layout.addWidget(excluded_listbox, 9, 1, 11, 3)
 
-        # Load Files
-        with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings")) as excluded_file:
-            files = load(excluded_file)["excluded_files"]
-        for file in files:
+        # Load values
+        for file in self.load_setting("excluded_files"):
             excluded_listbox.addItem(file)
 
         # Buttons to add or remove Files
         def edit_excluded(input_file, added=True):
 
-            # Load Settings
-            with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings")) as settings_file:
-                settings = load(settings_file)
-                excluded_files = settings["excluded_files"]
+            # Load excluded files list
+            excluded_files = self.load_setting("excluded_files")
 
             # Remove or add input to list
             if added:
@@ -118,12 +114,8 @@ class SettingsWindow:
             elif not added:
                 excluded_files.remove(input_file)
 
-            # Add changed Settings to dict
-            settings["excluded_files"] = excluded_files
-
             # Dump new settings
-            with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "w") as settings_file:
-                dump(settings, settings_file)
+            self.update_setting("excluded_files", excluded_files)
 
         def remove_file():
             try:

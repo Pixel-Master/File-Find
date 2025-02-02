@@ -3,7 +3,7 @@
   <h1 align="center">File Find</h1>
 
 
-<h3 align="center">A     file search utility that helps you find files easier.</h3>
+<h3 align="center">A file search utility that helps you find files easier.</h3>
 
 <h4 align="center">Completely open-source and free. By Pixel-Master</h4>
 
@@ -203,7 +203,7 @@ A: It is possible that for example reloading files or building the UI at the end
 
 Q: **How do you clean the cache?**
 
-A: File Find stores the cache under `/Users/$USERNAME/Library/Application Support/File-Find/Cached Searches`. You can clean the cache with `⌘ + T` or `Tools > Clear Cache`. In the About section you can set when the cache gets cleaned automatically.
+A: On macOS File Find stores the cache under `/Users/$USERNAME/Library/Application Support/File-Find/Cached Searches`. You can clean the cache with `⌘ + T` or `Tools > Clear Cache`. In the About section you can set when the cache gets cleaned automatically.
 
 Q: **Why does File Find ask for permission for Contacts, Calenders, Photos, etc...?**
 
@@ -220,6 +220,12 @@ but you are not going to be able to save searches in those directories
 Q: **Does File Find connect to the Internet?**
 
 A: **File Find does not connect to the Internet**, everything stays on your machine.
+
+Q: **Why doesn't File Find find my file/folder?**
+
+A: By default (on a fresh install) File Find finds every file/folder except internal system files in the `Library` or `System` folders.
+You can enable them under "Advanced". Also check the excluded files list in the settings. Files listed there will not show up. Other than that press `⌘ + R` on macOS (on Windows/Linux: `Strg + R`) to reset all filter settings to default.
+If none of these options help, [create a Bug Report.](#bug-reports)
 
 ## File Structure
 
@@ -261,6 +267,7 @@ A: **File Find does not connect to the Internet**, everything stays on your mach
 
 ## Contributing
 
+It is recommended to use the [GitHub Issue Tracker.](https://github.com/Pixel-Master/File-Find/issues)
 If you don't want to use GitHub or want to write privately, email me: [pixel_master.1@proton.me](mailto:pixel_master.1@proton.me)
 
 ### Bug reports
@@ -283,7 +290,7 @@ Include:
 
 ### Feature Request
 
-New functionality is  wished
+New functionality is wished
 
 * Is the feature request related to a problem?
 * The solution you'd like, clearly and 

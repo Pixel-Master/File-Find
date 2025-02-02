@@ -27,6 +27,7 @@ import FF_Additional_UI
 import FF_Files
 import FF_Main_UI
 import FF_Search_UI
+import FF_Settings
 
 
 # Sorting algorithms
@@ -111,51 +112,71 @@ class LoadSearch:
 
     # Opening the user-interface and creating a cache file for the reload button
     @staticmethod
-    def open_file(load_file, parent):
-        # A file was selected
-        if load_file != "":
-
+    def load_search_content(load_file):
+        # Debug
+        logging.info(f"Loading {load_file}")
+        # Opening the file
+        with open(load_file) as opened_file:
+            # Saving file content
+            saved_file_content = load(opened_file)
             # Debug
-            logging.info(f"Loading {load_file}")
-            # Opening the file
-            with open(load_file) as opened_file:
-                # Saving file content
-                saved_file_content = load(opened_file)
-                # Debug
-                logging.info(f"File has version: {saved_file_content['VERSION']},"
-                             f" local version: {FF_Files.FF_SEARCH_VERSION}")
+            logging.info(f"File has version: {saved_file_content['VERSION']},"
+                         f" local version: {FF_Files.FF_SEARCH_VERSION}")
 
-                # If the cache doesn't exist
-                if not os.path.exists(FF_Files.path_to_cache_file(load_file)):
+            # If the cache doesn't exist
+            if not os.path.exists(FF_Files.path_to_cache_file(load_file)):
 
-                    # Dictionary which is going to be dumped into the cache file
-                    dump_dict = {"VERSION": FF_Files.FF_CACHE_VERSION,
-                                 "found_path_set": saved_file_content["matched_list"],
-                                 "type_dict": {}}
+                # Dictionary which is going to be dumped into the cache file
+                dump_dict = {"VERSION": FF_Files.FF_CACHE_VERSION,
+                             "found_path_set": saved_file_content["matched_list"],
+                             "type_dict": {}}
 
-                    # Getting types
-                    for cache_file in saved_file_content["matched_list"]:
-                        if os.path.isdir(cache_file):
-                            dump_dict["type_dict"][cache_file] = "folder"
-                        else:
-                            dump_dict["type_dict"][cache_file] = "file"
+                # Getting types
+                for cache_file in saved_file_content["matched_list"]:
+                    if os.path.isdir(cache_file):
+                        dump_dict["type_dict"][cache_file] = "folder"
+                    else:
+                        dump_dict["type_dict"][cache_file] = "file"
 
-                    # Create a new cache file
-                    with open(
-                            os.path.join(
-                                FF_Files.CACHED_SEARCHES_FOLDER, f"{load_file}.FFCache".replace(
-                                    "/", "-")), "w") as cached_search:
-                        # Dump the content of the save into the cache with JSON into the file
-                        dump(dump_dict, cached_search)
+                # Create a new cache file
+                with open(FF_Files.path_to_cache_file(load_file), "w") as cached_search:
+                    # Dump the content of the save into the cache with JSON into the file
+                    dump(dump_dict, cached_search)
 
-                # Open the UI
-                FF_Search_UI.SearchWindow(*[{"time_searching": 0,
-                                             "time_indexing": 0,
-                                             "time_sorting": 0,
-                                             "time_building": 0,
-                                             "time_total": 0},
-                                            saved_file_content["matched_list"], load_file,
-                                            FF_Files.path_to_cache_file(load_file), parent])
+                # Create a metadata file
+                with open(FF_Files.path_to_cache_file(load_file, True), "w") as cached_search:
+                    # Date created
+                    # On macOS
+                    if platform == "darwin":
+                        c_date = os.stat(load_file).st_birthtime
+                    # On Linux
+                    elif platform == "linux":
+                        c_date = os.path.getmtime(load_file)
+                    # On Windows
+                    else:
+                        c_date = os.path.getctime(load_file)
+                    # Dump the metadata of the save into the cache with JSON into the file
+                    dump({"c_time": c_date,
+                          "cache_version": FF_Files.FF_CACHE_VERSION,
+                          "original_cache_file": FF_Files.path_to_cache_file(load_file)},
+                         cached_search)
+        return saved_file_content
+
+    @staticmethod
+    def open_file(load_file, parent):
+        # No file was selected
+        if load_file == "":
+            return
+
+        saved_file_content = LoadSearch.load_search_content(load_file)
+        # Open the UI
+        FF_Search_UI.SearchWindow(*[{"time_searching": 0,
+                                     "time_indexing": 0,
+                                     "time_sorting": 0,
+                                     "time_building": 0,
+                                     "time_total": 0},
+                                    saved_file_content["matched_list"], load_file,
+                                    FF_Files.path_to_cache_file(load_file), parent])
 
 
 # The Search Engine
@@ -229,8 +250,7 @@ class Search:
         logging.debug(f"{size_data=}, {data_file_size_min=}, {data_file_size_max=}")
 
         # Loading excluded files
-        with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings")) as excluded_file:
-            data_excluded_files = load(excluded_file)["excluded_files"]
+        data_excluded_files = FF_Settings.SettingsWindow.load_setting("excluded_files")
 
         # Checking if the search scope is an excluded directory
         excluded_files_block_search = False
@@ -943,10 +963,11 @@ class Search:
             # Saving the cache creation time in a separate file for faster access
             with open(FF_Files.path_to_cache_file(data_search_from, True), "w") as time_write_file:
                 if used_cache:
-                    # Determining the number of parent directories by splitting the path with the default separator
-                    # and then getting the length of the list. Dividing by then so to only add fractions of a seconds
-                    # to the c_time as to not get ranked over newer caches. Doing this so the already specialized cache
-                    # gets used preferably
+                    # Determining the number of parent directories by counting the default separators in the path
+                    # and then adding this value to the c_Time so the more specified cache gets used rather than
+                    # the broader cache which was created at the same time. Dividing by 10 so to only add fractions of
+                    # a seconds to the c_time as to not get ranked over newer caches.
+                    # Doing this so the already specialized cache gets used preferably
                     c_time_adjust = data_search_from.count(os.sep) / 10
                     logging.debug(f"Cache time {newest_fitting_cache_file_c_date} + adjuster: {c_time_adjust} "
                                   f"= {newest_fitting_cache_file_c_date + c_time_adjust}")
@@ -954,12 +975,14 @@ class Search:
                     # Used old cache, use old time
                     dump({"c_time": newest_fitting_cache_file_c_date + c_time_adjust,
                           "cache_version": FF_Files.FF_CACHE_VERSION,
-                          "original_cache_file": FF_Files.path_to_cache_file(data_search_from)}, time_write_file)
+                          "original_cache_file": newest_fitting_cache_file}, time_write_file)
 
                 else:
                     logging.debug("Created brand new cache..")
                     # New cache created
-                    dump({"c_time": time.time()}, time_write_file)
+                    dump({"c_time": time.time(),
+                          "cache_version": FF_Files.FF_CACHE_VERSION,
+                          "original_cache_file": FF_Files.path_to_cache_file(data_search_from)}, time_write_file)
                     newest_fitting_cache_file = FF_Files.path_to_cache_file(data_search_from)
 
         else:

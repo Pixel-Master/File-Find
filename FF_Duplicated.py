@@ -195,7 +195,6 @@ class DuplicatedSettings:
         self.button_box = QDialogButtonBox(parent=self.Duplicated_Settings)
         self.button_box.setStandardButtons(QDialogButtonBox.StandardButton.Cancel | QDialogButtonBox.StandardButton.Ok)
 
-
         # Connect events
         def start_duplicated():
             # Update search status label
@@ -247,8 +246,6 @@ class DuplicatedSettings:
                     criteria=criteria,
                     matched_list=matched_list,
                     signals=self.event_class))
-
-
 
         # Launch search algorithm
         self.button_box.button(
@@ -347,11 +344,11 @@ class DuplicatedUI:
         self.Duplicated_Tree.setColumnWidth(0, 550)
         self.Duplicated_Tree.horizontalScrollBar().show()
 
-        # Replacing the keys which is size or a filename and replacing them with absolute paths
+        # Taking the keys which are the size or a filename and replacing them with absolute paths
         for file_name in matched_dict.copy():
-            # Taking a name like "name.pdf" and converting it to an absolute path
+            # Taking a name like "name.pdf" or a size like 13MB and converting it to an absolute path
             matched_dict[matched_parent_file_path_dict[file_name]] = matched_dict[file_name]
-            # Removing it
+            # Cleaning up
             del matched_dict[file_name]
 
         matched_sorted_list = list(matched_dict.keys())
@@ -434,21 +431,22 @@ class DuplicatedUI:
             main_tree_item.setText(1, FF_Files.conv_file_size(FF_Files.get_file_size(main_item)))
             main_tree_item.setTextAlignment(1, Qt.AlignmentFlag.AlignRight)
 
-        # Add the model to the final
+        # If no duplicated file was found
+        if not matched_sorted_list:
+            empty_tree_item = QTreeWidgetItem(self.Duplicated_Tree)
+            empty_tree_item.setText(0, "No duplicated file of directory found")
+            self.Duplicated_Tree.setDisabled(True)
+
+        # Add the model to the Layout
         self.Duplicated_Layout.addWidget(self.Duplicated_Tree, 1, 0, 5, 8)
 
         # Setup menu bar
         menu_bar = FF_Menubar.MenuBar(
             parent=self.Duplicated_Window, window="duplicated", listbox=self.Duplicated_Tree, search_path=match_path,
-            cache_file_path=cache_file)
+            cache_file_path=cache_file, matched_list=matched_dict)
 
         # If item is double-clicked
-        def open_double_clicked(item):
-            # Only if subdirectory is clicked
-            if item.text(0) != os.path.basename(item.text(0)):
-                menu_bar.double_clicking_item()
-
-        self.Duplicated_Tree.itemDoubleClicked.connect(open_double_clicked)
+        self.Duplicated_Tree.itemDoubleClicked.connect(menu_bar.double_clicking_item)
 
         # Buttons
         # Functions to automate Button
@@ -517,7 +515,7 @@ class DuplicatedUI:
         time_needed_dict["time_after_building_ui"] = perf_counter()
 
         logging.info(f"\nSeconds needed:\n"
-                     f"Indexing: {time_needed_dict['time_before_building_ui'] - time_needed_dict['start_time']}\n"
+                     f"Finding duplicates: {time_needed_dict['time_before_building_ui'] - time_needed_dict['start_time']}\n"
                      f"Building UI: "
                      f"{time_needed_dict['time_after_building_ui'] - time_needed_dict['time_before_building_ui']}\n"
                      f"Total: {time_needed_dict['time_after_building_ui'] - time_needed_dict['start_time']}")
@@ -538,7 +536,8 @@ class DuplicatedUI:
             FF_Additional_UI.PopUps.show_info_messagebox(
                 "Time Stats",
                 f"Time needed:\n"
-                f"Indexing: {round(time_needed_dict['time_before_building_ui'] - time_needed_dict['start_time'], 3)}s\n"
+                f"Finding duplicates: {round(time_needed_dict['time_before_building_ui']
+                                             - time_needed_dict['start_time'], 3)}s\n"
                 f"Creating UI: "
                 f"{round(time_needed_dict['time_after_building_ui'] - time_needed_dict['time_before_building_ui'], 3)}s"
                 f"\n---------\n"

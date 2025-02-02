@@ -17,8 +17,8 @@ from time import time
 import hashlib
 
 # Versions
-VERSION: str = "17-jan-2025"
-VERSION_SHORT: str = "1.1.2"
+VERSION: str = "28-jan-2025"
+VERSION_SHORT: str = "1.2"
 # Versions of file formats
 FF_FILTER_VERSION = 1
 FF_SEARCH_VERSION = 1
@@ -30,19 +30,16 @@ USER_FOLDER = os.path.expanduser("~")
 # On macOS
 if platform == "darwin":
     FF_LIB_FOLDER = os.path.join(USER_FOLDER, "Library", "Application Support", "File-Find")
-    TITLE_FONT_SIZE = 23
     NORMAL_FONT_SIZE = 17
     SMALLER_FONT_SIZE = 15
 # On Windows
 elif platform == "win32" or platform == "cygwin":
     FF_LIB_FOLDER = os.path.join(USER_FOLDER, "AppData", "Roaming", "File-Find")
-    TITLE_FONT_SIZE = 20
     NORMAL_FONT_SIZE = 15
     SMALLER_FONT_SIZE = 13
 # On Linux
 else:
     FF_LIB_FOLDER = os.path.join(USER_FOLDER, ".file-find")
-    TITLE_FONT_SIZE = 21
     NORMAL_FONT_SIZE = 15
     SMALLER_FONT_SIZE = 14
 
@@ -113,8 +110,10 @@ DEFAULT_SETTINGS = {"settings_version": FF_SETTINGS_VERSION,
                     "double_click_action": "View file in Finder/File Explorer"}
 
 # Color schemes
-RED_COLOR = "#b31b00"
-GREEN_COLOR = "#009903"
+RED_LIGHT_THEME_COLOR = "#b1100c"
+RED_DARK_THEME_COLOR = "#f27171"
+GREEN_LIGHT_THEME_COLOR = "#008200"
+GREEN_DARK_THEME_COLOR = "#1ae087"
 GREY_DISABLED_COLOR = "#7f7f7f"
 
 
@@ -184,39 +183,50 @@ def cache_test(is_launching):
                 with open(os.path.join(CACHE_METADATA_FOLDER, file)) as time_file:
                     # Load creation time
                     cache_created_time = load(time_file)["c_time"]
-            except JSONDecodeError:
+            except (JSONDecodeError, KeyError, FileNotFoundError):
+                try:
+                    os.remove(os.path.join(CACHE_METADATA_FOLDER, file))
+                except FileNotFoundError:
+                    pass
+                try:
+                    os.remove(os.path.join(CACHED_SEARCHES_FOLDER, file))
+                except FileNotFoundError:
+                    pass
                 continue
 
             if cache_created_time < time() - allowed_time_difference:
-                logging.debug(f"Deleting Cache for dir: {file} because it's older than the allowed time difference,"
-                              f" {allowed_time_difference=}sec.")
+                logging.debug(f"Deleting Cache and it's metadata for dir: {file} because it's older than the allowed"
+                              f" time difference, {allowed_time_difference=}sec.")
+                # Remove cache
                 os.remove(os.path.join(CACHED_SEARCHES_FOLDER, file))
-
+                # Remove cache Metadata
+                os.remove(os.path.join(CACHE_METADATA_FOLDER, file))
 
     logging.debug("Finished Cache Testing!\n")
 
 
 # Function to get the File Size of a directory
-def get_file_size(file: str) -> int:
-    if os.path.isdir(file):
+def get_file_size(input_file: str) -> int:
+    if os.path.isdir(input_file):
         file_size_list_obj = 0
         # Gets the size if the path is a folder with recursively searching th director<
-        for path, _dirs, files in os.walk(file):
+        for root, _dirs, files in os.walk(input_file):
             for file in files:
                 try:
                     if not os.path.islink(file):
-                        file_size_list_obj += os.path.getsize(os.path.join(path, file))
+                        file_size_list_obj += os.path.getsize(os.path.join(root, file))
 
                 except (FileNotFoundError, ValueError):
                     continue
-    elif os.path.isfile(file):
+    elif os.path.isfile(input_file):
         try:
-            file_size_list_obj = os.path.getsize(file)
+            file_size_list_obj = os.path.getsize(input_file)
         except (FileNotFoundError, ValueError):
             return -1
     else:
+        # Error code
         return -1
-    if os.path.islink(file):
+    if os.path.islink(input_file):
         return -2
     else:
         return file_size_list_obj

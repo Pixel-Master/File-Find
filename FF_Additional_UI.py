@@ -15,19 +15,163 @@ from json import load, dump
 from subprocess import run
 from sys import platform
 from time import time, ctime
+from unicodedata import normalize
 
 # PySide6 Gui Imports
 from PySide6.QtCore import Qt, Signal, QObject
 from PySide6.QtGui import QFont, QPixmap, QColor
-from PySide6.QtWidgets import QMessageBox, QComboBox, QLabel, QVBoxLayout, QWidget, QMainWindow
+from PySide6.QtWidgets import QMessageBox, QComboBox, QLabel, QVBoxLayout, QWidget, QMainWindow, QLineEdit, QCompleter
 
 # Projects Libraries
 import FF_Files
 import FF_Menubar
+import FF_Settings
 
 # keeping a list of all created icons
 icons = set()
 global app, global_color_scheme
+
+
+# Used for entering the directory
+class DirectoryEntry(QLineEdit):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.parent = parent
+        # Set the size
+        self.resize(230, 20)
+        self.setFixedHeight(25)
+        self.setFixedWidth(230)
+        # Set text and tooltip to display the directory
+        self.setText(FF_Files.SELECTED_DIR)
+        # Execute the validate_dir function if text is changed
+        self.textChanged.connect(self.validate_dir)
+        # Loading Completions now
+        self.complete_path(FF_Files.SELECTED_DIR, check=False)
+        # If app is sandboxed the user must click on the directory for permission
+        if FF_Files.IS_SANDBOXED:
+            self.setReadOnly(True)
+
+        # normal colors
+        self.dark_color = "white"
+        self.light_color = "black"
+
+        # Connecting color scheme change, using app form UIIcon
+        app.styleHints().colorSchemeChanged.connect(lambda scheme: self.style_changed(scheme))
+
+    def validate_dir(self):
+        # Debug
+        logging.debug(f"Directory Path changed to: {self.text()}")
+
+        # Get the text
+        check_path = self.text()
+
+        # If User pressed "Cancel"
+        if check_path == "":
+            return
+
+        # Changing Tool-Tip
+        self.setToolTip(self.text())
+
+        # Testing if path is folder
+        if os.path.isdir(check_path):
+            # Changing Path
+            logging.debug(f"Path: {check_path} valid")
+            FF_Files.SELECTED_DIR = check_path
+
+            # Change color back to normal
+            self.change_color("black", "white")
+
+            # Updating Completions
+            self.complete_path(check_path)
+
+        else:
+            # Debug
+            logging.debug(f"Path: {check_path} invalid")
+
+            # Change color
+            self.change_color(FF_Files.RED_LIGHT_THEME_COLOR, FF_Files.RED_DARK_THEME_COLOR)
+
+    # Auto complete paths
+    def complete_path(self, path, check=True):
+
+        # Adds all folders in path into paths
+        def get_paths():
+            paths = []
+            for list_folder in os.listdir(path):
+                if os.path.isdir(os.path.join(FF_Files.SELECTED_DIR, list_folder)):
+                    # Normalising the Unicode form to deal with special characters (e.g. ä, ö, ü) on macOS
+                    normalised_path = normalize("NFC", os.path.join(FF_Files.SELECTED_DIR, list_folder))
+                    paths.append(normalised_path)
+
+            # Returns the list
+            return paths
+
+        # Check if "/" is at end of inputted path
+        if check:
+            # Going through all paths to look if auto-completion should be loaded
+            if path.endswith(os.sep):
+                completer_paths = get_paths()
+                logging.debug("Changed QCompleter")
+            else:
+                return
+        # If executed at launch skip check because home path doesn't end with a "/"
+        else:
+            completer_paths = get_paths()
+            logging.debug("Changed QCompleter")
+
+        # Set the saved list as Completer
+        directory_line_edit_completer = QCompleter(completer_paths, parent=self.parent)
+        self.setCompleter(directory_line_edit_completer)
+
+    def style_changed(self, scheme):
+        if scheme == Qt.ColorScheme.Dark:
+            self.setStyleSheet(f"color: {self.dark_color};")
+        elif scheme == Qt.ColorScheme.Light:
+            self.setStyleSheet(f"color: {self.light_color};")
+
+    def change_color(self, light_color, dark_color):
+        # Making parameters global
+        self.dark_color = dark_color
+        self.light_color = light_color
+
+        if global_color_scheme == Qt.ColorScheme.Dark:
+            self.setStyleSheet(f"color: {self.dark_color};")
+        elif global_color_scheme == Qt.ColorScheme.Light:
+            self.setStyleSheet(f"color: {self.light_color};")
+
+
+# Create a label that uses a different color than usual and changes with light and dark mode
+class ColoredLabel(QLabel):
+    def __init__(self, text, parent, light_color, dark_color):
+        super().__init__(text, parent)
+
+        # Making parameters global
+        self.dark_color = dark_color
+        self.light_color = light_color
+
+        # Connecting color scheme change, using app form UIIcon
+        app.styleHints().colorSchemeChanged.connect(lambda scheme: self.style_changed(scheme))
+
+        if global_color_scheme == Qt.ColorScheme.Dark:
+            self.setStyleSheet(f"color: {self.dark_color};")
+        elif global_color_scheme == Qt.ColorScheme.Light:
+            self.setStyleSheet(f"color: {self.light_color};")
+
+    def style_changed(self, scheme):
+        if scheme == Qt.ColorScheme.Dark:
+            self.setStyleSheet(f"color: {self.dark_color};")
+        elif scheme == Qt.ColorScheme.Light:
+            self.setStyleSheet(f"color: {self.light_color};")
+
+    def change_color(self, light_color, dark_color):
+        # Making parameters global
+        self.dark_color = dark_color
+        self.light_color = light_color
+
+        if global_color_scheme == Qt.ColorScheme.Dark:
+            self.setStyleSheet(f"color: {self.dark_color};")
+        elif global_color_scheme == Qt.ColorScheme.Light:
+            self.setStyleSheet(f"color: {self.light_color};")
 
 
 # Create a QPixmap that automatically adjusts to light and dark mode
@@ -45,7 +189,7 @@ class UIIcon:
 
             app = input_app
 
-            def change_global__color_scheme(scheme):
+            def change_global_color_scheme(scheme):
                 global global_color_scheme
                 global_color_scheme = scheme
 
@@ -53,7 +197,7 @@ class UIIcon:
 
             # Connecting color scheme change
             app.styleHints().colorSchemeChanged.connect(self.style_changed)
-            app.styleHints().colorSchemeChanged.connect(change_global__color_scheme)
+            app.styleHints().colorSchemeChanged.connect(change_global_color_scheme)
 
         # Creating an icon
         else:
@@ -297,20 +441,16 @@ class PopUps:
     # Ask to search MessageBoy
     @staticmethod
     def show_delete_question(parent, file):
-
-        # Opens the Settings File for the Ask when Searching Setting
-        with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings")) as settings_file:
-            # Load Settings with json
-            if load(settings_file)["popup"]["delete_question"]:
-                if QMessageBox.information(parent, "Are You Sure You Want To Delete This File?",
-                                           f"Do you want to delete {file}?",
-                                           QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel) \
-                        == QMessageBox.StandardButton.Ok:
-                    return True
-                else:
-                    return False
-            else:
+        if FF_Settings.SettingsWindow.load_setting("popup")["delete_question"]:
+            if QMessageBox.information(parent, "Are You Sure You Want To Delete This File?",
+                                       f"Do you want to delete {file}?",
+                                       QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel) \
+                    == QMessageBox.StandardButton.Ok:
                 return True
+            else:
+                return False
+        else:
+            return True
 
 
 # Displaying Welcome Popups

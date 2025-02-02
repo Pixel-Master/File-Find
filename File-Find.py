@@ -41,6 +41,7 @@ if __name__ == "__main__":
     else:
         logging.info("App is NOT sandboxed, all features are available")
 
+
     # Creating QApplication
     class CreateApp(QApplication):
 
@@ -77,11 +78,12 @@ if __name__ == "__main__":
 
             return super().event(event)
 
+
     app = CreateApp([])
 
     FF_Additional_UI.UIIcon(path=None, input_app=app)
 
-    # Turning of automatic garbage collection because
+    # Turning of automatic garbage collection because it makes the app crash
     gc.disable()
 
     # File Operation
