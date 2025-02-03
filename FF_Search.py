@@ -160,6 +160,8 @@ class LoadSearch:
                           "cache_version": FF_Files.FF_CACHE_VERSION,
                           "original_cache_file": FF_Files.path_to_cache_file(load_file)},
                          cached_search)
+                logging.debug(f"Created cache for {load_file} under {FF_Files.path_to_cache_file(load_file)} and"
+                              f" {FF_Files.path_to_cache_file(load_file, True)}")
         return saved_file_content
 
     @staticmethod

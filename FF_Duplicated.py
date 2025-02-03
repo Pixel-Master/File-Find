@@ -79,7 +79,7 @@ class DuplicatedSettings:
 
         # Title label
         self.title_label = QLabel(parent=self.Duplicated_Settings)
-        self.title_label.setText(f"Duplicated files in results of search in:"
+        self.title_label.setText("Duplicated files in results of search in:"
                                  f"\n{FF_Files.display_path(search_path, 45)}")
         self.title_label.setToolTip(search_path)
         # Make the Font bigger
@@ -535,15 +535,15 @@ class DuplicatedUI:
             # Displaying infobox with time info
             FF_Additional_UI.PopUps.show_info_messagebox(
                 "Time Stats",
-                f"Time needed:\n"
-                f"Finding duplicates: {round(time_needed_dict['time_before_building_ui']
-                                             - time_needed_dict['start_time'], 3)}s\n"
-                f"Creating UI: "
+                "Time needed:\n"
+                "Finding duplicates: "
+                f"{round(time_needed_dict['time_before_building_ui'] - time_needed_dict['start_time'], 3)}s\n"
+                "Creating UI: "
                 f"{round(time_needed_dict['time_after_building_ui'] - time_needed_dict['time_before_building_ui'], 3)}s"
                 f"\n---------\n"
                 f"Total: {round(time_needed_dict['time_after_building_ui'] - time_needed_dict['start_time'], 3)}s\n\n\n"
                 ""
-                f"Timestamps:\n"
+                "Timestamps:\n"
                 f"Cache (basis for search results) created:\n{cache_created_time}\n"
                 f"Window opened:\n{ctime(time_stamp)}s",
                 large=True,

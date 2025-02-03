@@ -11,7 +11,6 @@
 # Imports
 import logging
 import os
-from unicodedata import normalize
 from json import dump, load
 from sys import platform
 import sys
@@ -20,7 +19,7 @@ import sys
 from PySide6.QtCore import QSize, Qt, QDate
 from PySide6.QtGui import QFont, QDoubleValidator, QAction, QIcon, QClipboard
 from PySide6.QtWidgets import QWidget, QLabel, QPushButton, QRadioButton, QFileDialog, \
-    QLineEdit, QButtonGroup, QDateEdit, QComboBox, QSystemTrayIcon, QMenu, QCompleter, QTabWidget, \
+    QLineEdit, QButtonGroup, QDateEdit, QComboBox, QSystemTrayIcon, QMenu, QTabWidget, \
     QMainWindow, QGridLayout, QSpacerItem, QSizePolicy
 
 # Projects Libraries

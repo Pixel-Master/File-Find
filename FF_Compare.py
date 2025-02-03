@@ -42,7 +42,7 @@ class CompareUi:
         self.Compare_Window = QMainWindow(parent)
         # Set up the window title
         self.Compare_Window.setWindowTitle(
-            f"File Find | Comparing Searches: "
+            "File Find | Comparing Searches: "
             f"{FF_Files.display_path(path_of_first_search, 15)} (base) --> "
             f"{FF_Files.display_path(compared_searches.path_of_second_search[0], 15)}")
         # Set the start size of the Window, because it's resizable
@@ -83,7 +83,7 @@ class CompareUi:
         # Set up both list-boxes
         # Added files / files only in first search
         '''Creating a QScrollArea in which the QListWidget is put. This is because QListWidget.setUniformItemSizes(True)
-            allows for insane speed gains (up to 100x), but it makes all item the same size (if they are too long it 
+            allows for insane speed gains (up to 100x), but it makes all item the same size (if they are too long it
             will cut them of) so to profit from the speed gains but at the same time not cutting of the file paths, the
             QListWidget (takes care of vertical scrolling)
             is put into a QScrollArea, which takes care of the horizontal scrolling.'''
@@ -216,15 +216,17 @@ class CompareUi:
         FF_Main_UI.MainWindow.update_search_status_label()
 
         compared_searches.time_dict["time_after_building_ui"] = perf_counter()
+        comparing_time = (
+                compared_searches.time_dict['time_before_building_ui'] - compared_searches.time_dict['start_time'])
+        building_time = (compared_searches.time_dict['time_after_building_ui'] -
+                         compared_searches.time_dict['time_before_building_ui'])
+        total_time = compared_searches.time_dict['time_after_building_ui'] - compared_searches.time_dict['start_time']
 
         logging.info(
             f"\nSeconds needed:\n"
-            f"Comparing: {compared_searches.time_dict['time_before_building_ui'] -
-                          compared_searches.time_dict['start_time']}\n"
-            f"Building UI: {compared_searches.time_dict['time_after_building_ui'] -
-                            compared_searches.time_dict['time_before_building_ui']}\n"
-            f"Total: {compared_searches.time_dict['time_after_building_ui'] -
-                      compared_searches.time_dict['start_time']}")
+            f"Comparing: {comparing_time}\n"
+            f"Building UI: {building_time}\n"
+            f"Total: {total_time}")
 
         time_stamp = time()
 
@@ -273,17 +275,13 @@ class CompareUi:
             # Displaying infobox with time info
             FF_Additional_UI.PopUps.show_info_messagebox(
                 "Time Stats",
-                f"Time needed:\n"
-                f"Comparing: {round(compared_searches.time_dict['time_before_building_ui']
-                                    - compared_searches.time_dict['start_time'], 3)}s\n"
-                f"Creating UI: "
-                f"{round(compared_searches.time_dict['time_after_building_ui']
-                         - compared_searches.time_dict['time_before_building_ui'], 3)}s"
-                f"\n---------\n"
-                f"Total: {round(compared_searches.time_dict['time_after_building_ui'] -
-                                compared_searches.time_dict['start_time'], 3)}s\n\n\n"
+                "Time needed:\n"
+                f"Comparing: {round(comparing_time, 3)}s\n"
+                f"Creating UI: {round(building_time, 3)}s"
+                "\n---------\n"
+                f"Total: {round(total_time, 3)}s\n\n\n"
                 ""
-                f"Timestamps:\n"
+                "Timestamps:\n"
                 f"Base Search ({FF_Files.display_path(path_of_first_search, 60)}):\n{search1_created_time}\n"
                 f"Second Search ({FF_Files.display_path(compared_searches.path_of_second_search[0], 60)}):"
                 f"\n{search2_created_time}\n\n"
@@ -341,7 +339,7 @@ class CompareUi:
         # Configure the font
         label2.setFont(font2)
         # Times two because it is two lines and plus two for some extra space
-        label2.setFixedHeight(FF_Files.SMALLER_FONT_SIZE * 2 + 2)
+        label2.setFixedHeight(FF_Files.SMALLER_FONT_SIZE * 2 + 5)
 
         return label1, label2
 
@@ -408,7 +406,7 @@ class CompareSearches:
                 self.files_only_in_first_search.append(file_in_first_search)
 
         for file_in_second_search in self.files_of_second_search:
-            if file_in_second_search in first_search_files_set:
+            if not (file_in_second_search in first_search_files_set):
                 self.files_only_in_second_search.append(file_in_second_search)
 
         del first_search_files_set, second_search_files_set
@@ -436,5 +434,6 @@ class CompareSearches:
 
         # Load list from file and return path and files
         return FF_Search.LoadSearch.load_search_content(second_search_file[0])["matched_list"], second_search_file
+
 
 global compared_searches

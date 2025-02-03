@@ -344,7 +344,7 @@ class MenuBar:
                 # Try to move the file to trash and add a date for uniqueness
                 subprocess.run(command, check=True)
 
-            except subprocess.CalledProcessError:
+            except (subprocess.CalledProcessError, FileNotFoundError):
 
                 #  Error message
                 FF_Additional_UI.PopUps.show_critical_messagebox(
@@ -422,7 +422,6 @@ class MenuBar:
                 QColor(color).lightness()
                 self.get_listbox().item(self.get_listbox().currentRow()).setForeground(QBrush())
 
-
             else:
                 # Change the color to red
                 self.get_listbox().currentItem().setBackground(0, QColor(FF_Files.RED_DARK_THEME_COLOR))
@@ -441,7 +440,6 @@ class MenuBar:
                 # Change font color to white if necessary
                 QColor(color).lightness()
                 self.get_listbox().item(self.get_listbox().currentRow()).setForeground(QColor("white"))
-
 
             else:
                 # Change the color to red

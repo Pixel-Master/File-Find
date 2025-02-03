@@ -121,15 +121,15 @@ class SearchWindow:
             # Displaying infobox with time info
             FF_Additional_UI.PopUps.show_info_messagebox(
                 "Time Stats",
-                f"Time needed:\n"
+                "Time needed:\n"
                 f"Scanning: {round(time_dict['time_searching'], 3)}s\n"
                 f"Indexing: {round(time_dict['time_indexing'], 3)}s\n"
                 f"Sorting: {round(time_dict['time_sorting'], 3)}s\n"
                 f"Creating UI: {round(time_dict['time_building'], 3)}s\n"
-                f"---------\n"
+                "---------\n"
                 f"Total: {round(time_dict['time_total'] + time_dict['time_building'], 3)}s\n\n\n"
-                f""
-                f"Timestamps:\n"
+                ""
+                "Timestamps:\n"
                 f"Cache (basis for search results) created:\n{cache_created_time}\n"
                 f"Search opened:\n{search_opened_time}",
                 self.Search_Results_Window, large=True)
@@ -323,9 +323,8 @@ class SearchWindow:
         # The final action run when the UI is build, to measure time properly
         def finish():
             # Update Seconds needed Label
-            seconds_text.setText(
-                f"Time needed: {
-                round(time_dict['time_total'] + (perf_counter() - time_dict['time_before_building']), 3)}s")
+            seconds_text.setText(f"Time needed: {
+            round(time_dict['time_total'] + (perf_counter() - time_dict['time_before_building']), 3)}s")
             seconds_text.adjustSize()
 
             # Time building UI
@@ -334,7 +333,7 @@ class SearchWindow:
             time_dict["time_total"] = time_dict["time_total"] + time_dict["time_building"]
 
             # Debug
-            logging.info(f"\nSeconds needed:\n"
+            logging.info("\nSeconds needed:\n"
                          f"Scanning: {time_dict['time_searching']}\n"
                          f"Indexing: {time_dict['time_indexing']}\n"
                          f"Sorting: {time_dict['time_sorting']}\n"
