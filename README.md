@@ -274,8 +274,10 @@ If you don't want to use GitHub or want to write privately, email me: [pixel_mas
 
 If you found an unwanted behavior which you would classify as a bug. Make sure you can reliably reproduce the bug.
 
-It is advised to use the Bug report template, this includes 
-Include:
+It is advised to use the Bug report template.
+
+In your bug report include the following:
+
 * If you think it would be helpful (it is in most cases) the log, access it by quitting the app and:
   * _On macOS_: Open Terminal.app and paste `/Applications/File\ Find.app/Contents/MacOS/File-Find` into it, copy and paste the output into your bug report. Make sure that the log **does not include confidential information** such as your username.
   * _On Windows_: Open cmd or Terminal and paste `C:\path\to\File-Find.exe > output.txt 2>&1` and run reproduce the bug. The log will be stored in output.txt on your user directory. copy and paste the output into your bug report. Make sure that the log **does not include confidential information** such as your username.
@@ -291,6 +293,8 @@ Include:
 ### Feature Request
 
 New functionality is wished
+
+Include in your feature request:
 
 * Is the feature request related to a problem?
 * The solution you'd like, clearly and 

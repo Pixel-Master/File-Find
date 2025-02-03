@@ -144,7 +144,7 @@ class SearchWindow:
                 with open(save_file, "w") as export_file:
                     for save_file in self.matched_list:
                         export_file.write(save_file + "\n")
-            elif save_file.endswith(".FFSearch") and not os.path.exists(save_file):
+            elif save_file.endswith("FSearch") and not os.path.exists(save_file):
                 with open(save_file, "w") as export_file:
                     dump({"VERSION": FF_Files.FF_SEARCH_VERSION, "matched_list": self.matched_list}, export_file)
 
@@ -323,8 +323,9 @@ class SearchWindow:
         # The final action run when the UI is build, to measure time properly
         def finish():
             # Update Seconds needed Label
-            seconds_text.setText(f"Time needed: {
-            round(time_dict['time_total'] + (perf_counter() - time_dict['time_before_building']), 3)}s")
+            seconds_text.setText(
+                "Time needed: "
+                f"{round(time_dict['time_total'] + (perf_counter() - time_dict['time_before_building']), 3)}s")
             seconds_text.adjustSize()
 
             # Time building UI

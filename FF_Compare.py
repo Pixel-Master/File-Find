@@ -388,7 +388,7 @@ class CompareSearches:
             # Starting the thread
             logging.debug("Starting thread...")
             comparing_thread.start(self.compare)
-        except TypeError:
+        except (TypeError, UserWarning):
             # If no file was selected
             logging.info("No file was selected, when comparing files")
             pass
@@ -430,7 +430,11 @@ class CompareSearches:
             filter="*.FFSearch;")
 
         # Debug
-        logging.debug(f"Second search: {second_search_file}, Reading file...")
+        logging.debug(f"Second search: {second_search_file[0]}, Reading file...")
+
+        # If no file was selected
+        if second_search_file[0] == "":
+            raise UserWarning
 
         # Load list from file and return path and files
         return FF_Search.LoadSearch.load_search_content(second_search_file[0])["matched_list"], second_search_file
