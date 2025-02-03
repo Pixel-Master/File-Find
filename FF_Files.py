@@ -38,14 +38,14 @@ if platform == "darwin":
 elif platform == "win32" or platform == "cygwin":
     FF_LIB_FOLDER = os.path.join(USER_FOLDER, "AppData", "Roaming", "File-Find")
     NORMAL_FONT_SIZE = 15
-    SMALLER_FONT_SIZE = 13
+    SMALLER_FONT_SIZE = 12
     # Standard file separator
     SEP = "\\"
 # On Linux
 else:
     FF_LIB_FOLDER = os.path.join(USER_FOLDER, ".file-find")
     NORMAL_FONT_SIZE = 15
-    SMALLER_FONT_SIZE = 14
+    SMALLER_FONT_SIZE = 12
     # Standard file separator
     SEP = os.sep
 
@@ -136,10 +136,10 @@ def remove_cache():
 # Convert a file path to the corresponding cache file or metadata
 def path_to_cache_file(path, metadata=False):
     if not metadata:
-        return os.path.join(CACHED_SEARCHES_FOLDER, path.replace(os.sep, "-") + ".FFCache")
+        return os.path.join(CACHED_SEARCHES_FOLDER, path.replace(SEP, "-") + ".FFCache")
     # If instead ask for metadata
     elif metadata:
-        return os.path.join(CACHE_METADATA_FOLDER, path.replace(os.sep, "-") + ".FFCache")
+        return os.path.join(CACHE_METADATA_FOLDER, path.replace(SEP, "-") + ".FFCache")
     else:
         logging.fatal("Wrong arguments used with the convert_path_to_cache_file() function in FF_Files.py")
 

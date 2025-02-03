@@ -478,7 +478,7 @@ class MenuBar:
         selected_program = QFileDialog.getOpenFileName(
             parent=self.parent,
             dir="/Applications",
-            filter="*.app;")[0]
+            filter="Application/Executable (*.app *.bin *.exe")[0]
 
         # Tests if the user selected an app
         if selected_program != "":

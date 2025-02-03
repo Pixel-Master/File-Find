@@ -874,11 +874,11 @@ class MainWindow:
     def import_filters(self, import_path=None):
         if import_path is None:
             # Debug
-            logging.info("Asking for location for export")
+            logging.info("Asking for location for import")
             import_path = QFileDialog.getOpenFileName(parent=self.Root_Window,
                                                       dir=FF_Files.USER_FOLDER,
-                                                      caption="Export File Find Search",
-                                                      filter="*.FFFilter;*.FFSearch")[0]
+                                                      caption="Import Filer or Search",
+                                                      filter="File Find Filter or Search (*.FFFilter *.FFSearch)")[0]
 
             # If opened file is a search
             if import_path.endswith(".FFSearch"):
@@ -943,14 +943,23 @@ class MainWindow:
     def export_filters(self):
         # Debug
         logging.info("Request location for export")
-        export_path = QFileDialog.getSaveFileName(parent=self.Root_Window,
-                                                  dir=FF_Files.USER_FOLDER,
-                                                  caption="Export File Find Search",
-                                                  filter="File Find Filter Preset (*.FFFilter);;"
-                                                         "JSON (JavaScript Object Notation) (*.json)")[0]
+        export_dialog = QFileDialog.getSaveFileName(parent=self.Root_Window,
+                                                    dir=FF_Files.USER_FOLDER,
+                                                    caption="Export File Find Search",
+                                                    filter="File Find Filter Preset (*.FFFilter);;"
+                                                           "JSON (JavaScript Object Notation) (*.json)")[0]
+        export_path = export_dialog[0]
+
         # If User pressed "Cancel"
         if export_path == "":
             return
+
+        # If the suffix wasn't added, add it
+        if not (export_path.endswith(".FFFilter") or export_path.endswith(".json")):
+            if "FFFilter" in export_dialog[1]:
+                export_path += ".FFFilter"
+            else:
+                export_path += ".json"
 
         # Debug
         logging.info(f"Exporting all filters to {export_path}, with {FF_Files.FF_FILTER_VERSION=}...")

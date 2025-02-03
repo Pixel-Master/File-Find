@@ -20,7 +20,7 @@ from time import perf_counter, mktime
 
 # PySide6 Gui Imports
 from PySide6.QtCore import QThreadPool, Signal, QObject, QDate, Qt
-from PySide6.QtWidgets import QFileDialog, QWidget
+from PySide6.QtWidgets import QWidget
 
 # Projects Libraries
 import FF_Additional_UI
@@ -100,16 +100,6 @@ class GenerateTerminalCommand:
 
 # Loading a saved search
 class LoadSearch:
-    def __init__(self, parent):
-        load_dialog = QFileDialog.getOpenFileName(parent,
-                                                  "Import File Find Search",
-                                                  FF_Files.USER_FOLDER,
-                                                  "*.FFSearch;")
-        self.load_file = load_dialog[0]
-
-        # Open file
-        self.open_file(self.load_file, parent)
-
     # Opening the user-interface and creating a cache file for the reload button
     @staticmethod
     def load_search_content(load_file):
@@ -579,7 +569,7 @@ class Search:
 
         for cache_file in os.listdir(FF_Files.CACHED_SEARCHES_FOLDER):
             # Looks if there is a cache file for a higher directory
-            if data_search_from.replace(os.sep, "-").startswith(cache_file.removesuffix(".FFCache")):
+            if data_search_from.replace(FF_Files.SEP, "-").startswith(cache_file.removesuffix(".FFCache")):
                 # Date created from separate file
                 with open(os.path.join(FF_Files.CACHE_METADATA_FOLDER, cache_file)) as time_file:
                     cache_file_c_date = load(time_file)["c_time"]
@@ -970,7 +960,7 @@ class Search:
                     # the broader cache which was created at the same time. Dividing by 10 so to only add fractions of
                     # a seconds to the c_time as to not get ranked over newer caches.
                     # Doing this so the already specialized cache gets used preferably
-                    c_time_adjust = data_search_from.count(os.sep) / 10
+                    c_time_adjust = data_search_from.count(FF_Files.SEP) / 10
                     logging.debug(f"Cache time {newest_fitting_cache_file_c_date} + adjuster: {c_time_adjust} "
                                   f"= {newest_fitting_cache_file_c_date + c_time_adjust}")
 

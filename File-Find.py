@@ -56,13 +56,13 @@ if __name__ == "__main__":
                 path = QFileOpenEvent.url(event).path()
 
                 # If the opened file is a file find search
-                if path.endswith("FFSearch"):
+                if path.endswith(".FFSearch"):
                     # Debug
                     logging.info(f"Opening {path}...")
                     FF_Search.LoadSearch.open_file(path, None)
 
                 # Filter preset
-                elif path.endswith("FFFilter"):
+                elif path.endswith(".FFFilter"):
                     # Debug
                     logging.info(f"Opening {path}...")
                     main_window.import_filters(path)

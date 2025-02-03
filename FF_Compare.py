@@ -427,7 +427,7 @@ class CompareSearches:
             parent=None,
             caption="Select Second Search",
             dir=FF_Files.USER_FOLDER,
-            filter="*.FFSearch;")
+            filter="*.FFSearch")
 
         # Debug
         logging.debug(f"Second search: {second_search_file[0]}, Reading file...")

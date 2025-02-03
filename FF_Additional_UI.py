@@ -109,7 +109,7 @@ class DirectoryEntry(QLineEdit):
         # Check if "/" is at end of inputted path
         if check:
             # Going through all paths to look if auto-completion should be loaded
-            if path.endswith(os.sep):
+            if path.endswith(FF_Files.SEP):
                 completer_paths = get_paths()
                 logging.debug("Changed QCompleter")
             else:
