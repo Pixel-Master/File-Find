@@ -197,13 +197,26 @@ Q: **What is File Find and how does it work?**
 A: File Find is an open-source Utility for macOS, Windows and Linux
 , that makes it easy to find files. To search fill in the filters you need and leave the filters you don't need empty.
 
+Q: **Why doesn't File Find find my file/folder?**
+
+A: By default (on a fresh install) File Find finds every file/folder except internal system files in the `Library` or `System` folders.
+You can enable them under "Advanced".
+
+File Find uses it's own caching algorithm. Scanning results are stored and reused for a faster search. 
+On default this cache gets cleared every two hours. You can clear the cache manually with `⌘ + T` on macOS (on Windows/Linux: `Ctrl + T`). Or right click on the `Find` button and select `Search and create new cache for selected folder`.
+
+Also check the excluded files list in the settings. Files listed there will not show up. Other than that press `⌘ + R` on macOS (on Windows/Linux: `Ctrl + R`) to reset all filter settings to default.
+If none of these options help, [create a Bug Report.](#bug-reports)
+
+
 Q: **Why does File Find sometimes freeze?**
 
 A: It is possible that for example reloading files or building the UI at the end of a search can cause File Find to freeze. Just wait a few seconds!
 
-Q: **How do you clean the cache?**
+Q: **How do I clean the cache?**
 
-A: On macOS File Find stores the cache under `/Users/$USERNAME/Library/Application Support/File-Find/Cached Searches`. You can clean the cache with `⌘ + T` or `Tools > Clear Cache`. In the About section you can set when the cache gets cleaned automatically.
+A: File Find uses it's own caching algorithm. Scanning results are stored and reused for a faster search. 
+On default this cache gets cleared every two hours. You can change this behavior in the preferences. You can clear the cache manually with `⌘ + T` on macOS (on Windows/Linux: `Ctrl + T`). Or right click on the `Find` button and select `Search and create new cache for selected folder`.
 
 Q: **Why does File Find ask for permission for Contacts, Calenders, Photos, etc...?**
 
@@ -220,12 +233,6 @@ but you are not going to be able to save searches in those directories
 Q: **Does File Find connect to the Internet?**
 
 A: **File Find does not connect to the Internet**, everything stays on your machine.
-
-Q: **Why doesn't File Find find my file/folder?**
-
-A: By default (on a fresh install) File Find finds every file/folder except internal system files in the `Library` or `System` folders.
-You can enable them under "Advanced". Also check the excluded files list in the settings. Files listed there will not show up. Other than that press `⌘ + R` on macOS (on Windows/Linux: `Strg + R`) to reset all filter settings to default.
-If none of these options help, [create a Bug Report.](#bug-reports)
 
 ## File Structure
 
@@ -272,9 +279,9 @@ If you don't want to use GitHub or want to write privately, email me: [pixel_mas
 
 ### Bug reports
 
-If you found an unwanted behavior which you would classify as a bug. Make sure you can reliably reproduce the bug.
+_If you found an unwanted behavior which you would classify as a bug._ 
 
-It is advised to use the Bug report template.
+Make sure you can reliably reproduce the bug. It is advised to use the Bug report template.
 
 In your bug report include the following:
 
@@ -292,7 +299,7 @@ In your bug report include the following:
 
 ### Feature Request
 
-New functionality is wished
+_New functionality is wished._
 
 Include in your feature request:
 

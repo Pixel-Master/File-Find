@@ -99,7 +99,7 @@ DEFAULT_SETTINGS = {"settings_version": FF_SETTINGS_VERSION,
                     "version": f"{VERSION_SHORT}[{VERSION}]",
                     "cache_version": FF_CACHE_VERSION,
                     "excluded_files": [],
-                    "cache": "on Launch",
+                    "cache": "after two hours",
                     "popup":
                         {"FF_ver_welcome": False,
                          "FF_welcome": True,
