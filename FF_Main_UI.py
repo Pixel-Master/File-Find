@@ -545,6 +545,8 @@ class MainWindow:
             search_from = QFileDialog.getExistingDirectory(dir=FF_Files.SELECTED_DIR)
             # If a dir was selected
             if search_from != "":
+                # Normalize the path
+                search_from = os.path.normpath(search_from)
                 try:
                     FF_Files.SELECTED_DIR = search_from
                     self.edit_directory.setText(search_from)
@@ -879,7 +881,11 @@ class MainWindow:
                                                       dir=FF_Files.USER_FOLDER,
                                                       caption="Import Filer or Search",
                                                       filter="File Find Filter or Search (*.FFFilter *.FFSearch)")[0]
-
+            # If User pressed cancel
+            if import_path == "":
+                return
+            # Normalise the path
+            import_path = os.path.normpath(import_path)
             # If opened file is a search
             if import_path.endswith(".FFSearch"):
                 FF_Search.LoadSearch.open_file(import_path, self.Root_Window)
@@ -947,8 +953,8 @@ class MainWindow:
                                                     dir=FF_Files.USER_FOLDER,
                                                     caption="Export File Find Search",
                                                     filter="File Find Filter Preset (*.FFFilter);;"
-                                                           "JSON (JavaScript Object Notation) (*.json)")[0]
-        export_path = export_dialog[0]
+                                                           "JSON (JavaScript Object Notation) (*.json)")
+        export_path = os.path.normpath(export_dialog[0])
 
         # If User pressed "Cancel"
         if export_path == "":

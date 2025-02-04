@@ -139,7 +139,8 @@ class SearchWindow:
             save_dialog = QFileDialog.getSaveFileName(self.Search_Results_Window, "Export File Find Search",
                                                       FF_Files.USER_FOLDER,
                                                       "File Find Search (*.FFSearch);;Plain Text File (*.txt)")
-            save_file = save_dialog[0]
+            # Normalize the path and selecting the first item, because it's the path
+            save_file = os.path.normpath(save_dialog[0])
 
             # If the suffix wasn't added, add it
             if not (save_file.endswith(".FFSearch") or save_file.endswith(".txt")):

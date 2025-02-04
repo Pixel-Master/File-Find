@@ -247,6 +247,9 @@ class MenuBar:
             if new_location == "":
                 logging.info("User pressed Cancel")
                 return
+            else:
+                new_location = os.path.normpath(new_location)
+
             try:
                 shutil.move(selected_file, new_location)
             except FileNotFoundError:
@@ -484,6 +487,8 @@ class MenuBar:
         if selected_program != "":
             # Get the selected file
             selected_file = self.get_current_item()
+            # Normalise the program path
+            selected_program = os.path.normpath(selected_program)
 
             # Open the selected file with the selected program and checking the return value
             return_code = -1

@@ -435,7 +435,9 @@ class CompareSearches:
         # If no file was selected
         if second_search_file[0] == "":
             raise UserWarning
-
+        else:
+            # Normalise the oath and create a new tuple, because they don't support editing
+            second_search_file = (os.path.normpath(second_search_file[0]), second_search_file[1])
         # Load list from file and return path and files
         return FF_Search.LoadSearch.load_search_content(second_search_file[0])["matched_list"], second_search_file
 

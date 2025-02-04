@@ -569,7 +569,7 @@ class Search:
 
         for cache_file in os.listdir(FF_Files.CACHED_SEARCHES_FOLDER):
             # Looks if there is a cache file for a higher directory
-            if data_search_from.replace(FF_Files.SEP, "-").startswith(cache_file.removesuffix(".FFCache")):
+            if data_search_from.replace(os.sep, "-").startswith(cache_file.removesuffix(".FFCache")):
                 # Date created from separate file
                 with open(os.path.join(FF_Files.CACHE_METADATA_FOLDER, cache_file)) as time_file:
                     cache_file_c_date = load(time_file)["c_time"]
@@ -960,7 +960,7 @@ class Search:
                     # the broader cache which was created at the same time. Dividing by 10 so to only add fractions of
                     # a seconds to the c_time as to not get ranked over newer caches.
                     # Doing this so the already specialized cache gets used preferably
-                    c_time_adjust = data_search_from.count(FF_Files.SEP) / 10
+                    c_time_adjust = data_search_from.count(os.sep) / 10
                     logging.debug(f"Cache time {newest_fitting_cache_file_c_date} + adjuster: {c_time_adjust} "
                                   f"= {newest_fitting_cache_file_c_date + c_time_adjust}")
 

@@ -17,7 +17,7 @@ from time import time
 import hashlib
 
 # Versions
-VERSION: str = "3-feb-2025"
+VERSION: str = "4-feb-2025"
 VERSION_SHORT: str = "1.2"
 # Versions of file formats
 FF_FILTER_VERSION = 1
@@ -32,22 +32,16 @@ if platform == "darwin":
     FF_LIB_FOLDER = os.path.join(USER_FOLDER, "Library", "Application Support", "File-Find")
     NORMAL_FONT_SIZE = 17
     SMALLER_FONT_SIZE = 15
-    # Standard file separator
-    SEP = os.sep
 # On Windows
 elif platform == "win32" or platform == "cygwin":
     FF_LIB_FOLDER = os.path.join(USER_FOLDER, "AppData", "Roaming", "File-Find")
     NORMAL_FONT_SIZE = 15
     SMALLER_FONT_SIZE = 12
-    # Standard file separator
-    SEP = "\\"
 # On Linux
 else:
     FF_LIB_FOLDER = os.path.join(USER_FOLDER, ".file-find")
     NORMAL_FONT_SIZE = 15
     SMALLER_FONT_SIZE = 12
-    # Standard file separator
-    SEP = os.sep
 
 CACHED_SEARCHES_FOLDER = os.path.join(FF_LIB_FOLDER, "Cached Searches")
 CACHE_METADATA_FOLDER = os.path.join(FF_LIB_FOLDER, "Cache Metadata")
@@ -136,10 +130,10 @@ def remove_cache():
 # Convert a file path to the corresponding cache file or metadata
 def path_to_cache_file(path, metadata=False):
     if not metadata:
-        return os.path.join(CACHED_SEARCHES_FOLDER, path.replace(SEP, "-") + ".FFCache")
+        return os.path.join(CACHED_SEARCHES_FOLDER, path.replace(os.sep, "-") + ".FFCache")
     # If instead ask for metadata
     elif metadata:
-        return os.path.join(CACHE_METADATA_FOLDER, path.replace(SEP, "-") + ".FFCache")
+        return os.path.join(CACHE_METADATA_FOLDER, path.replace(os.sep, "-") + ".FFCache")
     else:
         logging.fatal("Wrong arguments used with the convert_path_to_cache_file() function in FF_Files.py")
 

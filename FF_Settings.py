@@ -132,11 +132,12 @@ class SettingsWindow:
         def add_file():
             selected_folder = QFileDialog.getExistingDirectory(dir=FF_Files.USER_FOLDER, parent=self.Settings_Window)
             if selected_folder != "":
+                selected_folder = os.path.normpath(selected_folder)
                 edit_excluded(selected_folder)
                 excluded_listbox.addItem(selected_folder)
                 logging.info(f"Added Excluded Folder: {selected_folder}")
 
-            # Enable button if there are  files
+            # Enable button if there are files
             if excluded_listbox.count() != 0:
                 remove_button.setDisabled(False)
 
@@ -246,7 +247,9 @@ class SettingsWindow:
                 logging.debug("No file was selected")
                 # Quit
                 return
-
+            else:
+                # Normalise the path
+                file_path = os.path.normpath(file_path)
             # Coping file into File-Find-Library folder
             with open(file_path, "rb") as user_preset_file:
                 preset = load(user_preset_file)
