@@ -57,7 +57,7 @@ def main():
                 value={"CFBundleDisplayName": "File Find",
                        "CFBundleExecutable": "File-Find",
                        "CFBundleIconFile": "icon.icns",
-                       "LSMinimumSystemVersion": "11",
+                       "LSMinimumSystemVersion": "12",
                        "CFBundleDocumentTypes": [{"CFBundleTypeExtensions": ["FFSearch"],
                                                   "CFBundleTypeIconSystemGenerated": True,
                                                   "CFBundleTypeName": "File Find Search",

@@ -139,21 +139,27 @@ class SearchWindow:
             save_dialog = QFileDialog.getSaveFileName(self.Search_Results_Window, "Export File Find Search",
                                                       FF_Files.USER_FOLDER,
                                                       "File Find Search (*.FFSearch);;Plain Text File (*.txt)")
+            # Debug
+            logging.debug(f"Asked for storage place of search. Got: {save_dialog}")
+
+            if save_dialog[0] == "":
+                return
+
             # Normalize the path and selecting the first item, because it's the path
             save_file = os.path.normpath(save_dialog[0])
 
             # If the suffix wasn't added, add it
             if not (save_file.endswith(".FFSearch") or save_file.endswith(".txt")):
-                if "FFFilter" in save_dialog[1]:
-                    save_file += ".FFFilter"
+                if "FFSearch" in save_dialog[1]:
+                    save_file += ".FFSearch"
                 else:
-                    save_file += ".json"
+                    save_file += ".txt"
 
             if save_file.endswith(".txt") and not os.path.exists(save_file):
                 with open(save_file, "w") as export_file:
                     for save_file in self.matched_list:
                         export_file.write(save_file + "\n")
-            elif save_file.endswith(".FSearch") and not os.path.exists(save_file):
+            elif save_file.endswith(".FFSearch") and not os.path.exists(save_file):
                 with open(save_file, "w") as export_file:
                     dump({"VERSION": FF_Files.FF_SEARCH_VERSION, "matched_list": self.matched_list}, export_file)
 

@@ -330,7 +330,7 @@ class CompareUi:
 
         # Shorten the text string to only include the first to the 30th
         # and the last ten character if the string is longer then 43 characters
-        text2_shortened = f"{length_of_list} files only in:\n{FF_Files.display_path(text2, 30)}"
+        text2_shortened = f"{length_of_list} file(s) only in:\n{FF_Files.display_path(text2, 30)}"
         # Set the label to the shortened string
         label2.setText(text2_shortened)
 
@@ -339,7 +339,7 @@ class CompareUi:
         # Configure the font
         label2.setFont(font2)
         # Times two because it is two lines and plus two for some extra space
-        label2.setFixedHeight(FF_Files.SMALLER_FONT_SIZE * 2 + 5)
+        label2.setFixedHeight(FF_Files.SMALLER_FONT_SIZE * 2 + 10)
 
         return label1, label2
 
