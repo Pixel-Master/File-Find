@@ -202,8 +202,8 @@ Q: **Why doesn't File Find find my file/folder?**
 A: By default (on a fresh install) File Find finds every file/folder except internal system files in the `Library` or `System` folders.
 You can enable them under "Advanced".
 
-File Find uses it's own caching algorithm. Scanning results are stored and reused for a faster search. 
-On default this cache gets cleared every two hours. You can clear the cache manually with `⌘ + T` on macOS (on Windows/Linux: `Ctrl + T`). Or right click on the `Find` button and select `Search and create new cache for selected folder`.
+File Find uses its own caching algorithm. Scanning results are stored and reused for a faster search. 
+On default this cache gets cleared every two hours. You can clear the cache manually with `⌘ + T` on macOS (on Windows/Linux: `Ctrl + T`). Or right-click on the `Find` button and select `Search and create new cache for selected folder`.
 
 Also check the excluded files list in the settings. Files listed there will not show up. Other than that press `⌘ + R` on macOS (on Windows/Linux: `Ctrl + R`) to reset all filter settings to default.
 If none of these options help, [create a Bug Report.](#bug-reports)
@@ -215,8 +215,8 @@ A: It is possible that for example reloading files or building the UI at the end
 
 Q: **How do I clean the cache?**
 
-A: File Find uses it's own caching algorithm. Scanning results are stored and reused for a faster search. 
-On default this cache gets cleared every two hours. You can change this behavior in the preferences. You can clear the cache manually with `⌘ + T` on macOS (on Windows/Linux: `Ctrl + T`). Or right click on the `Find` button and select `Search and create new cache for selected folder`.
+A: File Find uses its own caching algorithm. Scanning results are stored and reused for a faster search. 
+On default this cache gets cleared every two hours. You can change this behavior in the preferences. You can clear the cache manually with `⌘ + T` on macOS (on Windows/Linux: `Ctrl + T`). Or right-click on the `Find` button and select `Search and create new cache for selected folder`.
 
 Q: **Why does File Find ask for permission for Contacts, Calenders, Photos, etc...?**
 

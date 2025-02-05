@@ -161,7 +161,10 @@ class SearchWindow:
                         export_file.write(save_file + "\n")
             elif save_file.endswith(".FFSearch") and not os.path.exists(save_file):
                 with open(save_file, "w") as export_file:
-                    dump({"VERSION": FF_Files.FF_SEARCH_VERSION, "matched_list": self.matched_list}, export_file)
+                    dump(
+                        {"VERSION": FF_Files.FF_SEARCH_VERSION,
+                         "matched_list": self.matched_list,
+                         "marked_files": menu_bar.marked_files}, export_file)
 
         # Building Menu-bar
         menu_bar = FF_Menubar.MenuBar(

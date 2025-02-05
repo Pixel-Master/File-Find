@@ -17,11 +17,11 @@ from time import time
 import hashlib
 
 # Versions
-VERSION: str = "4-feb-2025"
+VERSION: str = "5-feb-2025"
 VERSION_SHORT: str = "1.2"
 # Versions of file formats
 FF_FILTER_VERSION = 1
-FF_SEARCH_VERSION = 1
+FF_SEARCH_VERSION = 2
 FF_SETTINGS_VERSION = 1
 FF_CACHE_VERSION = 2
 

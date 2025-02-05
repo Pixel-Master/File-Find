@@ -515,8 +515,9 @@ class DuplicatedUI:
         time_needed_dict["time_after_building_ui"] = perf_counter()
 
         logging.info(f"\nSeconds needed:\n"
-                     f"Finding duplicates: {time_needed_dict['time_before_building_ui'] - time_needed_dict['start_time']}\n"
-                     f"Building UI: "
+                     "Finding duplicates: "
+                     f"{time_needed_dict['time_before_building_ui'] - time_needed_dict['start_time']}\n"
+                     "Building UI: "
                      f"{time_needed_dict['time_after_building_ui'] - time_needed_dict['time_before_building_ui']}\n"
                      f"Total: {time_needed_dict['time_after_building_ui'] - time_needed_dict['start_time']}")
 
