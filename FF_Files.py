@@ -17,8 +17,8 @@ from time import time
 import hashlib
 
 # Versions
-VERSION: str = "5-feb-2025"
-VERSION_SHORT: str = "1.2"
+VERSION: str = "12-mar-2025"
+VERSION_SHORT: str = "1.2.1"
 # Versions of file formats
 FF_FILTER_VERSION = 1
 FF_SEARCH_VERSION = 2
@@ -30,18 +30,15 @@ USER_FOLDER = os.path.expanduser("~")
 # On macOS
 if platform == "darwin":
     FF_LIB_FOLDER = os.path.join(USER_FOLDER, "Library", "Application Support", "File-Find")
-    NORMAL_FONT_SIZE = 17
-    SMALLER_FONT_SIZE = 15
+    DEFAULT_FONT_SIZE = 15
 # On Windows
 elif platform == "win32" or platform == "cygwin":
     FF_LIB_FOLDER = os.path.join(USER_FOLDER, "AppData", "Roaming", "File-Find")
-    NORMAL_FONT_SIZE = 15
-    SMALLER_FONT_SIZE = 12
+    DEFAULT_FONT_SIZE = 12
 # On Linux
 else:
     FF_LIB_FOLDER = os.path.join(USER_FOLDER, ".file-find")
-    NORMAL_FONT_SIZE = 15
-    SMALLER_FONT_SIZE = 12
+    DEFAULT_FONT_SIZE = 12
 
 CACHED_SEARCHES_FOLDER = os.path.join(FF_LIB_FOLDER, "Cached Searches")
 CACHE_METADATA_FOLDER = os.path.join(FF_LIB_FOLDER, "Cache Metadata")

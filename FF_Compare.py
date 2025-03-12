@@ -16,10 +16,10 @@ from time import perf_counter, time, ctime
 import gc
 
 # PySide6 Gui Imports
-from PySide6.QtGui import QFont, Qt
-from PySide6.QtCore import QObject, Signal, QThreadPool, QSize
+from PySide6.QtGui import Qt
+from PySide6.QtCore import QObject, Signal, QThreadPool
 from PySide6.QtWidgets import (
-    QMainWindow, QFileDialog, QListWidget, QLabel, QPushButton, QWidget, QGridLayout, QHBoxLayout, QScrollArea,
+    QMainWindow, QFileDialog, QListWidget, QLabel, QWidget, QGridLayout, QHBoxLayout, QScrollArea,
     QSpacerItem, QSizePolicy)
 
 # Projects Libraries
@@ -32,7 +32,7 @@ import FF_Search
 
 # The window
 class CompareUi:
-    def __init__(self, path_of_first_search, cache_file, parent):
+    def __init__(self, path_of_first_search, cache_file, to_be_marked_files, parent):
         # Debug
         logging.info("Setting up the Compare_Window")
         # Saving time
@@ -76,8 +76,9 @@ class CompareUi:
         self.Compare_Layout.addLayout(self.Bottom_Layout, 11, 0, 1, 2)
 
         # Setting up the menu bar...
-        menu_bar = FF_Menubar.MenuBar(parent=self.Compare_Window, window="compare",
-                                      listbox=None, cache_file_path=cache_file)
+        menu_bar = FF_Menubar.MenuBar(parent=self.Compare_Window, window="compare", search_path=path_of_first_search,
+                                      search_path2=compared_searches.path_of_second_search[0],
+                                      cache_file_path=cache_file, bottom_layout=self.Bottom_Layout)
         logging.debug("Done building MenuBar\n")
 
         # Set up both list-boxes
@@ -190,26 +191,10 @@ class CompareUi:
         self.Compare_Layout.addWidget(self.removed_files_label1, 1, 1)
         self.Compare_Layout.addWidget(self.removed_files_label2, 2, 1)
 
-        # Buttons
-        # Button to open the File in Finder
-        move_file = self.generate_button("Move / Rename", menu_bar.move_file,
-                                         icon=os.path.join(FF_Files.ASSETS_FOLDER, "Move_icon_small.png"))
-        self.Bottom_Layout.addWidget(move_file)
-
-        # Button to move the file to trash
-        delete_file = self.generate_button("Move to Trash", menu_bar.delete_file,
-                                           icon=os.path.join(FF_Files.ASSETS_FOLDER, "Trash_icon_small.png"))
-        self.Bottom_Layout.addWidget(delete_file)
-
-        # Button to open the file
-        open_file = self.generate_button("Open", menu_bar.open_file,
-                                         icon=os.path.join(FF_Files.ASSETS_FOLDER, "Open_icon_small.png"))
-        self.Bottom_Layout.addWidget(open_file)
-
-        # Button to show info about the file
-        file_info_button = self.generate_button("Info", menu_bar.file_info,
-                                                icon=os.path.join(FF_Files.ASSETS_FOLDER, "Info_button_img_small.png"))
-        self.Bottom_Layout.addWidget(file_info_button)
+        # Mark the files that need to be marked, reference the two listbox widgets to the menu bar
+        menu_bar.listbox = self.added_files_listbox
+        menu_bar.listbox2 = self.removed_files_listbox
+        menu_bar.mark_marked_files(to_be_marked_files)
 
         # Update search status label
         FF_Search.ACTIVE_SEARCH_THREADS -= 1
@@ -230,10 +215,6 @@ class CompareUi:
 
         time_stamp = time()
 
-        # Setting a Font
-        small_text_font = QFont(FF_Files.DEFAULT_FONT, FF_Files.NORMAL_FONT_SIZE)
-        small_text_font.setBold(True)
-
         # Top Layout
         self.Top_Layout = QHBoxLayout()
         self.Top_Layout.setContentsMargins(0, 0, 0, 0)
@@ -243,14 +224,14 @@ class CompareUi:
         time_text = QLabel(self.Compare_Window)
         total_time = compared_searches.time_dict["time_after_building_ui"] - compared_searches.time_dict["start_time"]
         time_text.setText(f"Time needed: {round(total_time, 3)}s")
-        time_text.setFont(small_text_font)
+        time_text.setFont(FF_Additional_UI.BOLD_QT_FONT)
         # Displaying
         self.Top_Layout.addWidget(time_text)
 
         # Saving time
         # Time stat Button
-        show_time = self.generate_button(None, lambda: show_time_stats(),
-                                         icon=os.path.join(FF_Files.ASSETS_FOLDER, "Time_button_img_small.png"))
+        show_time = menu_bar.generate_button(None, lambda: show_time_stats(),
+                                             icon=os.path.join(FF_Files.ASSETS_FOLDER, "Time_button_img_small.png"))
         # Resize
         show_time.setMaximumSize(50, 50)
         # Add to Layout
@@ -295,32 +276,12 @@ class CompareUi:
         # Collect garbage
         gc.collect()
 
-    # Functions to automate Button
-    def generate_button(self, text, command, icon=None):
-        # Define the Button
-        button = QPushButton(self.Compare_Window)
-        # Change the Text
-        button.setText(text)
-        # Set the command
-        button.clicked.connect(command)
-        # Set the icon
-        if icon is not None:
-            FF_Additional_UI.UIIcon(icon, button.setIcon)
-            button.setIconSize(QSize(23, 22))
-        # Return the value of the Button, to move the Button
-        return button
-
     # Function for generating the added / removed files labels
     def generate_title_label(self, text, text2, light_color, dark_color, length_of_list) -> tuple[QLabel, QLabel]:
         # Label 1
         label1 = FF_Additional_UI.ColoredLabel(text, self.Compare_Window, light_color, dark_color)
-
-        # Defining the font
-        font1 = QFont(FF_Files.DEFAULT_FONT, FF_Files.NORMAL_FONT_SIZE)
-        font1.setBold(True)
-        label1.setFont(font1)
-
-        label1.setFixedHeight(FF_Files.NORMAL_FONT_SIZE + 2)
+        label1.setFont(FF_Additional_UI.BOLD_QT_FONT)
+        label1.setFixedHeight(FF_Files.DEFAULT_FONT_SIZE + 2)
         label1.adjustSize()
 
         # Label 2
@@ -334,19 +295,17 @@ class CompareUi:
         # Set the label to the shortened string
         label2.setText(text2_shortened)
 
-        # Defining the font
-        font2 = QFont(FF_Files.DEFAULT_FONT, FF_Files.SMALLER_FONT_SIZE)
         # Configure the font
-        label2.setFont(font2)
+        label2.setFont(FF_Additional_UI.DEFAULT_QT_FONT)
         # Times two because it is two lines and plus two for some extra space
-        label2.setFixedHeight(FF_Files.SMALLER_FONT_SIZE * 2 + 10)
+        label2.setFixedHeight(FF_Files.DEFAULT_FONT_SIZE * 2 + 10)
 
         return label1, label2
 
 
 # The engine
 class CompareSearches:
-    def __init__(self, files_of_first_search: list, path_of_first_search, cache_file, parent):
+    def __init__(self, files_of_first_search: list, path_of_first_search, cache_file, to_be_marked_files, parent):
         # Debug
         logging.debug("User pressed Compare Search")
 
@@ -357,7 +316,8 @@ class CompareSearches:
 
             self.signals = SignalsClass()
             # Connecting the signal to the user-interface class
-            self.signals.finished.connect(lambda: CompareUi(path_of_first_search, cache_file, parent))
+            self.signals.finished.connect(
+                lambda: CompareUi(path_of_first_search, cache_file, to_be_marked_files, parent))
 
             # Thread
             comparing_thread = QThreadPool(parent)

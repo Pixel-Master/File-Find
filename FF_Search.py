@@ -568,8 +568,9 @@ class Search:
         newest_fitting_cache_file_c_date = 0
 
         for cache_file in os.listdir(FF_Files.CACHED_SEARCHES_FOLDER):
-            # Looks if there is a cache file for a higher directory
-            if data_search_from.replace(os.sep, "-").startswith(cache_file.removesuffix(".FFCache")):
+            # Looks if there is a cache file for a higher directory add a "-" so that files from the same directory with
+            # a similar name aren't mistaken for files from a parent directory
+            if (data_search_from.replace(os.sep, "-") + "-").startswith(cache_file.removesuffix(".FFCache") + "-"):
                 # Date created from separate file
                 with open(os.path.join(FF_Files.CACHE_METADATA_FOLDER, cache_file)) as time_file:
                     cache_file_c_date = load(time_file)["c_time"]
@@ -590,35 +591,41 @@ class Search:
             with open(newest_fitting_cache_file) as search_results:
                 load_input = load(search_results)
 
-                # If the found cache file is form the same directory as which was searched
-                if newest_fitting_cache_file == FF_Files.path_to_cache_file(data_search_from):
-                    # Debug
-                    logging.debug("Cache file from the same directory as search")
+            # If the found cache file is form the same directory as which was searched
+            if newest_fitting_cache_file == FF_Files.path_to_cache_file(data_search_from):
+                # Debug
+                logging.debug("Cache file from the same directory as search")
 
-                    found_path_set = set(load_input["found_path_set"])
-                    type_dict = load_input["type_dict"]
+                found_path_set = set(load_input["found_path_set"])
+                type_dict = load_input["type_dict"]
 
-                # If it's a cache file from an upper dir
-                else:
-                    # Debug
-                    logging.debug("Cache file from an higher directory, sorting out unnecessary files")
+            # If it's a cache file from a parent dir
+            else:
+                # Debug
+                logging.debug("Cache file from an higher directory, sorting out unnecessary files")
 
-                    found_path_set = set(load_input["found_path_set"])
-                    type_dict = load_input["type_dict"]
+                found_path_set = set(load_input["found_path_set"])
+                type_dict = load_input["type_dict"]
 
-                    keep_time = time.perf_counter()
+                keep_time = time.perf_counter()
 
-                    # Remove irrelevant paths
-                    for found_item in found_path_set.copy():
-                        if not found_item.startswith(data_search_from):
-                            found_path_set.remove(found_item)
-                            del type_dict[found_item]
+                # Remove irrelevant paths
+                for found_item in found_path_set.copy():
+                    if not found_item.startswith(data_search_from):
+                        found_path_set.remove(found_item)
+                        del type_dict[found_item]
 
-                    # Remove the path itself
+                # make sure the path isn't in the list
+                try:
                     found_path_set.remove(data_search_from)
+                except (KeyError, NameError):
+                    pass
+                try:
                     del type_dict[data_search_from]
+                except KeyError :
+                    pass
 
-                    logging.debug(f"Sorting out unnecessary files took {perf_counter() - keep_time} sec.")
+                logging.debug(f"Sorting out unnecessary files took {perf_counter() - keep_time} sec.")
 
         # If there is no newer cache file
         else:

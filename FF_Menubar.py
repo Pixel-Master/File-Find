@@ -20,9 +20,9 @@ from sys import platform
 from platform import mac_ver
 
 # PySide6 Gui Imports
-from PySide6.QtCore import QThreadPool
-from PySide6.QtGui import QAction, QColor, QKeySequence, QClipboard, QBrush
-from PySide6.QtWidgets import QFileDialog, QListWidget, QTreeWidget
+from PySide6.QtCore import QThreadPool, QSize
+from PySide6.QtGui import QAction, QColor, QKeySequence, QClipboard, QBrush, Qt
+from PySide6.QtWidgets import QFileDialog, QListWidget, QTreeWidget, QMenu, QPushButton, QTreeWidgetItem
 
 # Projects Libraries
 import FF_Additional_UI
@@ -40,21 +40,24 @@ import FF_Settings
 class MenuBar:
 
     def __init__(
-            self, parent, window, listbox, matched_list=None, search_path=None, save_search=None, file_count_text=None,
-            cache_file_path=None):
+            self, parent, window, listbox=None, listbox2=None,
+            matched_list=None, search_path=None, save_search=None, file_count_text=None,
+            cache_file_path=None, bottom_layout=None, search_path2=None, duplicated_dict=None):
         logging.debug("Setting up menu-bar...")
 
         self.parent = parent
         self.listbox: QListWidget | QTreeWidget = listbox
+        self.listbox2: QListWidget | QTreeWidget = listbox2
         self.search_path = search_path
+        self.search_path2 = search_path2
         self.window = window
         self.cache_file_path = cache_file_path
         self.matched_list = matched_list
+        self.duplicated_dict = duplicated_dict
         self.file_count_text = file_count_text
 
         # Creating a set for all marked files
         self.marked_files = set()
-
         # Menu-bar
         self.menu_bar = self.parent.menuBar()
 
@@ -71,7 +74,7 @@ class MenuBar:
             save_search_action.triggered.connect(save_search)
             save_search_action.setShortcut("Ctrl+S")
             self.file_menu.addAction(save_search_action)
-
+        if window == "search" or window == "duplicated":
             # Reload and Remove Deleted Files
             reload_action = QAction("&Reload and Remove Deleted Files", self.parent)
             reload_action.triggered.connect(self.reload_files)
@@ -93,84 +96,118 @@ class MenuBar:
 
         if window == "search" or window == "compare" or window == "duplicated":
             # Open File Action
-            open_action = QAction("&Open selected file", self.parent)
-            open_action.triggered.connect(self.open_file)
-            open_action.setShortcut(QKeySequence.StandardKey.Open)
-            self.tools_menu.addAction(open_action)
+            self.open_action = QAction("&Open selected file", self.parent)
+            self.open_action.triggered.connect(self.open_file)
+            self.open_action.setShortcut(QKeySequence.StandardKey.Open)
+            self.tools_menu.addAction(self.open_action)
 
             # Open File in Terminal Action
-            open_terminal_action = QAction("&Open selected file in Terminal", self.parent)
-            open_terminal_action.triggered.connect(self.open_in_terminal)
-            open_terminal_action.setShortcut("Ctrl+Alt+O")
-            self.tools_menu.addAction(open_terminal_action)
+            self.open_terminal_action = QAction("&Open selected file in Terminal", self.parent)
+            self.open_terminal_action.triggered.connect(self.open_in_terminal)
+            self.open_terminal_action.setShortcut("Ctrl+Alt+O")
+            self.tools_menu.addAction(self.open_terminal_action)
 
             # Show File in Finder Action
-            show_action = QAction("&View selected file in Finder/File Explorer", self.parent)
-            show_action.triggered.connect(self.open_in_finder)
-            show_action.setShortcut("Ctrl+Shift+O")
-            self.tools_menu.addAction(show_action)
+            self.show_action = QAction("&View selected file in Finder/File Explorer", self.parent)
+            self.show_action.triggered.connect(self.open_in_finder)
+            self.show_action.setShortcut("Ctrl+Shift+O")
+            self.tools_menu.addAction(self.show_action)
 
             # Select an app to open the selected file
-            open_in_app_action = QAction("&Select an app to open the selected file...", self.parent)
-            open_in_app_action.triggered.connect(self.open_in_app)
-            open_in_app_action.setShortcut("Alt+O")
-            self.tools_menu.addAction(open_in_app_action)
+            self.open_in_app_action = QAction("&Select an app to open the selected file...", self.parent)
+            self.open_in_app_action.triggered.connect(self.open_in_app)
+            self.open_in_app_action.setShortcut("Alt+O")
+            self.tools_menu.addAction(self.open_in_app_action)
 
             # Separator
             self.tools_menu.addSeparator()
 
             # Select an app to open the selected file
-            delete_file_action = QAction("&Move selected file to trash", self.parent)
-            delete_file_action.triggered.connect(self.delete_file)
-            delete_file_action.setShortcut("Ctrl+Backspace")
-            self.tools_menu.addAction(delete_file_action)
+            self.delete_file_action = QAction("&Move selected file to trash", self.parent)
+            self.delete_file_action.triggered.connect(self.delete_file)
+            self.delete_file_action.setShortcut("Ctrl+Backspace")
+            self.tools_menu.addAction(self.delete_file_action)
 
             # Prompt the user to select a new location for the selected file
-            move_file_action = QAction("&Move or Rename selected file", self.parent)
-            move_file_action.triggered.connect(self.move_file)
-            move_file_action.setShortcut("Ctrl+M")
-            self.tools_menu.addAction(move_file_action)
+            self.move_file_action = QAction("&Move or Rename selected file", self.parent)
+            self.move_file_action.triggered.connect(self.move_file)
+            self.move_file_action.setShortcut("Ctrl+M")
+            self.tools_menu.addAction(self.move_file_action)
 
-            mark_file_action = QAction("&Mark/Unmark file", self.parent)
-            mark_file_action.triggered.connect(lambda: self.mark_file(FF_Files.GREEN_LIGHT_THEME_COLOR))
-            mark_file_action.setShortcut("M")
-            self.tools_menu.addAction(mark_file_action)
+            self.mark_file_action = QAction("&Mark/Unmark file", self.parent)
+            self.mark_file_action.triggered.connect(lambda: self.mark_file(FF_Files.GREEN_LIGHT_THEME_COLOR))
+            self.mark_file_action.setShortcut("M")
+            self.tools_menu.addAction(self.mark_file_action)
 
             # Separator
             self.tools_menu.addSeparator()
 
             # File Info
-            info_action = QAction("&Info for selected file", self.parent)
-            info_action.triggered.connect(self.file_info)
-            info_action.setShortcut("Ctrl+I")
-            self.tools_menu.addAction(info_action)
+            self.info_action = QAction("&Info for selected file", self.parent)
+            self.info_action.triggered.connect(self.file_info)
+            self.info_action.setShortcut("Ctrl+I")
+            self.tools_menu.addAction(self.info_action)
 
             # View File Hashes
-            hash_action = QAction("&Hashes for selected file", self.parent)
-            hash_action.triggered.connect(self.view_hashes)
-            hash_action.setShortcut("Ctrl+Shift+I")
-            self.tools_menu.addAction(hash_action)
+            self.hash_action = QAction("&Hashes for selected file", self.parent)
+            self.hash_action.triggered.connect(self.view_hashes)
+            self.hash_action.setShortcut("Ctrl+Shift+I")
+            self.tools_menu.addAction(self.hash_action)
 
             # Separator
             self.edit_menu.addSeparator()
 
             # Copy file for terminal
-            copy_path_action = QAction("&Copy file path", self.parent)
-            copy_path_action.triggered.connect(self.copy_file)
-            copy_path_action.setShortcut("Ctrl+C")
-            self.edit_menu.addAction(copy_path_action)
+            self.copy_path_action = QAction("&Copy file path", self.parent)
+            self.copy_path_action.triggered.connect(self.copy_file)
+            self.copy_path_action.setShortcut("Ctrl+C")
+            self.edit_menu.addAction(self.copy_path_action)
 
             # Copy file
-            copy_terminal_action = QAction("&Copy file path for terminal", self.parent)
-            copy_terminal_action.triggered.connect(self.copy_path_for_terminal)
-            copy_terminal_action.setShortcut("Ctrl+Alt+C")
-            self.edit_menu.addAction(copy_terminal_action)
+            self.copy_terminal_action = QAction("&Copy file path for terminal", self.parent)
+            self.copy_terminal_action.triggered.connect(self.copy_path_for_terminal)
+            self.copy_terminal_action.setShortcut("Ctrl+Alt+C")
+            self.edit_menu.addAction(self.copy_terminal_action)
 
             # Copy file name
-            copy_name_action = QAction("&Copy file name", self.parent)
-            copy_name_action.triggered.connect(self.copy_name)
-            copy_name_action.setShortcut("Ctrl+Shift+C")
-            self.edit_menu.addAction(copy_name_action)
+            self.copy_name_action = QAction("&Copy file name", self.parent)
+            self.copy_name_action.triggered.connect(self.copy_name)
+            self.copy_name_action.setShortcut("Ctrl+Shift+C")
+            self.edit_menu.addAction(self.copy_name_action)
+
+            # Bottom Buttons
+            # Button to open the File in Finder
+            move_file = self.generate_button(
+                "Move / Rename", self.move_file, icon=os.path.join(FF_Files.ASSETS_FOLDER, "Move_icon_small.png"))
+            bottom_layout.addWidget(move_file)
+            # Menu when Right-clicking
+            self.create_context_menu(
+                move_file, (self.mark_file_action, self.delete_file_action))
+
+            # Button to move the file to trash
+            delete_file = self.generate_button(
+                "Move to Trash", self.delete_file, icon=os.path.join(FF_Files.ASSETS_FOLDER, "Trash_icon_small.png"))
+            bottom_layout.addWidget(delete_file)
+            # Menu when Right-clicking
+            self.create_context_menu(
+                delete_file, (self.mark_file_action, self.move_file_action))
+
+            # Button to open the file
+            open_file = self.generate_button(
+                "Open", self.open_file, icon=os.path.join(FF_Files.ASSETS_FOLDER, "Open_icon_small.png"))
+            bottom_layout.addWidget(open_file)
+            # Menu when Right-clicking
+            self.create_context_menu(
+                open_file, (self.show_action, self.open_in_app_action, self.open_terminal_action))
+
+            # Button to show info about the file
+            file_info_button = self.generate_button(
+                "Info", self.file_info, icon=os.path.join(FF_Files.ASSETS_FOLDER, "Info_button_img_small.png"))
+            bottom_layout.addWidget(file_info_button)
+            # Menu when Right-clicking
+            self.create_context_menu(
+                file_info_button, (self.hash_action, self.copy_path_action,
+                                   self.copy_name_action, self.copy_terminal_action))
 
         # About File Find
         about_action = QAction("&About File Find", self.parent)
@@ -204,13 +241,14 @@ class MenuBar:
             # Compare Search
             compare_action = QAction("&Compare to other Search...", self.parent)
             compare_action.triggered.connect(lambda: FF_Compare.CompareSearches(
-                matched_list, search_path, cache_file_path, self.parent))
+                matched_list, search_path, cache_file_path, self.marked_files, self.parent))
             compare_action.setShortcut("Ctrl+N")
 
             # Find duplicated
             duplicated_action = QAction("&Find duplicated files...", self.parent)
             duplicated_action.triggered.connect(
-                lambda: FF_Duplicated.DuplicatedSettings(parent, search_path, matched_list, cache_file_path))
+                lambda: FF_Duplicated.DuplicatedSettings(parent, search_path, matched_list, cache_file_path,
+                                                         self.marked_files))
             duplicated_action.setShortcut("Ctrl+D")
 
             # Separator for visual indent
@@ -304,13 +342,16 @@ class MenuBar:
 
                     # Change the color to red
                     self.get_listbox().currentItem().setBackground(0, QColor(FF_Files.RED_DARK_THEME_COLOR))
+                    self.get_listbox().currentItem().setBackground(1, QColor(FF_Files.RED_DARK_THEME_COLOR))
                     # Change font color to white
                     self.get_listbox().currentItem().setForeground(0, QColor("white"))
+                    self.get_listbox().currentItem().setForeground(1, QColor("white"))
 
                     # Change font to italic
                     font = self.get_listbox().currentItem().font(0)
                     font.setItalic(True)
                     self.get_listbox().currentItem().setFont(0, font)
+                    self.get_listbox().currentItem().setFont(1, font)
 
                 # Removing file from cache
                 logging.info("Removing file from cache...")
@@ -395,60 +436,97 @@ class MenuBar:
 
                     # Change the color to red
                     self.get_listbox().currentItem().setBackground(0, QColor(FF_Files.RED_LIGHT_THEME_COLOR))
+                    self.get_listbox().currentItem().setBackground(1, QColor(FF_Files.RED_LIGHT_THEME_COLOR))
                     # Change font color to white
                     self.get_listbox().currentItem().setForeground(0, QColor("white"))
+                    self.get_listbox().currentItem().setForeground(1, QColor("white"))
 
                     # Change font to italic
                     font = self.get_listbox().currentItem().font(0)
                     font.setItalic(True)
                     self.get_listbox().currentItem().setFont(0, font)
+                    self.get_listbox().currentItem().setFont(1, font)
 
                 # Removing file from cache
                 logging.info("Removing file from cache...")
                 self.remove_file_from_cache(selected_file)
 
     # Marks a file
-    def mark_file(self, color):
-        selected_file = self.get_current_item()
-        # Testing if file is already marked
-        if selected_file in self.marked_files:
-            logging.info(f"Unmarking {self.get_current_item()}")
-            self.marked_files.remove(self.get_current_item())
+    def mark_file(self, color, selected_file=None):
+        # The file isn't predetermined
+        if selected_file is None:
+            selected_file = self.get_current_item()
+            listbox_item = self.get_listbox().currentItem()
+            predetermined_item = False
+
+        # The file is predetermined we first have to find the actual list item from the string
+        else:
+            if self.window == "search":
+                # The first item is the first and only match
+                listbox_item = self.get_listbox().findItems(selected_file, Qt.MatchFlag.MatchExactly)
+            elif self.window == "compare":
+                listbox_item = self.listbox.findItems(selected_file, Qt.MatchFlag.MatchExactly)
+                # If the files is in the other listbox and the found list is empty
+                if not listbox_item:
+                    listbox_item = self.listbox2.findItems(selected_file, Qt.MatchFlag.MatchExactly)
+            # In duplicated
+            else:
+                # Search recursively
+                listbox_item = self.get_listbox().findItems(selected_file,
+                                                            Qt.MatchFlag.MatchExactly | Qt.MatchFlag.MatchRecursive, 0)
+            # If the item wasn't found because it isn't in the results list, just skip
+            if not listbox_item:
+                return
+            else:
+                # The first item wll be the first and only match
+                listbox_item = listbox_item[0]
+            predetermined_item = True
+
+        # Testing if file is already marked and not predetermined
+        if selected_file in self.marked_files and not predetermined_item:
+            logging.info(f"Unmarking {selected_file}")
+            self.marked_files.remove(selected_file)
             # Unselecting the highlighted item of the listbox
             if self.window == "compare" or self.window == "search":
 
                 # Change the color to the desired color
-                self.get_listbox().item(
-                    self.get_listbox().currentRow()).setBackground(QBrush())
+                listbox_item.setBackground(QBrush())
 
                 # Change font color to white if necessary
                 QColor(color).lightness()
-                self.get_listbox().item(self.get_listbox().currentRow()).setForeground(QBrush())
+                listbox_item.setForeground(QBrush())
 
+            # In duplicated
             else:
-                # Change the color to red
-                self.get_listbox().currentItem().setBackground(0, QColor(FF_Files.RED_DARK_THEME_COLOR))
-                # Change font color to white
-                self.get_listbox().currentItem().setForeground(0, QColor("white"))
+                # Change the (background) colors to default
+                listbox_item.setBackground(0, QBrush())
+                listbox_item.setForeground(0, QBrush())
+                listbox_item.setBackground(1, QBrush())
+                listbox_item.setForeground(1, QBrush())
+        # If file isn't already marked
         else:
-            logging.info(f"Marking {self.get_current_item()} {color}")
-            self.marked_files.add(self.get_current_item())
+            logging.info(f"Marking {selected_file} {color}")
+            self.marked_files.add(selected_file)
             # Selecting the highlighted item of the listbox
             if self.window == "compare" or self.window == "search":
 
                 # Change the color to the desired color
-                self.get_listbox().item(
-                    self.get_listbox().currentRow()).setBackground(QColor(color))
+                listbox_item.setBackground(QColor(color))
 
                 # Change font color to white if necessary
                 QColor(color).lightness()
-                self.get_listbox().item(self.get_listbox().currentRow()).setForeground(QColor("white"))
-
+                listbox_item.setForeground(QColor("white"))
+            # In duplicated
             else:
-                # Change the color to red
-                self.get_listbox().currentItem().setBackground(0, QColor(FF_Files.RED_DARK_THEME_COLOR))
+                # Change the color to the specified one
+                listbox_item.setBackground(0, QColor(color))
                 # Change font color to white
-                self.get_listbox().currentItem().setForeground(0, QColor("white"))
+                listbox_item.setForeground(0, QColor("white"))
+
+                # Change the color to specified one
+                listbox_item.setBackground(1, QColor(color))
+                # Change font color to white
+                listbox_item.setForeground(1, QColor("white"))
 
     # Open a file with the default app
     def open_file(self):
@@ -477,11 +555,15 @@ class MenuBar:
 
     # Opens a file with a user-defined app
     def open_in_app(self):
+        if platform == "darwin":
+            open_dir = "/Applications"
+        else:
+            open_dir = FF_Files.USER_FOLDER
         # Prompt for an app
         selected_program = QFileDialog.getOpenFileName(
             parent=self.parent,
-            dir="/Applications",
-            filter="Application/Executable (*.app *.bin *.exe")[0]
+            dir=open_dir,
+            filter="Application or Executable (*.app *.bin *.exe *")[0]
 
         # Tests if the user selected an app
         if selected_program != "":
@@ -740,27 +822,32 @@ class MenuBar:
 
     # Remove moved file from cache
     def remove_file_from_cache(self, file):
-        with open(FF_Files.path_to_cache_file(self.search_path)) as search_file:
-            cached_files = load(search_file)
-
-        cached_files["found_path_set"].remove(file)
-
-        with open(FF_Files.path_to_cache_file(self.search_path), "w") as search_file:
-            dump(cached_files, search_file)
-
-        # If there is a cache file from a higher directory
-        if self.cache_file_path != FF_Files.path_to_cache_file(self.search_path):
-            with open(self.cache_file_path) as upper_search_file:
-                cached_files = load(upper_search_file)
+        try:
+            with open(FF_Files.path_to_cache_file(self.search_path)) as search_file:
+                cached_files = load(search_file)
 
             cached_files["found_path_set"].remove(file)
 
-            with open(self.cache_file_path, "w") as upper_search_file:
-                dump(cached_files, upper_search_file)
+            with open(FF_Files.path_to_cache_file(self.search_path), "w") as search_file:
+                dump(cached_files, search_file)
 
-        del cached_files
-        # Debug
-        logging.info("Removed file from cache")
+            # If there is a cache file from a higher directory
+            if self.cache_file_path != FF_Files.path_to_cache_file(self.search_path):
+                with open(self.cache_file_path) as upper_search_file:
+                    cached_files = load(upper_search_file)
+
+                cached_files["found_path_set"].remove(file)
+
+                with open(self.cache_file_path, "w") as upper_search_file:
+                    dump(cached_files, upper_search_file)
+
+            del cached_files
+        except (FileNotFoundError, KeyError):
+            # It isn't bad if the file isn't in cache anymore
+            pass
+        else:
+            # Debug
+            logging.debug("Removed file from cache")
 
     # Getting the listbox because there are two in the compare window
     def get_listbox(self):
@@ -810,33 +897,122 @@ class MenuBar:
         try:
             logging.info("Reload...")
             time_before_reload = perf_counter()
-            removed_list = []
-            # Creating a copy so that the list doesn't run out of index
-            matched_list_without_deleted_files = self.matched_list.copy()
+            removed_list = set()
+            # differs form the list in duplicated
+            removed_files_count = 0
+            if self.window == "search":
+                # Creating a copy so that the list doesn't run out of index
+                parent_items_without_deleted_files = self.matched_list.copy()
+                for matched_file in self.matched_list:
+                    if not os.path.exists(matched_file):
+                        # Remove file from widget if it doesn't exist
+                        self.get_listbox().takeItem(parent_items_without_deleted_files.index(matched_file))
+                        parent_items_without_deleted_files.remove(matched_file)
+                        # Adding file to removed_list to later remove it from cache
+                        removed_list.add(matched_file)
+                        removed_files_count += 1
 
-            for matched_file in self.matched_list:
-                if os.path.exists(matched_file):
-                    continue
-                else:
-                    # Remove file from widget if it doesn't exist
-                    self.get_listbox().takeItem(matched_list_without_deleted_files.index(matched_file))
-                    matched_list_without_deleted_files.remove(matched_file)
-                    # Adding file to removed_list to later remove it from cache
-                    removed_list.append(matched_file)
+            elif self.window == "duplicated":
+                # self.matched_list is a dict with files as key and lists with files as values
+                parent_items_without_deleted_files = self.matched_list.copy()
 
-            # Debug
-            logging.info(f"Reloaded found Files and removed {len(removed_list)} in"
-                         f" {round(perf_counter() - time_before_reload, 3)} sec.")
-            FF_Additional_UI.PopUps.show_info_messagebox(
-                "Reloaded!",
-                f"Reloaded found Files and removed {len(removed_list)}"
-                f" in {round(perf_counter() - time_before_reload, 3)} sec.",
-                self.parent)
-            # UI
-            self.file_count_text.setText(f"Files found: {len(self.matched_list)}")
+                for prove_file in self.matched_list:
+                    # Get the actual list tree item
+                    parent_item: QTreeWidgetItem = self.get_listbox().itemFromIndex(
+                        self.get_listbox().model().index(parent_items_without_deleted_files.index(prove_file), 0))
+
+                    matched_sub_list = self.duplicated_dict[prove_file].copy()
+                    for matched_sub_file in matched_sub_list.copy():
+                        if not os.path.exists(matched_sub_file):
+                            # Remove file from widget if it doesn't exist
+                            parent_item.takeChild(matched_sub_list.index(matched_sub_file))
+                            # Remove file from duplicated sub list
+                            self.duplicated_dict[prove_file].remove(matched_sub_file)
+                            # Adding file to removed_list to later remove it from cache
+                            removed_list.add(matched_sub_file)
+                            removed_files_count += 1
+                            matched_sub_list.remove(matched_sub_file)
+                    # Tests, if the parent item exists or if all subitems got deleted
+                    if not os.path.exists(prove_file) or not matched_sub_list:
+                        removed_files_count += 1
+                        # If there are at least two sub item left
+                        if len(matched_sub_list) > 1:
+                            # Take the first sub item and copy all it's properties to the parent item
+                            to_be_copied_item = parent_item.child(0)
+                            parent_item.setText(0, to_be_copied_item.text(0))
+                            parent_item.setText(1, to_be_copied_item.text(1))
+                            parent_item.setFont(0, to_be_copied_item.text(0))
+                            parent_item.setFont(1, to_be_copied_item.text(1))
+                            parent_item.setForeground(0, to_be_copied_item.foreground(0))
+                            parent_item.setForeground(1, to_be_copied_item.foreground(1))
+                            parent_item.setBackground(0, to_be_copied_item.background(0))
+                            parent_item.setBackground(1, to_be_copied_item.background(1))
+                            parent_item.setIcon(0, to_be_copied_item.icon(0))
+
+                            # Remove the child item
+                            # Remove file from widget if it doesn't exist
+                            parent_item.takeChild(0)
+                            # Remove file from duplicated sub list
+                            self.duplicated_dict[prove_file].remove(matched_sub_list[0])
+
+                            # Remove the removed parent from form the lists
+                            parent_items_without_deleted_files[
+                                parent_items_without_deleted_files.index(prove_file)] = matched_sub_list[0]
+                            self.duplicated_dict[matched_sub_list[0]] = self.duplicated_dict[prove_file]
+                            del self.duplicated_dict[prove_file]
+
+                        else:
+                            # Remove the item from the UI
+                            self.get_listbox().takeTopLevelItem(parent_items_without_deleted_files.index(prove_file))
+                            # Remove it form the internal lists
+                            del self.duplicated_dict[prove_file]
+                            parent_items_without_deleted_files.remove(prove_file)
+            else:
+                # Should never be reached
+                logging.fatal(f"Reloading files isn't supported in {self.window}")
+                return
 
             # Update internal list
-            self.matched_list = matched_list_without_deleted_files.copy()
+            self.matched_list = parent_items_without_deleted_files.copy()
+
+            # UI
+            if self.window == "search":
+                self.file_count_text.setText(f"Files found: {len(self.matched_list)}")
+            # In duplicated
+            else:
+                self.file_count_text.setText(f"Duplicated files: {len(self.matched_list)}")
+            self.file_count_text.update()
+
+            # Debug
+            if self.window == "duplicated":
+                logging.info(f"Reloaded duplicates files and removed {removed_files_count} deleted or not "
+                             "anymore duplicated files"
+                             f" in {round(perf_counter() - time_before_reload, 3)} sec.")
+                FF_Additional_UI.PopUps.show_info_messagebox(
+                    "Reloaded!",
+                    f"Reloaded duplicates files and removed {removed_files_count} deleted or"
+                    " not anymore duplicated files"
+                    f" in {round(perf_counter() - time_before_reload, 3)} sec.",
+                    self.parent)
+            elif self.window == "search":
+                logging.info(f"Reloaded found files and removed {removed_files_count} deleted files in"
+                             f" {round(perf_counter() - time_before_reload, 3)} sec.")
+                FF_Additional_UI.PopUps.show_info_messagebox(
+                    "Reloaded!",
+                    f"Reloaded found files and removed {removed_files_count} deleted files in"
+                    f" {round(perf_counter() - time_before_reload, 3)} sec.",
+                    self.parent)
+
+            # If all files were removed
+            if not parent_items_without_deleted_files:
+                if self.window == "duplicated":
+                    empty_tree_item = QTreeWidgetItem(self.listbox)
+                    empty_tree_item.setText(0, "No duplicated file of directory found")
+                    self.listbox.setDisabled(True)
+                # In normal searching mode
+                else:
+                    self.listbox.setDisabled(True)
+                    self.listbox.addItem("No file of directory found")
 
             def modify_cache():
                 # Loading cache to update it
@@ -880,3 +1056,51 @@ class MenuBar:
             FF_Additional_UI.PopUps.show_info_messagebox("Cache File not Found!",
                                                          "Cache File was deleted, couldn't Update Cache!",
                                                          self.parent)
+
+    def create_context_menu(self, button, actions: tuple):
+        # Menu when Right-clicking
+        context_menu = QMenu(self.parent)
+        for action in actions:
+            context_menu.addAction(action)
+        # Context Menu
+        button.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        button.customContextMenuRequested.connect(
+            lambda point: context_menu.exec(button.mapToGlobal(point)))
+
+    # Function to automate and unify the creation of buttons
+    def generate_button(self, text, command, icon=None):
+        # Define the Button
+        button = QPushButton(self.parent)
+        # Change the Text
+        button.setText(text)
+        # Set the command
+        button.clicked.connect(command)
+        # Set the icon
+        if icon is not None:
+            FF_Additional_UI.UIIcon(icon, button.setIcon)
+            button.setIconSize(QSize(23, 23))
+        # Return the value of the Button, to move the Button
+        return button
+
+    # Load marked files form previous search
+    def mark_marked_files(self, to_be_marked_files=None):
+        # Lad the list from the previous search
+        if to_be_marked_files is not None:
+            for marked_file in to_be_marked_files:
+                self.mark_file(FF_Files.GREEN_LIGHT_THEME_COLOR, marked_file)
+
+        # If the search is from a loaded file
+        if self.search_path.endswith(".FFSearch"):
+            with open(self.search_path) as load_file:
+                logging.debug("Loading marked files from file")
+                self.marked_files = set(load(load_file)["marked_files"])
+            for marked_file in self.marked_files:
+                self.mark_file(FF_Files.GREEN_LIGHT_THEME_COLOR, marked_file)
+
+        # Check the second search
+        if self.window == "compare" and self.search_path2.endswith(".FFSearch"):
+            with open(self.search_path2) as load_file:
+                logging.debug("Loading marked files from second search file")
+                self.marked_files = set(load(load_file)["marked_files"])
+            for marked_file in self.marked_files:
+                self.mark_file(FF_Files.GREEN_LIGHT_THEME_COLOR, marked_file)

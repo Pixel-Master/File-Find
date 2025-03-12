@@ -92,8 +92,8 @@ if __name__ == "__main__":
 
     # Launches the Main Window
     main_window = FF_Main_UI.MainWindow()
-
-    app.setQuitOnLastWindowClosed(False)
+    if platform == "darwin" or platform == "linux":
+        app.setQuitOnLastWindowClosed(False)
 
     # Only on non Mac systems set the icon
     if platform != "darwin":

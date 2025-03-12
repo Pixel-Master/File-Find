@@ -16,8 +16,8 @@ from time import perf_counter, ctime, time
 
 # PySide6 Gui Imports
 from PySide6.QtCore import QSize, Qt, QTimer
-from PySide6.QtGui import QFont, QIcon
-from PySide6.QtWidgets import QMainWindow, QLabel, QPushButton, QFileDialog, \
+from PySide6.QtGui import QIcon
+from PySide6.QtWidgets import QMainWindow, QLabel, QFileDialog, \
     QListWidget, QMenu, QWidget, QGridLayout, QHBoxLayout, QScrollArea
 
 # Projects Libraries
@@ -77,16 +77,14 @@ class SearchWindow:
         # Seconds needed Label
         seconds_text = QLabel(self.Search_Results_Window)
         # Setting a Font
-        small_text_font = QFont(FF_Files.DEFAULT_FONT, FF_Files.NORMAL_FONT_SIZE)
-        small_text_font.setBold(True)
-        seconds_text.setFont(small_text_font)
+        seconds_text.setFont(FF_Additional_UI.BOLD_QT_FONT)
         # Displaying
         self.Search_Results_Layout.addWidget(seconds_text, 0, 0)
 
         # Files found label
         objects_text = QLabel(self.Search_Results_Window)
         objects_text.setText(f"Files found: {len(self.matched_list)}")
-        objects_text.setFont(small_text_font)
+        objects_text.setFont(FF_Additional_UI.BOLD_QT_FONT)
         # Displaying
         self.Search_Results_Layout.addWidget(objects_text, 0, 2)
 
@@ -155,16 +153,16 @@ class SearchWindow:
                 else:
                     save_file += ".txt"
 
-            if save_file.endswith(".txt") and not os.path.exists(save_file):
+            if save_file.endswith(".txt"):
                 with open(save_file, "w") as export_file:
                     for save_file in self.matched_list:
                         export_file.write(save_file + "\n")
-            elif save_file.endswith(".FFSearch") and not os.path.exists(save_file):
+            elif save_file.endswith(".FFSearch"):
                 with open(save_file, "w") as export_file:
                     dump(
                         {"VERSION": FF_Files.FF_SEARCH_VERSION,
                          "matched_list": self.matched_list,
-                         "marked_files": menu_bar.marked_files}, export_file)
+                         "marked_files": list(menu_bar.marked_files)}, export_file)
 
         # Building Menu-bar
         menu_bar = FF_Menubar.MenuBar(
@@ -175,50 +173,15 @@ class SearchWindow:
             search_path=search_path,
             file_count_text=objects_text,
             save_search=save_search,
-            cache_file_path=cache_file_path)
+            cache_file_path=cache_file_path,
+            bottom_layout=self.Bottom_Layout)
 
         # Debug
         logging.info("Finished Setting up menu-bar")
 
-        # Buttons
-        # Functions to automate Button
-        def generate_button(text, command, icon=None):
-            # Define the Button
-            button = QPushButton(self.Search_Results_Window)
-            # Change the Text
-            button.setText(text)
-            # Set the command
-            button.clicked.connect(command)
-            # Set the icon
-            if icon is not None:
-                FF_Additional_UI.UIIcon(icon, button.setIcon)
-                button.setIconSize(QSize(23, 23))
-            # Return the value of the Button, to move the Button
-            return button
-
-        # Button to open the File in Finder
-        move_file = generate_button("Move / Rename", menu_bar.move_file,
-                                    icon=os.path.join(FF_Files.ASSETS_FOLDER, "Move_icon_small.png"))
-        self.Bottom_Layout.addWidget(move_file)
-
-        # Button to move the file to trash
-        delete_file = generate_button("Move to Trash", menu_bar.delete_file,
-                                      icon=os.path.join(FF_Files.ASSETS_FOLDER, "Trash_icon_small.png"))
-        self.Bottom_Layout.addWidget(delete_file)
-
-        # Button to open the file
-        open_file = generate_button("Open", menu_bar.open_file,
-                                    icon=os.path.join(FF_Files.ASSETS_FOLDER, "Open_icon_small.png"))
-        self.Bottom_Layout.addWidget(open_file)
-
-        # Button to show info about the file
-        file_info_button = generate_button("Info", menu_bar.file_info,
-                                           icon=os.path.join(FF_Files.ASSETS_FOLDER, "Info_button_img_small.png"))
-        self.Bottom_Layout.addWidget(file_info_button)
-
         # Time stat Button
-        show_time = generate_button(None, show_time_stats,
-                                    icon=os.path.join(FF_Files.ASSETS_FOLDER, "Time_button_img_small.png"))
+        show_time = menu_bar.generate_button(
+            None, show_time_stats, icon=os.path.join(FF_Files.ASSETS_FOLDER, "Time_button_img_small.png"))
         # Resize
         show_time.setMaximumSize(50, 50)
         # Tooltip
@@ -242,7 +205,7 @@ class SearchWindow:
         options_menu_compare_action = options_menu.addAction(
             "&Compare to other Search...")
         options_menu_compare_action.triggered.connect(
-            lambda: FF_Compare.CompareSearches(self.matched_list, search_path, cache_file_path,
+            lambda: FF_Compare.CompareSearches(self.matched_list, search_path, cache_file_path, menu_bar.marked_files,
                                                self.Search_Results_Window))
         # Separator
         options_menu.addSeparator()
@@ -251,10 +214,10 @@ class SearchWindow:
             "&Find duplicated...")
         options_menu_duplicated_action.triggered.connect(
             lambda: FF_Duplicated.DuplicatedSettings(self.Search_Results_Window, search_path, self.matched_list,
-                                                     cache_file_path))
+                                                     cache_file_path, menu_bar.marked_files))
 
         # More Options Button
-        options_button = generate_button(
+        options_button = menu_bar.generate_button(
             # Displaying the menu at the right position,
             # using the .mapToParent function with the position of the window.
             None, lambda: options_menu.exec(options_button.mapToParent(self.Search_Results_Window.pos())),
@@ -269,9 +232,9 @@ class SearchWindow:
         self.Search_Results_Layout.addWidget(options_button, 0, 5)
 
         # Compare Button
-        compare_button = generate_button(
+        compare_button = menu_bar.generate_button(
             None,
-            lambda: FF_Compare.CompareSearches(self.matched_list, search_path, cache_file_path,
+            lambda: FF_Compare.CompareSearches(self.matched_list, search_path, cache_file_path, menu_bar.marked_files,
                                                self.Search_Results_Window),
             icon=os.path.join(FF_Files.ASSETS_FOLDER, "Compare_files_img_small.png"))
         # Icon size
@@ -284,10 +247,10 @@ class SearchWindow:
         self.Search_Results_Layout.addWidget(compare_button, 0, 3)
 
         # Duplicated Button
-        duplicated_button = generate_button(
+        duplicated_button = menu_bar.generate_button(
             None,
             lambda: FF_Duplicated.DuplicatedSettings(self.Search_Results_Window, search_path, self.matched_list,
-                                                     cache_file_path),
+                                                     cache_file_path, menu_bar.marked_files),
             icon=os.path.join(FF_Files.ASSETS_FOLDER, "Duplicated_files_img_small.png"))
         # Icon size
         duplicated_button.setIconSize(QSize(50, 50))
@@ -337,6 +300,8 @@ class SearchWindow:
 
         # Action, user choice, on double click
         self.result_listbox.itemDoubleClicked.connect(menu_bar.double_clicking_item)
+        # Mark the files that need to be marked
+        menu_bar.mark_marked_files()
 
         # The final action run when the UI is build, to measure time properly
         def finish():

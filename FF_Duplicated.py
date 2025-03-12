@@ -11,19 +11,19 @@
 # Imports
 import logging
 import os
-from sys import platform
 from json import load
+from sys import platform
 from time import perf_counter, time, ctime
 import difflib
 import gc
 import hashlib
 
 # PySide6 Gui Imports
+from PySide6.QtCore import Qt, Signal, QObject, QThreadPool
+from PySide6.QtGui import QAction
 from PySide6.QtWidgets import (QMainWindow, QWidget, QGridLayout, QHBoxLayout, QVBoxLayout, QLabel, QSlider, QSpinBox,
-                               QDialogButtonBox, QSpacerItem, QSizePolicy, QPushButton, QTreeWidget, QTreeWidgetItem,
+                               QDialogButtonBox, QSpacerItem, QSizePolicy, QTreeWidget, QTreeWidgetItem,
                                QComboBox)
-from PySide6.QtCore import Qt, QSize, Signal, QObject, QThreadPool
-from PySide6.QtGui import QFont, QAction
 
 # Projects Libraries
 import FF_Main_UI
@@ -38,7 +38,7 @@ global duplicated_dict, time_dict, duplicated_parent_file_path_dict
 
 
 class DuplicatedSettings:
-    def __init__(self, parent, search_path, matched_list, cache_file):
+    def __init__(self, parent, search_path, matched_list, cache_file, to_be_marked_files):
         # Debug
         logging.info("Setting up Duplicated UI...")
 
@@ -232,7 +232,7 @@ class DuplicatedSettings:
             self.event_class.finished.connect(
                 lambda: DuplicatedUI(
                     parent, search_path, criteria, duplicated_dict, duplicated_parent_file_path_dict, time_dict,
-                    cache_file))
+                    cache_file, to_be_marked_files))
 
             self.event_class.finished.connect(
                 lambda: logging.debug("Received finish finish signal"))
@@ -299,10 +299,8 @@ class DuplicatedSettings:
 # User interface
 class DuplicatedUI:
     def __init__(
-            self,
-            parent,
-            match_path,
-            criteria, matched_dict: dict, matched_parent_file_path_dict: dict, time_needed_dict: dict, cache_file: str):
+            self, parent, match_path, criteria, matched_dict: dict, matched_parent_file_path_dict: dict,
+            time_needed_dict: dict, cache_file: str, to_be_marked_files):
         # Debug
         logging.info("Setting up Duplicated UI...")
         # Saving time
@@ -412,6 +410,8 @@ class DuplicatedUI:
 
         else:
             logging.info("Skipping Sorting")
+            for sub_file_set_key in matched_sorted_list:
+                matched_dict[sub_file_set_key] = list(matched_dict[sub_file_set_key])
 
         # Iterating through the list of all groups
         for main_item in matched_sorted_list:
@@ -440,73 +440,36 @@ class DuplicatedUI:
         # Add the model to the Layout
         self.Duplicated_Layout.addWidget(self.Duplicated_Tree, 1, 0, 5, 8)
 
-        # Setup menu bar
-        menu_bar = FF_Menubar.MenuBar(
-            parent=self.Duplicated_Window, window="duplicated", listbox=self.Duplicated_Tree, search_path=match_path,
-            cache_file_path=cache_file, matched_list=matched_dict)
-
-        # If item is double-clicked
-        self.Duplicated_Tree.itemDoubleClicked.connect(menu_bar.double_clicking_item)
-
-        # Buttons
-        # Functions to automate Button
-        def generate_button(text, command, icon=None):
-            # Define the Button
-            button = QPushButton(self.Duplicated_Window)
-            # Change the Text
-            button.setText(text)
-            # Set the command
-            button.clicked.connect(command)
-            # Set the icon
-            if icon is not None:
-                FF_Additional_UI.UIIcon(icon, button.setIcon)
-                button.setIconSize(QSize(23, 23))
-            # Return the value of the Button, to move the Button
-            return button
-
-        # Button to open the File in Finder
-        move_file = generate_button("Move / Rename", menu_bar.move_file,
-                                    icon=os.path.join(FF_Files.ASSETS_FOLDER, "Move_icon_small.png"))
-        self.Bottom_Layout.addWidget(move_file)
-
-        # Button to move the file to trash
-        delete_file = generate_button("Move to Trash", menu_bar.delete_file,
-                                      icon=os.path.join(FF_Files.ASSETS_FOLDER, "Trash_icon_small.png"))
-        self.Bottom_Layout.addWidget(delete_file)
-
-        # Button to open the file
-        open_file = generate_button("Open", menu_bar.open_file,
-                                    icon=os.path.join(FF_Files.ASSETS_FOLDER, "Open_icon_small.png"))
-        self.Bottom_Layout.addWidget(open_file)
-
-        # Button to show info about the file
-        file_info_button = generate_button("Info", menu_bar.file_info,
-                                           icon=os.path.join(FF_Files.ASSETS_FOLDER, "Info_button_img_small.png"))
-        self.Bottom_Layout.addWidget(file_info_button)
-
-        # Setting a Font
-        small_text_font = QFont(FF_Files.DEFAULT_FONT, FF_Files.NORMAL_FONT_SIZE)
-        small_text_font.setBold(True)
-
         # Files found label
         objects_text = QLabel(self.Duplicated_Window)
         objects_text.setText(f"Duplicated files: {len(matched_dict)}")
-        objects_text.setFont(small_text_font)
+        objects_text.setFont(FF_Additional_UI.BOLD_QT_FONT)
 
         # Displaying
         self.Duplicated_Layout.addWidget(objects_text, 0, 4, Qt.AlignmentFlag.AlignRight)
 
+        # Setup menu bar
+        menu_bar = FF_Menubar.MenuBar(
+            parent=self.Duplicated_Window, window="duplicated", listbox=self.Duplicated_Tree, search_path=match_path,
+            cache_file_path=cache_file, matched_list=matched_sorted_list, bottom_layout=self.Bottom_Layout,
+            duplicated_dict=duplicated_dict, file_count_text=objects_text)
+
+        # If item is double-clicked
+        self.Duplicated_Tree.itemDoubleClicked.connect(menu_bar.double_clicking_item)
+
+        menu_bar.mark_marked_files(to_be_marked_files)
+
         # Time needed
         time_text = QLabel(self.Duplicated_Window)
         time_text.setText("Time needed:")
-        time_text.setFont(small_text_font)
+        time_text.setFont(FF_Additional_UI.BOLD_QT_FONT)
         # Displaying
         self.Duplicated_Layout.addWidget(time_text, 0, 0)
 
         # Saving time
         # Time stat Button
-        show_time = generate_button(None, lambda: show_time_stats(),
-                                    icon=os.path.join(FF_Files.ASSETS_FOLDER, "Time_button_img_small.png"))
+        show_time = menu_bar.generate_button(None, lambda: show_time_stats(),
+                                             icon=os.path.join(FF_Files.ASSETS_FOLDER, "Time_button_img_small.png"))
         # Resize
         show_time.setMaximumSize(50, 50)
         # Add to Layout
@@ -593,7 +556,7 @@ class FindDuplicated:
             duplicated_name_dict = {}
             # Dict for storing names to be displayed
             duplicated_name_parent_file_path_dict = {}
-            # Group by name1
+            # Group by name
             if criteria["name"]["match_percentage"] == 100:
 
                 for file in found_path_set:
@@ -649,7 +612,8 @@ class FindDuplicated:
 
             # Removing sets that have no duplicates
             for duplicated_file in duplicated_name_dict.copy():
-                if len(duplicated_name_dict[duplicated_file]) <= 1:
+                # empty list = no duplicates
+                if not duplicated_name_dict[duplicated_file]:
                     duplicated_name_dict.pop(duplicated_file)
 
             # Finalize
@@ -733,7 +697,7 @@ class FindDuplicated:
 
             # Removing sets that have no duplicates
             for duplicated_file in duplicated_size_dict.copy():
-                if len(duplicated_size_dict[duplicated_file]) <= 1:
+                if not duplicated_size_dict[duplicated_file]:
                     duplicated_size_dict.pop(duplicated_file)
 
             # If content is activated size is ALWAYS checked first
@@ -832,8 +796,8 @@ class FindDuplicated:
 
                 # Removing sets that have no duplicates
                 for duplicated_file in duplicated_content_dict.copy():
-                    # If set lengths is only 1, that means there are no files that are the same
-                    if len(duplicated_content_dict[duplicated_file]) <= 1:
+                    # If the list is empty, that means there are no files that are the same
+                    if not duplicated_content_dict[duplicated_file]:
                         duplicated_content_dict.pop(duplicated_file)
 
                     elif os.path.isdir(duplicated_file):

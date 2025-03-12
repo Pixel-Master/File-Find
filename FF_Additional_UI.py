@@ -30,7 +30,9 @@ import FF_Settings
 # keeping a list of all created icons
 icons = set()
 global app, global_color_scheme
-
+DEFAULT_QT_FONT = QFont(FF_Files.DEFAULT_FONT, FF_Files.DEFAULT_FONT_SIZE)
+BOLD_QT_FONT = QFont(FF_Files.DEFAULT_FONT, FF_Files.DEFAULT_FONT_SIZE)
+BOLD_QT_FONT.setBold(True)
 
 # Used for entering the directory
 class DirectoryEntry(QLineEdit):
@@ -341,11 +343,11 @@ class CheckableComboBox(QComboBox):
             return "none"
 
         # less than four items selected, display all checked items
-        elif len(all_checked_items) <= 3:
+        elif len(all_checked_items) < 4:
             return ", ".join(all_checked_items)
 
-        # less than two item unchecked, display all unchecked ones
-        elif (len(all_items) - len(all_checked_items)) <= 2:
+        # less than three item unchecked, display all unchecked ones
+        elif (len(all_items) - len(all_checked_items)) < 3:
             all_unchecked_items = []
             for item in all_items:
                 if item not in all_checked_items:
@@ -415,10 +417,7 @@ class PopUps:
             # Title
             title_label = QLabel(msg_info)
             title_label.setText(title)
-            # Set font size
-            font = QFont(FF_Files.DEFAULT_FONT, FF_Files.SMALLER_FONT_SIZE)
-            font.setBold(True)
-            title_label.setFont(font)
+            title_label.setFont(BOLD_QT_FONT)
             # Display
             layout.addWidget(title_label)
 
@@ -433,7 +432,7 @@ class PopUps:
             msg_info.setWindowTitle(title)
             msg_info.show()
 
-            FF_Menubar.MenuBar(parent=msg_info, window="info_box", listbox=None)
+            FF_Menubar.MenuBar(parent=msg_info, window="info_box")
 
             # Return the Value of the Message Box
             return msg_info
@@ -534,6 +533,12 @@ def welcome_popups(parent, force_popups=False):
                  "File Find version: "
                  f"{FF_Files.VERSION_SHORT} [{FF_Files.VERSION}]",
             parent=parent)
+
+        # Resetting time since last notice
+        popup_dict["last_update_notice"] = time()
+
+        # Debug
+        logging.debug(f"Reset time since last_update_notice to {ctime(popup_dict['last_update_notice'])}")
 
     # If last update notice is older than 40 weeks, inform about possibility of a new update
     # time() returns time since the epoch in seconds

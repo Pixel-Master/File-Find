@@ -39,7 +39,7 @@
 Or you could:
 
 - [Building from Source](#building-from-source)
-- [Beta builds from the GitHub Action Page](https://github.com/Pixel-Master/File-Find/actions/workflows/File-Find.yml)
+- [Unstable builds from the GitHub Action Page](https://github.com/Pixel-Master/File-Find/actions/workflows/File-Find.yml)
 
 ## Features
 
@@ -199,15 +199,32 @@ A: File Find is an open-source Utility for macOS, Windows and Linux
 
 Q: **Why doesn't File Find find my file/folder?**
 
-A: By default (on a fresh install) File Find finds every file/folder except internal system files in the `Library` or `System` folders.
-You can enable them under "Advanced".
+A: Try the following steps:
 
-File Find uses its own caching algorithm. Scanning results are stored and reused for a faster search. 
-On default this cache gets cleared every two hours. You can clear the cache manually with `⌘ + T` on macOS (on Windows/Linux: `Ctrl + T`). Or right-click on the `Find` button and select `Search and create new cache for selected folder`.
+* By default (on a fresh install) File Find finds every file/folder except internal system files in the `Library` or `System` folders. You can enable them under `Advanced`.
 
-Also check the excluded files list in the settings. Files listed there will not show up. Other than that press `⌘ + R` on macOS (on Windows/Linux: `Ctrl + R`) to reset all filter settings to default.
-If none of these options help, [create a Bug Report.](#bug-reports)
+* Maybe you haven't granted all the permission necessary to find every file. There are also some files that are only accessible to File Find by granting Full Disk Acess. To do this open System Preferences, go to `Security & Privacy` and then add or activate File Find under `Full Disk Access`.
 
+* File Find uses its own caching algorithm. Scanning results are stored and reused for a faster search. On default this cache gets cleared every two hours. You can clear the cache manually with `⌘ + T` on macOS (on Windows/Linux: `Ctrl + T`). Or right-click on the `Find` button and select `Search and create new cache for selected folder`.
+
+* Check the excluded files list in the settings. Files listed there will not show up.
+
+* Press `⌘ + R` on macOS (on Windows/Linux: `Ctrl + R`) to reset all filter settings to default and make sure the file actually meets the given criteria.
+
+* If none of these options help, [create a Bug Report.](#bug-reports)
+
+Q: **Why can't I open File Find**?
+
+A: On macOS, if you get a message like
+
+**“File Find.app” Not Opened**
+
+Apple could not verify “File Find.app” is free of malware that may harm your Mac or compromise your privacy.
+
+it is because File Find isn't signed with an Developer Certificate, which has to be acquired by Apple at around 99$. 
+I currently do not have one nor plan on buying one soon. MacOS flags everyone who doesn't have one as "potentially unwanted software".
+To bypass this you have to press `Done`, open System Preferences, go to `Privacy & Security,` scroll down to `"File Find.app" was blocked to protect your Mac.` and press `Open Anyway`.
+There is going to be another Popup, in which you'll have to press `Open Anyway` again.
 
 Q: **Why does File Find sometimes freeze?**
 
@@ -304,7 +321,7 @@ _New functionality is wished._
 Include in your feature request:
 
 * Is the feature request related to a problem?
-* The solution you'd like, clearly and 
+* The solution you'd like, clearly and concise
 * How elaborate will the implementation be? (estimation)
 * Alternatives (optional)
 

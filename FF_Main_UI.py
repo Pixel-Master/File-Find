@@ -16,7 +16,7 @@ from sys import platform
 import sys
 
 # PySide6 Gui Imports
-from PySide6.QtCore import QSize, Qt, QDate
+from PySide6.QtCore import QSize, Qt, QDate, QTimer, QTime
 from PySide6.QtGui import QFont, QDoubleValidator, QAction, QIcon, QClipboard
 from PySide6.QtWidgets import QWidget, QLabel, QPushButton, QRadioButton, QFileDialog, \
     QLineEdit, QButtonGroup, QDateEdit, QComboBox, QSystemTrayIcon, QMenu, QTabWidget, \
@@ -277,7 +277,7 @@ class MainWindow:
         label_command_title.setText("Command:")
         label_command_title.setToolTip(
             "Terminal command:\nYou can paste this command into the Terminal app to search with the \"find\" tool")
-        label_command_title.setFont(QFont(FF_Files.DEFAULT_FONT, FF_Files.NORMAL_FONT_SIZE))
+        label_command_title.setFont(FF_Additional_UI.DEFAULT_QT_FONT)
         self.Main_Layout.addWidget(label_command_title, 11, 0)
         label_command_title.hide()
 
@@ -302,7 +302,7 @@ class MainWindow:
         # Title of searching indicator
         search_status_title_label = QLabel(self.Root_Window)
         search_status_title_label.setText("Status:")
-        search_status_title_label.setFont(QFont(FF_Files.DEFAULT_FONT, FF_Files.NORMAL_FONT_SIZE))
+        search_status_title_label.setFont(FF_Additional_UI.DEFAULT_QT_FONT)
         search_status_title_label.setToolTip(
             "Search Indicator:\n"
             "Indicates if searching and shows the numbers of active searches.\n"
@@ -315,7 +315,7 @@ class MainWindow:
         search_status_label = FF_Additional_UI.ColoredLabel("Idle", self.Root_Window,
                                                             FF_Files.GREEN_LIGHT_THEME_COLOR,
                                                             FF_Files.GREEN_DARK_THEME_COLOR)
-        search_status_label.setFont(QFont(FF_Files.DEFAULT_FONT, FF_Files.NORMAL_FONT_SIZE))
+        search_status_label.setFont(FF_Additional_UI.DEFAULT_QT_FONT)
         search_status_label.show()
         self.Main_Layout.addWidget(search_status_label, 12, 1)
         self.Main_Layout.addItem(QSpacerItem(600, 0, hData=QSizePolicy.Policy.Maximum), 12, 2)
@@ -534,11 +534,32 @@ class MainWindow:
         self.m_date_to_drop_down.setDate(QDate.currentDate())
         self.properties_widget_layout.addWidget(self.m_date_to_drop_down, 2, 5, 1, 7)
 
+        # If the current date changes, the edit should too
+        timer = QTimer(self.Root_Window)
+        timer.setTimerType(Qt.TimerType.VeryCoarseTimer)
+        timer.timeout.connect(lambda: self.c_date_to_drop_down.setDate(QDate.currentDate()))
+
+        # Always executed at midnight
+        def restart_timer():
+            # Debug
+            logging.debug("Midnight!, changing time for creation and modification time edit")
+            # Check for both the modified and the creation time if the date is equal to the former current time
+            # If this is the case (for example if left untouched) set the date to the actual current date
+            if self.c_date_to_drop_down.date() == QDate.currentDate().addDays(-1):
+                self.c_date_to_drop_down.setDate(QDate.currentDate())
+            if self.m_date_to_drop_down.date() == QDate.currentDate().addDays(-1):
+                self.m_date_to_drop_down.setDate(QDate.currentDate())
+            # Time to next midnight 23:59:59:999 with 1 added buffer second / 1000 milliseconds
+            timer.start(QTime.currentTime().msecsTo(QTime(23, 59, 59, 999)) + 1000)
+
+        timer.timeout.connect(restart_timer)
+        # Time to midnight 23:59:59:999 with 1 added buffer second / 1000 milliseconds
+        timer.start(QTime.currentTime().msecsTo(QTime(23, 59, 59, 999)) + 1000)
+
         # Push Buttons
-        logging.debug("Setting up Push Buttons...")
+        logging.debug("Set up time mechanics, Setting up Push Buttons...")
 
         # Buttons
-
         # Search from Button
         # Opens the File dialogue and changes the current working dir into the returned value
         def open_dialog():
@@ -741,7 +762,7 @@ class MainWindow:
         # Define the Label
         label = QLabel(name, parent=tab)
         # Change Font
-        label.setFont(QFont(FF_Files.DEFAULT_FONT, FF_Files.NORMAL_FONT_SIZE))
+        label.setFont(FF_Additional_UI.DEFAULT_QT_FONT)
         # Hover tool tip
         label.setToolTip(f"{tooltip}")
         label.setToolTipDuration(-1)
@@ -1145,6 +1166,9 @@ class MainWindow:
         # Add this icon to the menu bar
         global menu_bar_icon
         menu_bar_icon = QSystemTrayIcon(self.Root_Window)
+
+        if platform == "win32" or platform == "cygwin":
+            menu_bar_icon.activated.connect(self.Root_Window.show())
 
         # Icon
         # On macOS

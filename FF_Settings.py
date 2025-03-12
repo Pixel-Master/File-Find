@@ -16,7 +16,7 @@ import shutil
 import sys
 
 # PySide6 Gui Imports
-from PySide6.QtGui import QFont, Qt
+from PySide6.QtGui import Qt
 from PySide6.QtWidgets import QMainWindow, QLabel, QPushButton, QListWidget, QFileDialog, QComboBox, \
     QMessageBox, QCheckBox, QWidget, QGridLayout, QSizePolicy, QSpacerItem, QLineEdit
 
@@ -78,7 +78,7 @@ class SettingsWindow:
         # Define the Label
         exclude_label = QLabel("Always excluded folders:", parent=self.Settings_Window)
         # Change Font
-        exclude_label.setFont(QFont(FF_Files.DEFAULT_FONT, FF_Files.SMALLER_FONT_SIZE))
+        exclude_label.setFont(FF_Additional_UI.DEFAULT_QT_FONT)
         # Display the Label
         self.Settings_Layout.addWidget(exclude_label, 9, 0)
 
@@ -155,7 +155,7 @@ class SettingsWindow:
         # Define the Label
         ask_delete_label = QLabel("Ask before deleting a file:", parent=self.Settings_Window)
         # Change Font
-        ask_delete_label.setFont(QFont(FF_Files.DEFAULT_FONT, FF_Files.SMALLER_FONT_SIZE))
+        ask_delete_label.setFont(FF_Additional_UI.DEFAULT_QT_FONT)
         # Display the Label
         self.Settings_Layout.addWidget(ask_delete_label, 0, 0)
         ask_delete_label.adjustSize()
@@ -197,7 +197,7 @@ class SettingsWindow:
         filter_preset_label = QLabel("Filter Preset on launch:", parent=self.Settings_Window)
         filter_preset_label.setToolTip("The filter preset loaded at launch")
         # Change Font
-        filter_preset_label.setFont(QFont(FF_Files.DEFAULT_FONT, FF_Files.SMALLER_FONT_SIZE))
+        filter_preset_label.setFont(FF_Additional_UI.DEFAULT_QT_FONT)
         # Display the Label
         self.Settings_Layout.addWidget(filter_preset_label, 1, 0)
 
@@ -273,7 +273,7 @@ class SettingsWindow:
         # Define the Label
         double_click_label = QLabel("Action when double-clicking:", parent=self.Settings_Window)
         # Change Font
-        double_click_label.setFont(QFont(FF_Files.DEFAULT_FONT, FF_Files.SMALLER_FONT_SIZE))
+        double_click_label.setFont(FF_Additional_UI.DEFAULT_QT_FONT)
         # Display the Label
         self.Settings_Layout.addWidget(double_click_label, 2, 0)
 
@@ -296,7 +296,7 @@ class SettingsWindow:
         # Define the Label
         reset_label = QLabel("Reset File Find:", parent=self.Settings_Window)
         # Change Font
-        reset_label.setFont(QFont(FF_Files.DEFAULT_FONT, FF_Files.SMALLER_FONT_SIZE))
+        reset_label.setFont(FF_Additional_UI.DEFAULT_QT_FONT)
         # Display the Label
         self.Settings_Layout.addWidget(reset_label, 4, 0)
         reset_label.adjustSize()
@@ -345,7 +345,7 @@ class SettingsWindow:
         # Define the Label
         cache_label = QLabel("Delete Cache automatically:", parent=self.Settings_Window)
         # Change Font
-        cache_label.setFont(QFont(FF_Files.DEFAULT_FONT, FF_Files.SMALLER_FONT_SIZE))
+        cache_label.setFont(FF_Additional_UI.DEFAULT_QT_FONT)
         # Display the Label
         self.Settings_Layout.addWidget(cache_label, 5, 0)
 
@@ -379,7 +379,7 @@ class SettingsWindow:
         # Define the Label
         menu_bar_icon_label = QLabel("Show File Find in the menu bar:", parent=self.Settings_Window)
         # Change Font
-        menu_bar_icon_label.setFont(QFont(FF_Files.DEFAULT_FONT, FF_Files.SMALLER_FONT_SIZE))
+        menu_bar_icon_label.setFont(FF_Additional_UI.DEFAULT_QT_FONT)
         # Display the Label
         self.Settings_Layout.addWidget(menu_bar_icon_label, 6, 0)
 
@@ -410,7 +410,7 @@ class SettingsWindow:
         self.Settings_Layout.addWidget(menu_bar_icon_checkbox, 6, 1)
 
         # Menu-bar
-        FF_Menubar.MenuBar(self.Settings_Window, "settings", None, )
+        FF_Menubar.MenuBar(self.Settings_Window, "settings", )
 
         # Debug
         logging.info("Finished Setting up Help UI\n")

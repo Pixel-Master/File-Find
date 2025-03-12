@@ -79,7 +79,7 @@ class AboutWindow:
         version_label = QLabel(about_window)
         # Font and Text
         version_label.setText(f"v. {FF_Files.VERSION_SHORT} ({FF_Files.VERSION})")
-        version_label.setFont(QFont(FF_Files.DEFAULT_FONT, FF_Files.SMALLER_FONT_SIZE))
+        version_label.setFont(FF_Additional_UI.DEFAULT_QT_FONT)
         # The command and tooltip
         version_label.setToolTip(f"Version: {FF_Files.VERSION_SHORT} Extended Version: {FF_Files.VERSION}")
         # Display the Label
@@ -90,7 +90,7 @@ class AboutWindow:
         # Font and Text
         author_label.setText(
             "Created by Pixel Master, Copyright © 2022–2025 Pixel Master.\nLicensed under the GNU GPLv3")
-        author_label.setFont(QFont(FF_Files.DEFAULT_FONT, FF_Files.SMALLER_FONT_SIZE))
+        author_label.setFont(FF_Additional_UI.DEFAULT_QT_FONT)
         # The command and tooltip
         author_label.setToolTip(f"Version: {FF_Files.VERSION_SHORT} Extended Version: {FF_Files.VERSION}")
         # Display the Label
@@ -102,7 +102,7 @@ class AboutWindow:
             link = QPushButton(about_window)
             # Font and Text
             link.setText(displayed_text)
-            font = QFont(FF_Files.DEFAULT_FONT, FF_Files.NORMAL_FONT_SIZE)
+            font = QFont(FF_Files.DEFAULT_FONT, FF_Files.DEFAULT_FONT_SIZE)
             font.setUnderline(True)
             link.setFont(font)
             # The command and tooltip
