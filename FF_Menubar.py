@@ -52,6 +52,13 @@ class MenuBar:
         self.search_path2 = search_path2
         self.window = window
         self.cache_file_path = cache_file_path
+        if self.cache_file_path is not None:
+            # Getting the depth from the cache file's metadata brother
+            with open(FF_Files.get_metadata_file_from_cache_file(cache_file_path)) as depth_file:
+                try:
+                    self.search_depth = load(depth_file)["global_depth_limit"]
+                except FileNotFoundError:
+                    pass
         self.matched_list = matched_list
         self.duplicated_dict = duplicated_dict
         self.file_count_text = file_count_text
@@ -823,16 +830,17 @@ class MenuBar:
     # Remove moved file from cache
     def remove_file_from_cache(self, file):
         try:
-            with open(FF_Files.path_to_cache_file(self.search_path)) as search_file:
+            cache_file_with_same_path = FF_Files.path_to_cache_file(self.search_path, self.search_depth)
+            with open(cache_file_with_same_path) as search_file:
                 cached_files = load(search_file)
 
             cached_files["found_path_set"].remove(file)
 
-            with open(FF_Files.path_to_cache_file(self.search_path), "w") as search_file:
+            with open(cache_file_with_same_path, "w") as search_file:
                 dump(cached_files, search_file)
 
             # If there is a cache file from a higher directory
-            if self.cache_file_path != FF_Files.path_to_cache_file(self.search_path):
+            if self.cache_file_path != cache_file_with_same_path:
                 with open(self.cache_file_path) as upper_search_file:
                     cached_files = load(upper_search_file)
 
@@ -843,7 +851,7 @@ class MenuBar:
 
             del cached_files
         except (FileNotFoundError, KeyError):
-            # It isn't bad if the file isn't in cache anymore
+            # It isn't bad if the file isn't in cache anymore or the cache file doesn't exist
             pass
         else:
             # Debug
@@ -970,7 +978,7 @@ class MenuBar:
             else:
                 # Should never be reached
                 logging.fatal(f"Reloading files isn't supported in {self.window}")
-                return
+                raise NotImplementedError
 
             # Update internal list
             self.matched_list = parent_items_without_deleted_files.copy()
@@ -1017,15 +1025,15 @@ class MenuBar:
             def modify_cache():
                 # Loading cache to update it
                 with open(self.cache_file_path) as search_file:
-                    cached_file: dict[list, dict, dict] = load(search_file)
+                    cached_file: dict[str: list, str: dict] = load(search_file)
 
                 # Testing if the cache file from the specified directory was used as to also update the used cache
-                if self.cache_file_path != FF_Files.path_to_cache_file(self.search_path):
+                if self.cache_file_path != FF_Files.path_to_cache_file(self.search_path, self.search_depth):
 
                     different_cache_file = True
                     # Loading cache to update it
-                    with open(FF_Files.path_to_cache_file(self.search_path)) as upper_search_file:
-                        cached_home_file: dict[list, dict, dict] = load(upper_search_file)
+                    with open(FF_Files.path_to_cache_file(self.search_path, self.search_depth)) as upper_search_file:
+                        cached_home_file: dict[str: list, str: dict] = load(upper_search_file)
                 else:
                     different_cache_file = False
 
@@ -1039,7 +1047,7 @@ class MenuBar:
                         # File was already removed from cache
                         pass
 
-                with open(FF_Files.path_to_cache_file(self.search_path), "w") as search_file:
+                with open(FF_Files.path_to_cache_file(self.search_path, self.search_depth), "w") as search_file:
                     dump(cached_file, search_file)
 
                 # Loading the cache file from the higher directory

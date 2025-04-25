@@ -113,8 +113,8 @@ class LoadSearch:
             logging.info(f"File has version: {saved_file_content['VERSION']},"
                          f" local version: {FF_Files.FF_SEARCH_VERSION}")
 
-            # If the cache doesn't exist
-            if not os.path.exists(FF_Files.path_to_cache_file(load_file)):
+            # If the cache doesn't exist use unlimited depth
+            if not os.path.exists(FF_Files.path_to_cache_file(load_file, -1)):
 
                 # Dictionary which is going to be dumped into the cache file
                 dump_dict = {"VERSION": FF_Files.FF_CACHE_VERSION,
@@ -129,12 +129,12 @@ class LoadSearch:
                         dump_dict["type_dict"][cache_file] = "file"
 
                 # Create a new cache file
-                with open(FF_Files.path_to_cache_file(load_file), "w") as cached_search:
+                with open(FF_Files.path_to_cache_file(load_file, -1), "w") as cached_search:
                     # Dump the content of the save into the cache with JSON into the file
                     dump(dump_dict, cached_search)
 
                 # Create a metadata file
-                with open(FF_Files.path_to_cache_file(load_file, True), "w") as cached_search:
+                with open(FF_Files.path_to_cache_file(load_file, -1, metadata=True), "w") as cached_search:
                     # Date created
                     # On macOS
                     if platform == "darwin":
@@ -148,10 +148,12 @@ class LoadSearch:
                     # Dump the metadata of the save into the cache with JSON into the file
                     dump({"c_time": c_date,
                           "cache_version": FF_Files.FF_CACHE_VERSION,
-                          "original_cache_file": FF_Files.path_to_cache_file(load_file)},
+                          "original_cache_file": FF_Files.path_to_cache_file(load_file, -1),
+                          "global_depth_limit": -1,
+                          "path": load_file},
                          cached_search)
-                logging.debug(f"Created cache for {load_file} under {FF_Files.path_to_cache_file(load_file)} and"
-                              f" {FF_Files.path_to_cache_file(load_file, True)}")
+                logging.debug(f"Created cache for {load_file} under {FF_Files.path_to_cache_file(load_file, -1)} and"
+                              f" {FF_Files.path_to_cache_file(load_file, -1, metadata=True)}")
         return saved_file_content
 
     @staticmethod
@@ -168,7 +170,7 @@ class LoadSearch:
                                      "time_building": 0,
                                      "time_total": 0},
                                     saved_file_content["matched_list"], load_file,
-                                    FF_Files.path_to_cache_file(load_file), parent])
+                                    FF_Files.path_to_cache_file(load_file, -1), parent])
 
 
 # The Search Engine
@@ -176,7 +178,8 @@ class Search:
     def __init__(self, data_name, data_in_name, data_filetype, data_file_size_min, data_file_size_max,
                  data_file_size_min_unit, data_file_size_max_unit, data_library,
                  data_search_for, data_search_from_valid, data_search_from_unchecked, data_content, data_date_edits,
-                 data_sort_by, data_reverse_sort, data_file_group, parent: QWidget, new_cache_file=False):
+                 data_sort_by, data_reverse_sort, data_file_group, data_file_type_mode, data_folder_depth,
+                 data_folder_depth_custom, parent: QWidget, new_cache_file=False):
         # Debug
         logging.debug("Converting Date-times...")
 
@@ -229,11 +232,11 @@ class Search:
                 data_file_size_min = float(data_file_size_min) * size_unit_factors[data_file_size_min_unit]
                 data_file_size_max = float(data_file_size_max) * size_unit_factors[data_file_size_max_unit]
 
-                # Testing if one is larger than the other
-                if data_file_size_min < data_file_size_max:
+                # Testing if may is larger than min other
+                if data_file_size_min <= data_file_size_max:
                     size_data = "valid"
                 else:
-                    # Both fields are empty
+                    # Max is smaller than min
                     size_data = "invalid"
 
         except ValueError:
@@ -256,11 +259,9 @@ class Search:
         # because if they do no file will be found
         # Also testing if wildcard syntax is used in data_name,
         # because wildcard is supported and so no error should appear
-        if (((data_name != "" and data_in_name != "") or
-             (data_name != "" and data_filetype != "") or
-             (data_name != "" and data_file_group != list(FF_Files.FILE_FORMATS.keys())))
-                and
-                (not (("[" in data_name) or ("?" in data_name) or ("*" in data_name)))):
+        if (data_name != "" and (
+                data_in_name != "" or data_filetype != "" or data_file_group != list(FF_Files.FILE_FORMATS.keys()))
+                and (not (("[" in data_name) or ("?" in data_name) or ("*" in data_name)))):  # wildcard
             # Debug
             logging.error("File name can't be used together with file type, name contains or file ending")
 
@@ -320,7 +321,7 @@ class Search:
                                                              parent=None)
 
         # If data_file_group is an empty list (no files would be found)
-        elif not data_file_group:
+        elif not data_file_group and data_file_type_mode == "predefined":
             # Debug
             logging.error("File Types Error! No File Types are selected")
 
@@ -373,7 +374,6 @@ class Search:
                 indexing = Signal()
                 indexing_name = Signal()
                 indexing_name_contains = Signal()
-                indexing_file_extension = Signal()
                 indexing_system_files = Signal()
                 indexing_files_folders = Signal()
                 indexing_file_groups = Signal()
@@ -413,11 +413,10 @@ class Search:
             self.signals.indexing.connect(lambda: self.ui_logger.update("Indexing..."))
             self.signals.indexing_name.connect(lambda: self.ui_logger.update("Indexing Name..."))
             self.signals.indexing_name_contains.connect(lambda: self.ui_logger.update("Indexing Name contains..."))
-            self.signals.indexing_file_extension.connect(lambda: self.ui_logger.update("Indexing file extension..."))
             self.signals.indexing_system_files.connect(lambda: self.ui_logger.update("Indexing System Files..."))
             self.signals.indexing_files_folders.connect(
                 lambda: self.ui_logger.update("Indexing exclude or include folders or files ..."))
-            self.signals.indexing_file_groups.connect(lambda: self.ui_logger.update("Filtering for file groups..."))
+            self.signals.indexing_file_groups.connect(lambda: self.ui_logger.update("Filtering for file type..."))
             self.signals.indexing_dump_files.connect(lambda: self.ui_logger.update("Removing dump files..."))
             self.signals.indexing_excluded.connect(lambda: self.ui_logger.update("Filtering excluded files..."))
             self.signals.indexing_c_date.connect(lambda: self.ui_logger.update("Indexing date created..."))
@@ -440,7 +439,9 @@ class Search:
                 lambda: self.searching(
                     data_name, data_in_name, data_filetype, data_file_size_min, data_file_size_max, data_library,
                     data_search_from_valid, data_search_for, data_content, unix_time_list, data_sort_by,
-                    data_reverse_sort, data_file_group, data_excluded_files, new_cache_file, parent))
+                    data_reverse_sort, data_file_group, data_file_type_mode, data_folder_depth,
+                    data_folder_depth_custom, data_excluded_files, new_cache_file,
+                    parent))
 
             # Debug
             logging.debug("Finished Setting up QThreadPool!")
@@ -448,7 +449,8 @@ class Search:
     # The search engine
     def searching(self, data_name, data_in_name, data_filetype, data_file_size_min, data_file_size_max, data_library,
                   data_search_from, data_search_for, data_content, data_time, data_sort_by, data_reverse_sort,
-                  data_file_group, data_excluded_files, new_cache_file, parent):
+                  data_file_group, data_file_type_mode, data_folder_depth,
+                  data_folder_depth_custom, data_excluded_files, new_cache_file, parent):
         # Debug
         logging.info("Starting Search...")
         self.signals.starting.emit()
@@ -527,36 +529,59 @@ class Search:
             logging.debug("Excluded files checking is needed")
             data_excluded_files_needed = True
 
-        # Checking if check for file groups is needed
-        if set(data_file_group) != set(FF_Files.FILE_FORMATS.keys()):
-            logging.debug("File groups checking is needed")
+        # Checking if check for file type is needed
+        if ((set(data_file_group) != set(FF_Files.FILE_FORMATS.keys()) and data_file_type_mode == "predefined") or
+                (data_filetype != "" and data_file_type_mode == "custom")):
+            logging.debug("File type checking is needed")
 
             # Creating a set and adding every needed file format to it
             allowed_filetypes_set = set()
-            disallowed_filetypes_set = set()  # Needed if "other" is activated
+            disallowed_filetypes_set = set()  # Needed if "other" is activated and user chose "predefined"
 
-            # Iterating through the list of file group type
-            for file_group in FF_Files.FILE_FORMATS.keys():
-                # Needing two lists because of "other",
-                # when it's activated all groups, which are not allowed are collected
-                # Else all allowed groups are collected
-                # This is because "other" is everything else, which isn't in a group.
-                if file_group in data_file_group:
-                    for file in FF_Files.FILE_FORMATS[file_group]:
-                        allowed_filetypes_set.add(file)
-                else:
-                    for file in FF_Files.FILE_FORMATS[file_group]:
-                        disallowed_filetypes_set.add(file)
+            if data_file_type_mode == "predefined":
+                # Iterating through the list of file group type
+                for file_group in FF_Files.FILE_FORMATS.keys():
+                    # Needing two lists because of "other",
+                    # when it's activated all groups, which are not allowed are collected
+                    # Else all allowed groups are collected
+                    # This is because "other" is everything else, which isn't in a group.
+                    if file_group in data_file_group:
+                        for file in FF_Files.FILE_FORMATS[file_group]:
+                            allowed_filetypes_set.add(file)
+                    else:
+                        for file in FF_Files.FILE_FORMATS[file_group]:
+                            disallowed_filetypes_set.add(file)
+
+            elif data_file_type_mode == "custom":
+                # Semicolons can be used for entering multiple possible file types,
+                # removing all spaces as filetypes have none (at least sane people don't use them)
+                allowed_filetypes_set = data_filetype.replace(" ", "").split(";")
 
             # Making tuples out of the sets for better performance
             allowed_filetypes = tuple(allowed_filetypes_set)
             disallowed_filetypes = tuple(disallowed_filetypes_set)
 
         else:
-            logging.debug("File groups checking is NOT needed")
+            logging.debug("File type checking is NOT needed")
             # Because checking isn't needed and wwe don't want automated tools to flag this as "possibly unassigned"
             allowed_filetypes = None
             disallowed_filetypes = None
+
+        # Processing folder depth input
+        if data_folder_depth == "Unlimited":
+            # folder_depth_global_limit is basically just the amount of "/" (on macOS)
+            # that are allowed in the path of a file
+            # -1 means infinite
+            folder_depth_global_limit = -1
+        elif data_folder_depth == "No subfolders":
+            folder_depth_global_limit = data_search_from.count(os.sep)
+        elif data_folder_depth == "Custom":
+            # Using data_search_from.count(os.sep) as the depth is relative to the directory that is searched in
+            folder_depth_global_limit = data_search_from.count(os.sep) + data_folder_depth_custom
+        else:
+            # Shouldn't be reached
+            logging.fatal("Error in code while processing folder depth limit")
+            raise ValueError
 
         # Debug
         logging.info("Starting Scanning...")
@@ -568,19 +593,28 @@ class Search:
         newest_fitting_cache_file_c_date = 0
 
         for cache_file in os.listdir(FF_Files.CACHED_SEARCHES_FOLDER):
-            # Looks if there is a cache file for a higher directory add a "-" so that files from the same directory with
-            # a similar name aren't mistaken for files from a parent directory
-            if (data_search_from.replace(os.sep, "-") + "-").startswith(cache_file.removesuffix(".FFCache") + "-"):
-                # Date created from separate file
-                with open(os.path.join(FF_Files.CACHE_METADATA_FOLDER, cache_file)) as time_file:
-                    cache_file_c_date = load(time_file)["c_time"]
+            # Looks if there is a cache file for a higher directory add a folder separator ("-") so that files
+            # from the same directory with a similar name aren't mistaken for files from a parent directory
+            # A dollar sign marks the beginning of the relative depth limit of the cache file
+            # "-" marks a folder separator
+            # comparable_cache_file is basically the original search path but all "/" are replaced with "-"
+            comparable_cache_file = ((cache_file.removesuffix(".FFCache")[:cache_file.rfind("$")]) + "-")
 
-                # Looks if it is newer
-                if cache_file_c_date > newest_fitting_cache_file_c_date:
+            if (data_search_from.replace(os.sep, "-") + "-").startswith(comparable_cache_file):
+                # Date created and global folder depth (which must match) from separate file
+                with open(os.path.join(FF_Files.CACHE_METADATA_FOLDER, cache_file)) as time_file:
+                    metadata = load(time_file)
+                    cache_file_c_date = metadata["c_time"]
+                    cache_file_depth = metadata["global_depth_limit"]
+
+                # Looks if the creation time is newer than the current best fitting file
+                # Also check if the global depth matches up
+                if ((cache_file_c_date > newest_fitting_cache_file_c_date) and
+                        (cache_file_depth == folder_depth_global_limit)):
                     newest_fitting_cache_file_c_date = cache_file_c_date
                     newest_fitting_cache_file = os.path.join(FF_Files.CACHED_SEARCHES_FOLDER, cache_file)
 
-        # If there is a fitting cache file or user requested new cache file to be created
+        # If there is a fitting cache file and user didn't request new cache file to be created
         if newest_fitting_cache_file is not None and not new_cache_file:
             # Debug
             logging.info(f"Scanning using cached data from {newest_fitting_cache_file}"
@@ -591,8 +625,8 @@ class Search:
             with open(newest_fitting_cache_file) as search_results:
                 load_input = load(search_results)
 
-            # If the found cache file is form the same directory as which was searched
-            if newest_fitting_cache_file == FF_Files.path_to_cache_file(data_search_from):
+            # If the found cache file is form the same directory as the one the search was for
+            if newest_fitting_cache_file == FF_Files.path_to_cache_file(data_search_from, folder_depth_global_limit):
                 # Debug
                 logging.debug("Cache file from the same directory as search")
 
@@ -622,7 +656,7 @@ class Search:
                     pass
                 try:
                     del type_dict[data_search_from]
-                except KeyError :
+                except KeyError:
                     pass
 
                 logging.debug(f"Sorting out unnecessary files took {perf_counter() - keep_time} sec.")
@@ -630,7 +664,7 @@ class Search:
         # If there is no newer cache file
         else:
 
-            # Creates empty lists for the files
+            # Create empty lists for the files
             found_path_set: set = set()
             type_dict: dict = {}
 
@@ -638,19 +672,43 @@ class Search:
 
             # Going through every file and every folder using the os.walk() method
             # Saving every file to found_path_set and the type (file or folder) to found_path_dict
-            for (roots, dirs, files) in os.walk(data_search_from):
-                for file in files:
-                    # Saving types to the dictionaries
-                    type_dict[os.path.join(roots, file)] = "file"
-                    # Saving the path to a list for fast access
-                    found_path_set.add(os.path.join(roots, file))
+            # Only running this if folder_depth_global_limit == -1 which means that the folder depth is unlimited
+            if folder_depth_global_limit == -1:
+                # Not putting this into its own function as it would be noticeably slower
+                for (root, dirs, files) in os.walk(data_search_from):
+                    for file in files:
+                        # Saving types to the dictionaries
+                        type_dict[os.path.join(root, file)] = "file"
+                        # Saving the path to a list for fast access
+                        found_path_set.add(os.path.join(root, file))
 
-                for directory in dirs:
-                    # Saving types to the dictionaries
-                    type_dict[os.path.join(roots, directory)] = "folder"
+                    for directory in dirs:
+                        # Saving types to the dictionaries
+                        type_dict[os.path.join(root, directory)] = "folder"
 
-                    # Saving the path to a list for fast access
-                    found_path_set.add(os.path.join(roots, directory))
+                        # Saving the path to a list for fast access
+                        found_path_set.add(os.path.join(root, directory))
+            # If folder depth is used
+            else:
+                # Not putting this into its own function as it would be noticeably slower
+                for (root, dirs, files) in os.walk(data_search_from):
+                    if root.count(os.sep) <= folder_depth_global_limit:
+                        # If depth is in range
+                        for file in files:
+                            # Saving types to the dictionaries
+                            type_dict[os.path.join(root, file)] = "file"
+                            # Saving the path to a list for fast access
+                            found_path_set.add(os.path.join(root, file))
+                        for directory in dirs:
+                            # Saving types to the dictionaries
+                            type_dict[os.path.join(root, directory)] = "folder"
+
+                            # Saving the path to a list for fast access
+                            found_path_set.add(os.path.join(root, directory))
+                    else:
+                        # Removing element from this list prevent python from visiting these directories
+                        for directory in dirs:
+                            dirs.remove(directory)
 
         # Saves time
         time_after_searching = perf_counter() - time_before_start
@@ -691,29 +749,38 @@ class Search:
         # Making the copy and the original the same
         found_path_set = copy_found_path_set.copy()
 
-        # Filetype
-        logging.info("Indexing file extension...")
-        self.signals.indexing_file_extension.emit()
-
-        if data_filetype != "":
-            # Scan every file
-            for filetype_file in found_path_set:
-                if not filetype_file.lower().endswith(f".{data_filetype}"):
-                    copy_found_path_set.remove(filetype_file)
-
-        # Making the copy and the original the same
-        found_path_set = copy_found_path_set.copy()
-
         # Search in System Files
         logging.info("Indexing System Files...")
         self.signals.indexing_system_files.emit()
         if not data_library:
-
-            # Scan every file
-            for library_file in found_path_set:
-                if "/Library" in library_file or library_file.startswith("/System"):
-                    # Remove the file
-                    copy_found_path_set.remove(library_file)
+            if platform == "darwin":
+                # Scan every file
+                for library_file in found_path_set:
+                    if (library_file.startswith("/private")
+                            or library_file.startswith("/var")
+                            or library_file.startswith("/System")
+                            or "/Library" in library_file
+                            or "/." in library_file):
+                        # Remove the file
+                        copy_found_path_set.remove(library_file)
+            elif platform == "win32" or platform == "cygwin":
+                # Scan every file
+                for library_file in found_path_set:
+                    if (library_file.startswith("C:\\Windows")
+                            or library_file.startswith("C:\\ProgramData")
+                            or "\\AppData" in library_file):
+                        # Remove the file
+                        copy_found_path_set.remove(library_file)
+            elif platform == "linux":
+                # Scan every file
+                for library_file in found_path_set:
+                    if (library_file.startswith("/var")
+                            or library_file.startswith("/lib")
+                            or "/." in library_file):
+                        # Remove the file
+                        copy_found_path_set.remove(library_file)
+            else:
+                logging.fatal("OS not supported")
 
         # Making the copy and the original the same
         found_path_set = copy_found_path_set.copy()
@@ -737,26 +804,27 @@ class Search:
         # Making the copy and the original the same
         found_path_set = copy_found_path_set.copy()
         # Filter some unnecessary System Files
-        logging.info("Filtering for file groups...")
+        logging.info("Filtering for file types...")
         self.signals.indexing_file_groups.emit()
 
-        # if "other" files is activated
+        # Checking is not needed
         if allowed_filetypes is not None:
+            # if "other" files is activated
             if "*" in allowed_filetypes:
-                for file_group_file in found_path_set:
+                for file_type_file in found_path_set:
                     for file_ending in disallowed_filetypes:
-                        if file_group_file.lower().endswith(f".{file_ending}"):
-                            copy_found_path_set.remove(file_group_file)
+                        if file_type_file.lower().endswith(f".{file_ending}"):
+                            copy_found_path_set.remove(file_type_file)
 
             else:
-                for file_group_file in found_path_set:
+                for file_type_file in found_path_set:
                     for file_ending in allowed_filetypes:
-                        if file_group_file.lower().endswith(f".{file_ending}"):
+                        if file_type_file.lower().endswith(f".{file_ending}"):
                             break
                         else:
                             pass
                     else:
-                        copy_found_path_set.remove(file_group_file)
+                        copy_found_path_set.remove(file_type_file)
 
         # Making the copy and the original the same
         found_path_set = copy_found_path_set.copy()
@@ -947,42 +1015,50 @@ class Search:
 
         # Caching Results with json
         # Testing if cache file exist, if it doesn't or isn't from the exact directory exist it caches scanned files
-        if not used_cache or newest_fitting_cache_file != FF_Files.path_to_cache_file(data_search_from):
+        if (not used_cache or
+                newest_fitting_cache_file != FF_Files.path_to_cache_file(data_search_from, folder_depth_global_limit)):
             # Debug and menu-bar log
             logging.info("Caching Search Results...")
             self.signals.caching.emit()
 
             # Creating file
-            with open(FF_Files.path_to_cache_file(data_search_from), "w") as result_file:
+            with open(FF_Files.path_to_cache_file(data_search_from, folder_depth_global_limit), "w") as result_file:
                 # Dumping with json
                 dump({
                     "found_path_set": list(original_found_path_set),
                     "type_dict": type_dict}, result_file)
 
             # Saving the cache creation time in a separate file for faster access
-            with open(FF_Files.path_to_cache_file(data_search_from, True), "w") as time_write_file:
+            with open(FF_Files.path_to_cache_file(data_search_from, folder_depth_global_limit, metadata=True),
+                      "w") as time_write_file:
                 if used_cache:
                     # Determining the number of parent directories by counting the default separators in the path
                     # and then adding this value to the c_Time so the more specified cache gets used rather than
-                    # the broader cache which was created at the same time. Dividing by 10 so to only add fractions of
-                    # a seconds to the c_time as to not get ranked over newer caches.
+                    # the broader cache which originated from the broader one.
+                    # Dividing by 10 so to only add fractions of a seconds to the c_time as
+                    # to not get ranked over newer caches.
                     # Doing this so the already specialized cache gets used preferably
                     c_time_adjust = data_search_from.count(os.sep) / 10
                     logging.debug(f"Cache time {newest_fitting_cache_file_c_date} + adjuster: {c_time_adjust} "
                                   f"= {newest_fitting_cache_file_c_date + c_time_adjust}")
 
-                    # Used old cache, use old time
+                    # Used old cache, save old time
                     dump({"c_time": newest_fitting_cache_file_c_date + c_time_adjust,
                           "cache_version": FF_Files.FF_CACHE_VERSION,
-                          "original_cache_file": newest_fitting_cache_file}, time_write_file)
+                          "original_cache_file": newest_fitting_cache_file,
+                          "global_depth_limit": folder_depth_global_limit,
+                          "path": data_search_from}, time_write_file)
 
                 else:
                     logging.debug("Created brand new cache..")
                     # New cache created
                     dump({"c_time": time.time(),
                           "cache_version": FF_Files.FF_CACHE_VERSION,
-                          "original_cache_file": FF_Files.path_to_cache_file(data_search_from)}, time_write_file)
-                    newest_fitting_cache_file = FF_Files.path_to_cache_file(data_search_from)
+                          "original_cache_file": FF_Files.path_to_cache_file(data_search_from,
+                                                                             folder_depth_global_limit),
+                          "global_depth_limit": folder_depth_global_limit,
+                          "path": data_search_from}, time_write_file)
+                    newest_fitting_cache_file = FF_Files.path_to_cache_file(data_search_from, folder_depth_global_limit)
 
         else:
             logging.info("Cache file already exist, skipping caching...")
@@ -1039,6 +1115,6 @@ class Search:
 
 
 # Global Variables for Search Threads
-SEARCH_OUTPUT: [{str: float}, list, str, str, QWidget] = []
+SEARCH_OUTPUT: ({str: float}, list, str, str, QWidget)
 
 ACTIVE_SEARCH_THREADS: int = 0

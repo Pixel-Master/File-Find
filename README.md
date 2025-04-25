@@ -9,7 +9,7 @@
 
 
 [![File Find build](https://img.shields.io/github/actions/workflow/status/Pixel-Master/File-Find/File-Find.yml?branch=main&label=File%20Find%20build%20status&logo=File%20Find&style=flat-square)](https://github.com/Pixel-Master/File-Find/actions/workflows/File-Find.yml)
-[![GPLv3 License](https://img.shields.io/badge/License-GPL%20v3-blue.svg?style=flat-square)](http://www.gnu.org/licenses/gpl-3.0.html) 
+[![GPLv3 License](https://img.shields.io/badge/License-GPL%20v3-blue.svg?style=flat-square)](http://www.gnu.org/licenses/gpl-3.0.html)
 [![GitLab last commit](https://img.shields.io/github/last-commit/Pixel-Master/File-Find.svg?style=flat-square)](https://github.com/Pixel-Master/File-Find/commits)
 [![GitHub stars](https://img.shields.io/github/stars/Pixel-Master/File-Find.svg?style=flat-square&label=Stars&color=yellow)](https://Pixel-Master.github.io/File-Find/)
 [![GitLab forks](https://img.shields.io/github/forks/Pixel-Master/File-Find.svg?style=flat-square&label=Fork&color=red)](https://github.com/Pixel-Master/File-Find/forks/)
@@ -22,9 +22,9 @@
 - [Download](#download)
 - [Features](#features)
 - [Building from source](#building-from-source)
-  - [On macOS](#on-macos)
-  - [On Linux](#on-linux)
-  - [On Windows](#on-windows)
+    - [On macOS](#on-macos)
+    - [On Linux](#on-linux)
+    - [On Windows](#on-windows)
 - [FAQ](#faq)
 - [File Structure](#file-structure)
 - [Contributing](#contributing)
@@ -44,12 +44,13 @@ Or you could:
 ## Features
 
 ### Search options
-- **Basic**
-	<p align="left">
-  <img src="https://github.com/Pixel-Master/Pixel-Master.github.io/blob/main/File-Find/screenshots/File%20Find%20screenshot%20white.png?raw=true" height="250">
 
-	* **Name**: Input needs to match the name of a file exactly, ignoring case. Also supports unix shell-style wildcards, which are not the same as regular expressions (also ignoring case).
-	* **Name contains**: The name of a file must contain input, ignoring case.
+- **Basic**
+  <p align="left">
+   <img src="https://github.com/Pixel-Master/Pixel-Master.github.io/blob/main/File-Find/screenshots/File%20Find%20screenshot%20white.png?raw=true" height="250">
+
+    * **Name**: Input needs to match the name of a file exactly, ignoring case. Also supports unix shell-style wildcards, which are not the same as regular expressions (also ignoring case).
+    * **Name contains**: The name of a file must contain input, ignoring case.
     * **File Type**: Select groups of files types that should be included in search results.
     * **Directory**: The directory tree to search in. Excluding subdirectory content is currently not possibly
 
@@ -59,8 +60,8 @@ Or you could:
 - **Properties**
 
   <img src="https://github.com/Pixel-Master/Pixel-Master.github.io/blob/main/File-Find/screenshots/properties.png?raw=true" height="250">
-	
-	* **File contains**: Allows you to search in files. Input must be in the file content. This option can take really long. Your input is case-sensitive.
+
+    * **File contains**: Allows you to search in files. Input must be in the file content. This option can take really long. Your input is case-sensitive.
     * **Date created and modified**: Specify a date range for the date the file has been created / modified, leave at default to ignore.
     * **File size**: Input specifies file size in a range from min to max. Select the unit (Byte, Megabyte, Gigabyte...) on the right. Select "No Limit" to only set a minimum or maximum value.
 
@@ -68,22 +69,22 @@ Or you could:
 - **Advanced**
 
   <img src="https://github.com/Pixel-Master/Pixel-Master.github.io/blob/main/File-Find/screenshots/advanced.png?raw=true" height="250">
-  
+
     * **Search in system files**: Toggle to include files in the system and library folders.
-	* **File extension**: Input needs to match the file extension (file type) without the ".", ignoring case.
+    * **File extension**: Input needs to match the file extension (file type) without the ".", ignoring case.
     * **Only search for folders or files**: Toggle to only include folders or files in the search results.
 
 - **Sorting**
 
   <img src="https://github.com/Pixel-Master/Pixel-Master.github.io/blob/main/File-Find/screenshots/sorting.png?raw=true" height="250">
-	
-	* **None** (fastest)
-	* **File size**
-	* **File name**
-	* **Date modified**
-	* **Date created**
-	* **Path**
-	* **Reverse Sort**: Reverse the sorted search results.
+
+    * **None** (fastest)
+    * **File size**
+    * **File name**
+    * **Date modified**
+    * **Date created**
+    * **Path**
+    * **Reverse Sort**: Reverse the sorted search results.
 
 ### Dark / Light mode 
 
@@ -94,10 +95,11 @@ Or you could:
 
 
 ### Other
-	
+
 - Export search results as a **plain text file (.txt)** or as a reloadable **File Find Search (.FFSearch)**
 - Export your set filters as a .FFFilter file, load them again, share them or even set them as a default in the settings.
 - Compare two searches and search for differences
+- Find duplicated files
 
 
 
@@ -113,10 +115,10 @@ Or you could:
 #### On macOS
 
 1. Install Python:
-    
-    Download the installer: [here](https://www.python.org/ftp/python/3.12.7/python-3.12.7-macos11.pkg) or use
 
-    Homebrew: `brew install python@3.12`
+   Download the installer: [here](https://www.python.org/ftp/python/3.12.7/python-3.12.7-macos11.pkg) or use
+
+   Homebrew: `brew install python@3.12`
 
 
 2. Clone the File Find repository: `git clone https://github.com/Pixel-Master/File-Find.git`
@@ -126,8 +128,8 @@ Or you could:
 
 
 4. Create a virtual environment: 
-   1. Create: `python3 -m venv ./venv`
-   2. Activate the virtual environment: `source venv/bin/activate`
+    1. Create: `python3 -m venv ./venv`
+    2. Activate the virtual environment: `source venv/bin/activate`
 
 
 5. [Install dependencies](#dependencies-for-building): `pip3 install -r requirements.txt`
@@ -135,12 +137,12 @@ Or you could:
 
 6. Build using:
 
-`python3 build.py` 
+`python3 build.py`
 
 #### On Linux
 
 1. Install Python:
-    
+
     With your favourite packet-manager
 
     E.g.: `sudo apt install python3.12`
@@ -153,8 +155,8 @@ Or you could:
 
 
 4. Create a virtual environment: 
-   1. Create: `python3 -m venv ./venv`
-   2. Activate the virtual environment: `source venv/bin/activate`
+    1. Create: `python3 -m venv ./venv`
+    2. Activate the virtual environment: `source venv/bin/activate`
 
 
 5. [Install dependencies](#dependencies-for-building): `pip3 install -r requirements.txt`
@@ -167,7 +169,7 @@ Or you could:
 #### On Windows
 
 1. Install Python:
-    
+
     Download the installer: [here](https://www.python.org/ftp/python/3.12.7/python-3.12.7-amd64.exe)
 
 
@@ -179,8 +181,8 @@ Or you could:
 
 
 4. Create a virtual environment: 
-   1. Create: `python -m venv venv`
-   2. Activate the virtual environment: `venv\bin\activate.bat`
+    1. Create: `python -m venv venv`
+    2. Activate the virtual environment: `venv\bin\activate.bat`
 
 
 5. [Install dependencies](#dependencies-for-building): `pip3 install -r requirements.txt`
@@ -188,22 +190,23 @@ Or you could:
 
 6. Build using:
 
-`python build.py` 
+`python build.py`
 
 
 ## FAQ
 Q: **What is File Find and how does it work?**
 
 A: File Find is an open-source Utility for macOS, Windows and Linux
-, that makes it easy to find files. To search fill in the filters you need and leave the filters you don't need empty.
+, that makes it easy to find files. To search fill in the filters you need and
+leave the filters that you don't need empty.
 
 Q: **Why doesn't File Find find my file/folder?**
 
 A: Try the following steps:
 
-* By default (on a fresh install) File Find finds every file/folder except internal system files in the `Library` or `System` folders. You can enable them under `Advanced`.
+* By default, (on a fresh install) File Find finds every file/folder except internal system files in the `Library` or `System` folders. You can enable them under `Advanced`.
 
-* Maybe you haven't granted all the permission necessary to find every file. There are also some files that are only accessible to File Find by granting Full Disk Acess. To do this open System Preferences, go to `Security & Privacy` and then add or activate File Find under `Full Disk Access`.
+* Maybe you haven't granted all the permission necessary to find every file. There are also some files that are only accessible to File Find by granting Full Disk Access. To do this open System Preferences, go to `Security & Privacy` and then add or activate File Find under `Full Disk Access`.
 
 * File Find uses its own caching algorithm. Scanning results are stored and reused for a faster search. On default this cache gets cleared every two hours. You can clear the cache manually with `⌘ + T` on macOS (on Windows/Linux: `Ctrl + T`). Or right-click on the `Find` button and select `Search and create new cache for selected folder`.
 
@@ -221,7 +224,7 @@ A: On macOS, if you get a message like
 
 Apple could not verify “File Find.app” is free of malware that may harm your Mac or compromise your privacy.
 
-it is because File Find isn't signed with an Developer Certificate, which has to be acquired by Apple at around 99$. 
+it is because File Find isn't signed with a Developer Certificate, which has to be acquired by Apple at around 99$. 
 I currently do not have one nor plan on buying one soon. MacOS flags everyone who doesn't have one as "potentially unwanted software".
 To bypass this you have to press `Done`, open System Preferences, go to `Privacy & Security,` scroll down to `"File Find.app" was blocked to protect your Mac.` and press `Open Anyway`.
 There is going to be another Popup, in which you'll have to press `Open Anyway` again.
@@ -296,22 +299,22 @@ If you don't want to use GitHub or want to write privately, email me: [pixel_mas
 
 ### Bug reports
 
-_If you found an unwanted behavior which you would classify as a bug._ 
+_If you found an unwanted behavior which you would classify as a bug._
 
 Make sure you can reliably reproduce the bug. It is advised to use the Bug report template.
 
 In your bug report include the following:
 
 * If you think it would be helpful (it is in most cases) the log, access it by quitting the app and:
-  * _On macOS_: Open Terminal.app and paste `/Applications/File\ Find.app/Contents/MacOS/File-Find` into it, copy and paste the output into your bug report. Make sure that the log **does not include confidential information** such as your username.
-  * _On Windows_: Open cmd or Terminal and paste `C:\path\to\File-Find.exe > output.txt 2>&1` and run reproduce the bug. The log will be stored in output.txt on your user directory. copy and paste the output into your bug report. Make sure that the log **does not include confidential information** such as your username.
-  * _On Linux_: Open Console and paste `/path/to/File-Find.bin` into it, copy and paste the output into your bug report. Make sure that the log **does not include confidential information** such as your username.
+    * _On macOS_: Open Terminal.app and paste `/Applications/File\ Find.app/Contents/MacOS/File-Find` into it, copy and paste the output into your bug report. Make sure that the log **does not include confidential information** such as your username.
+    * _On Windows_: Open cmd or Terminal and paste `C:\path\to\File-Find.exe > output.txt 2>&1` and run reproduce the bug. The log will be stored in output.txt on your user directory. copy and paste the output into your bug report. Make sure that the log **does not include confidential information** such as your username.
+    * _On Linux_: Open Console and paste `/path/to/File-Find.bin` into it, copy and paste the output into your bug report. Make sure that the log **does not include confidential information** such as your username.
 * Step-by-Step guide on how to reproduce the bug
 * Expected behavior
 * Screenshot (only necessary with UI-Related bugs, always welcome)
 * Installation Information
-  * OS and Version: [e.g. macOS 12]
-  * File Find Version (as seen in the about page) [e.g. 1.0 [25-july-2024]]
+    * OS and Version: [e.g. macOS 12]
+    * File Find Version (as seen in the about page) [e.g. 1.0 [25-july-2024]]
 * Additional information
 
 ### Feature Request

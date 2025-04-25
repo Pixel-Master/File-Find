@@ -34,6 +34,7 @@ DEFAULT_QT_FONT = QFont(FF_Files.DEFAULT_FONT, FF_Files.DEFAULT_FONT_SIZE)
 BOLD_QT_FONT = QFont(FF_Files.DEFAULT_FONT, FF_Files.DEFAULT_FONT_SIZE)
 BOLD_QT_FONT.setBold(True)
 
+
 # Used for entering the directory
 class DirectoryEntry(QLineEdit):
     def __init__(self, parent):

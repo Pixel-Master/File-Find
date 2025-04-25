@@ -44,7 +44,6 @@ if __name__ == "__main__":
 
     # Creating QApplication
     class CreateApp(QApplication):
-
         def event(self, event: QEvent) -> bool:
             # Executed when an event is received.
 

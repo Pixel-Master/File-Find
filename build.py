@@ -112,7 +112,7 @@ def main():
              "nuitka",
              "--standalone",
              "--onefile",
-             f"--linux-icon={os.path.join(os.getcwd(), 'assets', 'icon.png')}",
+             f"--linux-icon={os.path.join(os.getcwd(), "assets", "icon.png")}",
              "--enable-plugin=pyside6",
              "--output-dir=dist",
              "File-Find.py"])

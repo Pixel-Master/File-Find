@@ -16,14 +16,16 @@ from sys import platform
 from time import time
 import hashlib
 
+from PySide6.QtCore import QDate, Qt
+
 # Versions
-VERSION: str = "12-mar-2025"
-VERSION_SHORT: str = "1.2.1"
+VERSION: str = "25-apr-2025"
+VERSION_SHORT: str = "2.0"
 # Versions of file formats
-FF_FILTER_VERSION = 1
+FF_FILTER_VERSION = 2
 FF_SEARCH_VERSION = 2
 FF_SETTINGS_VERSION = 1
-FF_CACHE_VERSION = 2
+FF_CACHE_VERSION = 3
 
 # Defining folder variables and font sizes
 USER_FOLDER = os.path.expanduser("~")
@@ -106,6 +108,19 @@ DEFAULT_SETTINGS = {"settings_version": FF_SETTINGS_VERSION,
                     "display_menu_bar_icon": True,
                     "double_click_action": "View file in Finder/File Explorer"}
 
+DEFAULT_FILTER = {"VERSION": FF_FILTER_VERSION,
+                  "name": "", "name_contains": "",
+                  "file_types": FILE_FORMATS.keys(),
+                  "file_extension": "", "file_type_mode": "predefined",
+                  "directory": USER_FOLDER,
+                  "dates": {"m_date_from": "2000-01-01", "c_date_from": "2000-01-01",
+                            "m_date_to": QDate.currentDate().toString(Qt.DateFormat.ISODate),
+                            "c_date_to": QDate.currentDate().toString(Qt.DateFormat.ISODate)},
+                  "size": {"min": "", "max": ""}, "size_unit": {"min": "No Limit", "max": "No Limit"},
+                  "folder_depth": "Unlimited", "folder_depth_custom": 0,
+                  "file_contains": "", "hidden_files": False,
+                  "files_folders": 0, "sorting": 0, "reverse_sorting": False}
+
 # Color schemes
 RED_LIGHT_THEME_COLOR = "#b1100c"
 RED_DARK_THEME_COLOR = "#f27171"
@@ -125,14 +140,15 @@ def remove_cache():
 
 
 # Convert a file path to the corresponding cache file or metadata
-def path_to_cache_file(path, metadata=False):
+def path_to_cache_file(path, depth, metadata=False):
+    # A -1 for the depth means unlimited depth
     if not metadata:
-        return os.path.join(CACHED_SEARCHES_FOLDER, path.replace(os.sep, "-") + ".FFCache")
+        return os.path.join(CACHED_SEARCHES_FOLDER, path.replace(os.sep, "-") + f"${depth}.FFCache")
     # If instead ask for metadata
     elif metadata:
-        return os.path.join(CACHE_METADATA_FOLDER, path.replace(os.sep, "-") + ".FFCache")
+        return os.path.join(CACHE_METADATA_FOLDER, path.replace(os.sep, "-") + f"${depth}.FFCache")
     else:
-        logging.fatal("Wrong arguments used with the convert_path_to_cache_file() function in FF_Files.py")
+        return logging.fatal("Wrong arguments used with the convert_path_to_cache_file() function in FF_Files.py")
 
 
 # Takes a path to a cache file and returns the path to the metadata file
@@ -172,7 +188,7 @@ def cache_test(is_launching):
     else:
         logging.debug("Skipping deleting...")
 
-    if cache_settings.lower() in ("after a Week", "after a Day", "after two hours"):
+    if cache_settings.lower() in ("after a week", "after a day", "after two hours"):
         # Looping through every file in CACHED_SEARCHES_FOLDER and getting separately stored creation tie
         # Iterating through all files in the cache folder
         for file in os.listdir(CACHED_SEARCHES_FOLDER):
@@ -204,7 +220,10 @@ def cache_test(is_launching):
 
 # Function to get the File Size of a directory
 def get_file_size(input_file: str) -> int:
-    if os.path.isdir(input_file):
+    if os.path.islink(input_file):
+        # Specific error code
+        return -2
+    elif os.path.isdir(input_file):
         file_size_list_obj = 0
         # Gets the size if the path is a folder with recursively searching th director<
         for root, _dirs, files in os.walk(input_file):
@@ -215,18 +234,15 @@ def get_file_size(input_file: str) -> int:
 
                 except (FileNotFoundError, ValueError):
                     continue
+        return file_size_list_obj
     elif os.path.isfile(input_file):
         try:
-            file_size_list_obj = os.path.getsize(input_file)
+            return os.path.getsize(input_file)
         except (FileNotFoundError, ValueError):
             return -1
     else:
-        # Error code
+        # Error
         return -1
-    if os.path.islink(input_file):
-        return -2
-    else:
-        return file_size_list_obj
 
 
 # Convert File Size to a String
@@ -234,7 +250,7 @@ def conv_file_size(byte_size: int, decimal_places=2) -> str:
     if byte_size == -1:
         return "ERROR! (File does not exist or isn't valid)"
     elif byte_size == -2:
-        return "ERROR! (File is a Link to an other File)"
+        return "File is a Link to an other File"
     elif byte_size > 1000000000:
         return f"{round(byte_size / 1000000000, decimal_places)} GB"
     elif byte_size > 1000000:
@@ -285,6 +301,7 @@ def setup():
                 remove_cache()
 
             # Checking if all settings exist and updating version numbers
+            settings["cache_version"] = FF_CACHE_VERSION
             settings["settings_version"] = FF_SETTINGS_VERSION
             settings["version"] = f"{VERSION_SHORT}[{VERSION}]"
 

@@ -744,8 +744,6 @@ class FindDuplicated:
                                         # Updating hash
                                         computing_hash.update(data)
 
-                                    # Getting hash in hex form
-                                    file_hash = computing_hash.hexdigest()
                             except OSError:
                                 continue
                         else:
@@ -776,8 +774,8 @@ class FindDuplicated:
 
                                     except OSError:
                                         continue
-                            # Getting hash in hex form
-                            file_hash = computing_hash.hexdigest()
+                        # Getting hash in hex form
+                        file_hash = computing_hash.hexdigest()
 
                         # If everything ran successful
                         # If hash doesn't already exist

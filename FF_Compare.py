@@ -246,11 +246,12 @@ class CompareUi:
             logging.debug("Displaying time stats.")
 
             # Getting the creation time of the cache file which is stored separately
-            with open(FF_Files.path_to_cache_file(path_of_first_search, True)) as time_file1:
+            with open(FF_Files.get_metadata_file_from_cache_file(cache_file)) as time_file1:
                 # Load time
                 search1_created_time = ctime(load(time_file1)["c_time"])
             # Getting the creation time of the cache file which is stored separately
-            with open(FF_Files.path_to_cache_file(compared_searches.path_of_second_search[0], True)) as time_file2:
+            with open(FF_Files.path_to_cache_file(
+                    compared_searches.path_of_second_search[0], -1, metadata=True)) as time_file2:
                 search2_created_time = ctime(load(time_file2)["c_time"])
 
             # Displaying infobox with time info
