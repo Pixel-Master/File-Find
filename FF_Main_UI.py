@@ -17,7 +17,7 @@ import sys
 
 # PySide6 Gui Imports
 from PySide6.QtCore import QSize, Qt, QDate, QTimer, QTime
-from PySide6.QtGui import QFont, QDoubleValidator, QAction, QIcon, QClipboard
+from PySide6.QtGui import QFont, QDoubleValidator, QAction, QIcon
 from PySide6.QtWidgets import QWidget, QLabel, QPushButton, QRadioButton, QFileDialog, \
     QLineEdit, QDateEdit, QComboBox, QSystemTrayIcon, QMenu, QTabWidget, \
     QMainWindow, QGridLayout, QSpacerItem, QSizePolicy, QCheckBox, QSpinBox
@@ -77,36 +77,38 @@ class MainWindow:
         self.basic_search_widget_layout = QGridLayout(self.basic_search_widget)
         self.basic_search_widget.setLayout(self.basic_search_widget_layout)
         self.basic_search_widget_layout.addItem(QSpacerItem(600, 0, hData=QSizePolicy.Policy.Maximum), 0, 0)
-        self.basic_search_widget_layout.addItem(QSpacerItem(600, 0, hData=QSizePolicy.Policy.Maximum), 0, 5)
+        self.basic_search_widget_layout.addItem(QSpacerItem(600, 0, hData=QSizePolicy.Policy.Maximum), 0, 8)
         # Add Tab
         self.tabbed_widget.addTab(self.basic_search_widget, "Basic")
 
         # Creating the Labels with tooltips
         label_name = self.generate_large_filter_label(
-            "Name:",
+            "Name",
             self.basic_search_widget,
-            self.generic_tooltip("Name",
-                                 "Input needs to match the name of a file exactly, \nignoring case.\n\n"
-                                 "Also supports unix shell-style wildcards,\n"
-                                 "which are not the same as regular expressions. (also ignoring case)\n\nUsage:\n"
-                                 "Pattern   Meaning\n"
-                                 "   *         matches everything\n"
-                                 "   ?         matches any single character\n"
-                                 " [seq]    matches any character in seq\n"
-                                 " [!seq]   matches any character not in seq\n\n"
-                                 "For further documentation: http://docs.python.org/library/fnmatch",
-                                 "Example.txt",
-                                 os.path.join(FF_Files.USER_FOLDER, "example.txt")))
+            self.generic_tooltip(
+                "Name",
+                "Multiple different modes can be selected. \n"
+                "\nName \"is\":\n"
+                "  Input needs to match the file name exactly. Also supports unix shell-style "
+                "wildcards, which are not the same as regular expressions."
+                "\n  Usage:\n"
+                "  Pattern   Meaning\n"
+                "      *         matches everything\n"
+                "      ?         matches any single character\n"
+                "      [seq]  matches any character in seq\n"
+                "      [!seq] matches any character not in seq\n\n"
+                "Name \"contains\":\n   The file name must contain input\n\n"
+                "Name \"begins with\":\n  The file name must start with the input\n\n"
+                "Name \"ends with\":\n  The file name (without the file ending) must end with input. So \"mple\" "
+                "would match with \"Example.txt\"\n\n"
+                "Name \"is similar to\":\n  Performs a fuzzy search. So \"amp\" matches with \"Example.txt\". "
+                "Matching percentage can be set separately.\n\n"
+                "Name \"doesn't contain\":\n  Input must not be included in its entirety in the file name.\n\n"
+                "Name \"in RegEx\":\n  Does a regular expression pattern matching. For a detailed explanation refer to:"
+                " https://regular-expressions.info",
+                "Name \"is:\", Example.txt",
+                os.path.join(FF_Files.USER_FOLDER, "Example.txt")))
         self.basic_search_widget_layout.addWidget(label_name, 0, 1)
-
-        label_name_contains = self.generate_large_filter_label(
-            "Name contains:",
-            self.basic_search_widget,
-            self.generic_tooltip("Name contains",
-                                 "The name of a file must contain input,\nignoring case.",
-                                 "file",
-                                 os.path.join(FF_Files.USER_FOLDER, "my-file.pdf")))
-        self.basic_search_widget_layout.addWidget(label_name_contains, 1, 1)
 
         label_file_type = self.generate_large_filter_label(
             "File Types:",
@@ -128,7 +130,7 @@ class MainWindow:
             "Directory:",
             self.basic_search_widget,
             self.generic_tooltip("Directory",
-                                 "The Directory to search in.",
+                                 "The directory to search in.",
                                  os.path.join(
                                      FF_Files.USER_FOLDER,
                                      "Downloads"),
@@ -335,17 +337,12 @@ class MainWindow:
         # Name
         self.edit_name = self.generate_filter_entry(self.basic_search_widget)
         # Place
-        self.basic_search_widget_layout.addWidget(self.edit_name, 0, 2)
-
-        # Name contains
-        self.edit_name_contains = self.generate_filter_entry(self.basic_search_widget)
-        # Place
-        self.basic_search_widget_layout.addWidget(self.edit_name_contains, 1, 2)
+        self.basic_search_widget_layout.addWidget(self.edit_name, 0, 3, 1, 4)
 
         # Edit for displaying the Path
         self.edit_directory = FF_Additional_UI.DirectoryEntry(self.basic_search_widget)
         # Place in layout
-        self.basic_search_widget_layout.addWidget(self.edit_directory, 3, 2)
+        self.basic_search_widget_layout.addWidget(self.edit_directory, 3, 2, 1, 3)
 
         # File contains
         self.edit_file_contains = self.generate_filter_entry(self.properties_widget)
@@ -402,6 +399,47 @@ class MainWindow:
 
         # Radio Button
         logging.debug("Setting up Check Boxes...")
+        # Making a layout to put under the "name [custom]" line edit so when changing the "consider case"-checkbox
+        # to the similarity percentage, the window doesn't jump around
+        self.name_widget = QWidget(self.Root_Window)
+        self.basic_search_widget_layout.addWidget(self.name_widget, 1, 3, 1, 4)
+        self.name_widget.setFixedSize(QSize(140, 35))
+        self.name_layout = QGridLayout(self.name_widget)
+        self.name_layout.setSpacing(0)
+        self.name_layout.setContentsMargins(0, 0, 0, 0)
+        self.name_widget.setLayout(self.name_layout)
+
+        # Consider case check box
+        self.case_check_box = QCheckBox(" Consider case", self.Root_Window)
+        self.case_check_box.setToolTip(
+            self.generic_tooltip("Consider case",
+                                 "Turn on to consider case, so \"Film\" won't find \"film\"",
+                                 "Yes, Example.txt",
+                                 os.path.join(FF_Files.USER_FOLDER, "Library", "Caches", "Example.txt")))
+
+        self.name_layout.addWidget(self.case_check_box, 1, 1, 1, 2, Qt.AlignmentFlag.AlignLeft)
+
+        # Similarity percentage
+        self.similarity_label = QLabel("% similar", parent=self.Root_Window)
+        self.name_layout.addWidget(self.similarity_label, 1, 2)
+        # Tooltip
+        self.similarity_label.setToolTip(
+            self.generic_tooltip("is similar to",
+                                 "Adjust to change the percentage that a file name"
+                                 " must be similar to the input. Performs a fuzzy search.\n\n"
+                                 "100% means, it has to be an exact match,\n"
+                                 "0% will be a match, no matter the file name,\n"
+                                 "60% is a recommended value.",
+                                 "60%, exampl",
+                                 os.path.join(FF_Files.USER_FOLDER, "Library", "Caches", "Example.txt")))
+
+        # Spinbox
+        self.similarity_spinbox = QSpinBox(parent=self.Root_Window)
+        # Maximum value is 100 %
+        self.similarity_spinbox.setMaximum(100)
+        # Tooltips
+        self.name_layout.addWidget(self.similarity_spinbox, 1, 1, Qt.AlignmentFlag.AlignLeft)
+
         # Search for Library Files
         self.library_check_box = QCheckBox(" Search for system files", self.Root_Window)
         self.library_check_box.setToolTip(
@@ -435,6 +473,36 @@ class MainWindow:
 
         # Drop Down Menus
         logging.debug("Setting up Drop Down Menus...")
+
+        def hide_show_similarity():
+            if self.name_specifier.currentText() == "is similar to:":
+                self.similarity_label.show()
+                self.similarity_spinbox.show()
+                self.case_check_box.hide()
+            else:
+                self.similarity_label.hide()
+                self.similarity_spinbox.hide()
+                self.case_check_box.show()
+
+        # Name specifier
+        self.name_specifier = QComboBox(self.basic_search_widget)
+        # Possible options
+        self.name_specifier.addItems([
+            "is:",
+            "contains:",
+            "begins with:",
+            "ends with:",
+            "is similar to:",
+            "doesn't contain:",
+            "in RegEx:",
+        ])
+        # Set a fixed width
+        self.name_specifier.setFixedWidth(145)
+        # Display
+        self.name_specifier.show()
+        # Connect with consider case checkbox and similarity spinbox
+        self.name_specifier.currentTextChanged.connect(hide_show_similarity)
+        self.basic_search_widget_layout.addWidget(self.name_specifier, 0, 2)
 
         # Sorting Menu
         # Defining
@@ -500,12 +568,12 @@ class MainWindow:
         self.combobox_file_types.addItems(FF_Files.FILE_FORMATS.keys())
         # Display
         self.combobox_file_types.show()
-        self.basic_search_widget_layout.addWidget(self.combobox_file_types, 2, 2)
+        self.basic_search_widget_layout.addWidget(self.combobox_file_types, 2, 2, 1, 3)
 
         # Custom file extension input
         self.edit_file_extension = self.generate_filter_entry(self.properties_widget)
         # Place
-        self.basic_search_widget_layout.addWidget(self.edit_file_extension, 2, 2)
+        self.basic_search_widget_layout.addWidget(self.edit_file_extension, 2, 2, 1, 3)
         self.edit_file_extension.hide()
 
         # Button
@@ -515,7 +583,7 @@ class MainWindow:
             text="Custom")
         self.change_file_type_mode_button.setFixedWidth(80)
         self.file_type_mode = "predefined"
-        self.basic_search_widget_layout.addWidget(self.change_file_type_mode_button, 2, 5)
+        self.basic_search_widget_layout.addWidget(self.change_file_type_mode_button, 2, 7)
 
         # Date-Time Entries
         logging.debug("Setting up Day Entries...")
@@ -575,20 +643,20 @@ class MainWindow:
 
         browse_path_button = self.generate_edit_button(open_dialog, self.basic_search_widget, text="Browse")
         browse_path_button.setFixedWidth(80)
-        self.basic_search_widget_layout.addWidget(browse_path_button, 3, 3)
+        self.basic_search_widget_layout.addWidget(browse_path_button, 3, 5)
 
         # Select and deselect all options in the check able file group combobox
         self.select_all_button = self.generate_edit_button(
             self.combobox_file_types.select_all, self.basic_search_widget, text="Select all")
         self.select_all_button.setFixedWidth(80)
-        self.basic_search_widget_layout.addWidget(self.select_all_button, 2, 3)
+        self.basic_search_widget_layout.addWidget(self.select_all_button, 2, 5)
         self.select_all_button.setEnabled(False)
 
         self.deselect_all_button = self.generate_edit_button(
             self.combobox_file_types.deselected_all, self.basic_search_widget, text="Deselect all")
         # Place on the layout
         self.deselect_all_button.setFixedWidth(90)
-        self.basic_search_widget_layout.addWidget(self.deselect_all_button, 2, 4)
+        self.basic_search_widget_layout.addWidget(self.deselect_all_button, 2, 6)
 
         # Activate/Deactivate buttons if necessary
         self.combobox_file_types.button_signals.all_selected.connect(
@@ -608,8 +676,7 @@ class MainWindow:
         def print_data():
             logging.info(
                 f"\nFilters:\n"
-                f"Name: {self.edit_name.text()}\n"
-                f"Name contains: {self.edit_name_contains.text()}\n"
+                f"Name {self.name_specifier} {self.edit_name.text()} (Consider Case: {self.case_check_box})\n"
                 f"File Ending: {self.edit_file_extension.text()}\n"
                 f"File Groups: {self.combobox_file_types.all_checked_items()}\n"
                 f"File Type mode: {self.file_type_mode}\n\n"
@@ -636,7 +703,9 @@ class MainWindow:
             # Start Searching
             FF_Search.Search(
                 data_name=self.edit_name.text(),
-                data_in_name=self.edit_name_contains.text(),
+                data_name_specifier=self.name_specifier.currentText(),
+                data_consider_case=self.case_check_box.isChecked(),
+                data_similarity=self.similarity_spinbox.value(),
                 data_filetype=self.edit_file_extension.text(),
                 data_file_size_min=self.edit_size_min.text(), data_file_size_max=self.edit_size_max.text(),
                 data_file_size_min_unit=self.unit_selector_min.currentText(),
@@ -662,49 +731,6 @@ class MainWindow:
         # Saves the function in a different var
         self.search_entry = search_entry
 
-        # Generate a shell command, that displays in the UI
-        def generate_terminal_command():
-            # Debug
-            logging.debug("User clicked Generate Terminal Command")
-
-            # Print the data
-            print_data()
-
-            def copy_command():
-                # Copying the command
-                clipboard = QClipboard()
-                clipboard.setText(shell_command)
-                # Feedback to the User
-                logging.info(f"Copied Command: {shell_command}")
-                # Messagebox
-                FF_Additional_UI.PopUps.show_info_messagebox("Successful copied!",
-                                                             f"Successful copied Command:\n{shell_command} !",
-                                                             self.Root_Window)
-
-            # Calling the function, which generate a shell command
-            shell_command = str(
-                FF_Search.GenerateTerminalCommand(self.edit_name.text(), self.edit_name_contains.text(),
-                                                  self.edit_file_extension.text(), self.edit_size_max.text()))
-
-            # Showing the label that says "Command:"
-            label_command_title.show()
-
-            # Displaying the command label
-            label_command.setText(shell_command)
-            label_command.setToolTip(shell_command)
-            label_command.show()
-
-            # Copy Command Button
-            # Disconnect the button set a new click event
-            try:
-                button_command_copy.clicked.disconnect()
-            except (TypeError, RuntimeError, RuntimeWarning):
-                # If this fails, that means that there is now connected signal
-                pass
-            button_command_copy.clicked.connect(copy_command)
-            # Display the Button at the correct position
-            button_command_copy.show()
-
         # Large Buttons
         # Search button with image, to start searching
 
@@ -723,11 +749,6 @@ class MainWindow:
         action_open_search = QAction("&Open Search / Filter Preset", self.Root_Window)
         action_open_search.triggered.connect(lambda: self.import_filters())
         context_menu.addAction(action_open_search)
-
-        # Shell Command Action
-        action_terminal = QAction("Generate Terminal Command", self.Root_Window)
-        action_terminal.triggered.connect(generate_terminal_command)
-        context_menu.addAction(action_terminal)
 
         # Separator
         context_menu.addSeparator()
@@ -754,13 +775,13 @@ class MainWindow:
 
         # Set up the menu bar
         logging.info("Setting up Menu Bar...")
-        self.menu_bar(generate_terminal_command)
+        self.menu_bar()
 
         # Setting filters to default
         self.reset_filters()
 
         # Showing PopUps
-        FF_Additional_UI.welcome_popups(parent=self.Root_Window)
+        FF_Additional_UI.Tutorial(parent=self.Root_Window)
 
         # Debug
         logging.info("Finished Setting up Main UI\n")
@@ -787,7 +808,7 @@ class MainWindow:
         # Set the Length
         entry.resize(230, 26)
         entry.setFixedHeight(26)
-        entry.setFixedWidth(230)
+        entry.setMinimumWidth(230)
         # If only_int true, configure the label
         if only_int:
             validator = QDoubleValidator(self.Root_Window)
@@ -912,7 +933,9 @@ class MainWindow:
 
         # Basic
         self.edit_name.setText(filters["name"])
-        self.edit_name_contains.setText(filters["name_contains"])
+        self.name_specifier.setCurrentText(filters["name_specifier"])
+        self.case_check_box.setChecked(filters["consider_case"])
+        self.similarity_spinbox.setValue(filters["similarity"])
 
         self.edit_file_extension.setText(filters["file_extension"])
         self.change_file_type_mode(filters["file_type_mode"])
@@ -994,7 +1017,9 @@ class MainWindow:
         filters = {"VERSION": FF_Files.FF_FILTER_VERSION,
 
                    "name": self.edit_name.text(),
-                   "name_contains": self.edit_name_contains.text(),
+                   "name_specifier": self.name_specifier.currentText(),
+                   "consider_case": self.case_check_box,
+                   "similarity": self.similarity_spinbox.value(),
                    "file_types": self.combobox_file_types.all_checked_items(),
                    "file_extension": self.edit_file_extension.text(),
                    "file_type_mode": self.file_type_mode,
@@ -1056,7 +1081,7 @@ class MainWindow:
             self.combobox_file_types.data_changed()
 
     # Setting up the menu bar
-    def menu_bar(self, shell_cmd):
+    def menu_bar(self):
 
         # Menu Bar
         menu_bar = self.Root_Window.menuBar()
@@ -1074,7 +1099,7 @@ class MainWindow:
         file_menu.addAction(load_filter_action)
 
         # Export filter preset
-        export_filter_action = QAction("&Save Filter as Filter Preset", self.Root_Window)
+        export_filter_action = QAction("&Save current filters as Filter Preset", self.Root_Window)
         export_filter_action.triggered.connect(self.export_filters)
         export_filter_action.setShortcut("Ctrl+S")
         file_menu.addAction(export_filter_action)
@@ -1091,12 +1116,6 @@ class MainWindow:
                                                                  self.Root_Window))
         cache_action.setShortcut("Ctrl+T")
         tools_menu.addAction(cache_action)
-
-        # Generate Terminal Command
-        cmd_action = QAction("&Generate Terminal command", self.Root_Window)
-        cmd_action.triggered.connect(shell_cmd)
-        cmd_action.setShortcut("Ctrl+G")
-        tools_menu.addAction(cmd_action)
 
         # Reset filter
         reset_action = QAction("&Reset all filters", self.Root_Window)
@@ -1117,7 +1136,7 @@ class MainWindow:
 
         # Tutorial
         tutorial_action = QAction("&Tutorial", self.Root_Window)
-        tutorial_action.triggered.connect(lambda: FF_Additional_UI.welcome_popups(self.Root_Window, force_popups=True))
+        tutorial_action.triggered.connect(lambda: FF_Additional_UI.Tutorial(self.Root_Window, force_tutorial=True))
         help_menu.addAction(tutorial_action)
 
         # Show File Find window

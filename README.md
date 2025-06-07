@@ -47,12 +47,27 @@ Or you could:
 
 - **Basic**
   <p align="left">
-   <img src="https://github.com/Pixel-Master/Pixel-Master.github.io/blob/main/File-Find/screenshots/File%20Find%20screenshot%20white.png?raw=true" height="250">
+   <img src="https://github.com/Pixel-Master/Pixel-Master.github.io/blob/main/File-Find/screenshots/File%20Find%20screenshot%20white.png?raw=true" height="250"></p>
 
-    * **Name**: Input needs to match the name of a file exactly, ignoring case. Also supports unix shell-style wildcards, which are not the same as regular expressions (also ignoring case).
-    * **Name contains**: The name of a file must contain input, ignoring case.
-    * **File Type**: Select groups of files types that should be included in search results.
-    * **Directory**: The directory tree to search in. Excluding subdirectory content is currently not possibly
+    * **Name**: Multiple different modes can be selected.
+      * Name **is**: Input needs to match the file name exactly. Also supports unix shell-style wildcards, which are not the same as regular expressions.
+          * Usage:
+
+              | Pattern | Meaning                          |
+              |---------|----------------------------------|
+              | *       | matches everything               |
+              | ?       | matches any single character     |
+              | [seq]   | matches any character in seq     |
+              | [!seq]  | matches any character not in seq |
+
+      * Name **contains**: The file name must contain input.
+      * Name **begins with**: The file name must start with the input
+      * Name **ends with**: The file name (without the file ending) must end with input. So `mple` would match with `Example.txt`
+      * Name **is similar to**: Performs a fuzzy search. So `amp` matches with `Example.txt`. Matching percentage can be set separately.
+      * Name **doesn't contain**: Input must not be included in its entirety in the file name.
+      * Name **in RegEx**: Does a regular expression pattern matching. For a detailed explanation refer to: https://regular-expressions.info
+    * **File Types**: Select groups of file types that should be included in search results. Click `Custom` to change selection mode and input a file type (e.g. pdf) without the `.` that needs to match the file ending of a file exactly, ignoring case. Multiple possible file types can be separated with a semicolon (for example: `png;jpg;heic`) Click `Predefined` to switch back. Only the currently visible mode will be taken into account.
+    * **Directory**: The directory to search in. Excluding subdirectory is possible in `Advanced`
 
 
   
@@ -63,28 +78,31 @@ Or you could:
 
     * **File contains**: Allows you to search in files. Input must be in the file content. This option can take really long. Your input is case-sensitive.
     * **Date created and modified**: Specify a date range for the date the file has been created / modified, leave at default to ignore.
-    * **File size**: Input specifies file size in a range from min to max. Select the unit (Byte, Megabyte, Gigabyte...) on the right. Select "No Limit" to only set a minimum or maximum value.
+    * **File size**: Input specifies file size in a range from min to max. Select the unit (Byte, Megabyte, Gigabyte...) on the right. Select `No Limit` to only set a minimum or maximum value.
 
 
 - **Advanced**
 
   <img src="https://github.com/Pixel-Master/Pixel-Master.github.io/blob/main/File-Find/screenshots/advanced.png?raw=true" height="250">
 
-    * **Search in system files**: Toggle to include files in the system and library folders.
-    * **File extension**: Input needs to match the file extension (file type) without the ".", ignoring case.
+    * **Limit folder depth**: Toggle to include/exclude subdirectories or their subdirectories. Entering a custom number sets the maximum amount of subdirectories in which files are still included. 
+      * `0` or `No subfolders` means that ony the files directly in the specified directory will be included 
+      * `1` means only the files in the folders that are directly in the specified dir will be considered...
     * **Only search for folders or files**: Toggle to only include folders or files in the search results.
+    * **Search in system files**: Toggle to include files in the system and library folders.
 
 - **Sorting**
 
   <img src="https://github.com/Pixel-Master/Pixel-Master.github.io/blob/main/File-Find/screenshots/sorting.png?raw=true" height="250">
 
-    * **None** (fastest)
-    * **File size**
-    * **File name**
-    * **Date modified**
-    * **Date created**
-    * **Path**
-    * **Reverse Sort**: Reverse the sorted search results.
+    * **Sorting**: Possible sorting options:
+        * **None** (fastest)
+        * **File size**
+        * **File name**
+        * **Date modified**
+        * **Date created**
+        * **Path**: Sorting Path alphabetically
+    * **Reverse Sort**: Reverse the sorted search results (last comes first). Only appears if a search option is selected.
 
 ### Dark / Light mode 
 
@@ -242,12 +260,12 @@ Q: **Why does File Find ask for permission for Contacts, Calenders, Photos, etc.
 
 A: File Find scans the entire specified directory, even if files are excluded they are scanned first and then sorted out. 
 Your photos, Calendar data, Contacts etc. are stored in a library folder, which means that File Find scans them. 
-File Find does not connect to the internet, everything stays on your machine. You can also press "Do not allow", the associated files will not appear in your searches.
+File Find does not connect to the internet, everything stays on your machine. You can also press `Do not allow`, the associated files will not appear in your searches.
 
 Q: **Why does File Find ask for permission for Downloads, Desktop, Documents, etc...?**
 
 A: On macOS if an app scans a directory this popup will automatically appear.
-If you press "Don't allow", File Find will still be able to scan those files,
+If you press `Don't allow`, File Find will still be able to scan those files,
 but you are not going to be able to save searches in those directories
 
 Q: **Does File Find connect to the Internet?**

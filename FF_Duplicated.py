@@ -82,11 +82,7 @@ class DuplicatedSettings:
         self.title_label.setText("Duplicated files in results of search in:"
                                  f"\n{FF_Files.display_path(search_path, 45)}")
         self.title_label.setToolTip(search_path)
-        # Make the Font bigger
-        font = self.title_label.font()
-        font.setBold(True)
-        font.setPixelSize(18)
-        self.title_label.setFont(font)
+        self.title_label.setFont(FF_Additional_UI.BOLD_QT_FONT)
         # Adjust size
         self.title_label.adjustSize()
         self.Duplicated_Settings_Layout.addWidget(self.title_label)
@@ -288,7 +284,7 @@ class DuplicatedSettings:
 
         # Tutorial
         tutorial_action = QAction("&Tutorial", self.Duplicated_Settings)
-        tutorial_action.triggered.connect(lambda: FF_Additional_UI.welcome_popups(parent, force_popups=True))
+        tutorial_action.triggered.connect(lambda: FF_Additional_UI.Tutorial(parent, force_tutorial=True))
         help_menu.addAction(tutorial_action)
 
         # Debug

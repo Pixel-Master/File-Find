@@ -164,7 +164,7 @@ class AboutWindow:
 
         # Tutorial
         tutorial_action = QAction("&Tutorial", about_window)
-        tutorial_action.triggered.connect(lambda: FF_Additional_UI.welcome_popups(parent, force_popups=True))
+        tutorial_action.triggered.connect(lambda: FF_Additional_UI.Tutorial(parent, force_tutorial=True))
         help_menu.addAction(tutorial_action)
 
         # Debug

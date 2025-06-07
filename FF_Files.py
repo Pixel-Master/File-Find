@@ -19,7 +19,7 @@ import hashlib
 from PySide6.QtCore import QDate, Qt
 
 # Versions
-VERSION: str = "25-apr-2025"
+VERSION: str = "7-june-2025"
 VERSION_SHORT: str = "2.0"
 # Versions of file formats
 FF_FILTER_VERSION = 2
@@ -109,7 +109,7 @@ DEFAULT_SETTINGS = {"settings_version": FF_SETTINGS_VERSION,
                     "double_click_action": "View file in Finder/File Explorer"}
 
 DEFAULT_FILTER = {"VERSION": FF_FILTER_VERSION,
-                  "name": "", "name_contains": "",
+                  "name": "", "name_specifier": "contains:", "consider_case": False, "similarity": 60,
                   "file_types": FILE_FORMATS.keys(),
                   "file_extension": "", "file_type_mode": "predefined",
                   "directory": USER_FOLDER,

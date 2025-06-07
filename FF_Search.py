@@ -11,12 +11,14 @@
 # Imports
 import logging
 import os
+import re
 import time
 from unicodedata import normalize
 from fnmatch import fnmatch
 from json import dump, load
 from sys import platform
 from time import perf_counter, mktime
+import difflib
 
 # PySide6 Gui Imports
 from PySide6.QtCore import QThreadPool, Signal, QObject, QDate, Qt
@@ -70,32 +72,6 @@ class Sort:
             return os.path.getctime(file)
         except FileNotFoundError:
             return -1
-
-
-# Class for Generating the terminal command
-class GenerateTerminalCommand:
-    def __init__(self, name: str, name_contains: str, file_ending: str, fn_match: str):
-        self.shell_command = f"find {FF_Files.SELECTED_DIR}"
-        self.name_string = ""
-        if name != "":
-            self.name_string += f"{name}"
-        elif fn_match != "":
-            self.name_string = fn_match
-
-        else:
-            if name_contains != "":
-                self.name_string += f"*{name_contains}*"
-            if file_ending != "":
-                self.name_string += f"*.{file_ending}"
-
-        if self.name_string != "":
-            self.shell_command += f" -name \"{self.name_string}\""
-
-        # Debug
-        logging.info(f"Command: {self.shell_command}")
-
-    def __str__(self):
-        return self.shell_command
 
 
 # Loading a saved search
@@ -175,7 +151,8 @@ class LoadSearch:
 
 # The Search Engine
 class Search:
-    def __init__(self, data_name, data_in_name, data_filetype, data_file_size_min, data_file_size_max,
+    def __init__(self, data_name, data_name_specifier, data_consider_case, data_similarity, data_filetype,
+                 data_file_size_min, data_file_size_max,
                  data_file_size_min_unit, data_file_size_max_unit, data_library,
                  data_search_for, data_search_from_valid, data_search_from_unchecked, data_content, data_date_edits,
                  data_sort_by, data_reverse_sort, data_file_group, data_file_type_mode, data_folder_depth,
@@ -259,16 +236,19 @@ class Search:
         # because if they do no file will be found
         # Also testing if wildcard syntax is used in data_name,
         # because wildcard is supported and so no error should appear
-        if (data_name != "" and (
-                data_in_name != "" or data_filetype != "" or data_file_group != list(FF_Files.FILE_FORMATS.keys()))
-                and (not (("[" in data_name) or ("?" in data_name) or ("*" in data_name)))):  # wildcard
+        wildcard_used = ("[" in data_name) or ("?" in data_name) or ("*" in data_name)
+        file_types_used = (
+                (data_file_type_mode == "custom" and data_filetype != "") or
+                (data_file_type_mode == "predefined" and data_file_group != list(FF_Files.FILE_FORMATS.keys())))
+        if data_name != "" and file_types_used and not wildcard_used and data_name_specifier == "is:":
             # Debug
-            logging.error("File name can't be used together with file type, name contains or file ending")
+            logging.error("File name \"is\" can't be used together with file type")
 
             # Show Popup
             FF_Additional_UI.PopUps.show_critical_messagebox(
                 "NAME ERROR!",
-                "Name Error!\n\nFile name can't be used together with file type, name contains or file ending",
+                "Name Error!\n\nFile name \"is\" can't be used together with file type"
+                " as there would be no files found",
                 parent=None)
 
         # Directory not valid
@@ -373,7 +353,6 @@ class Search:
                 scanning = Signal()
                 indexing = Signal()
                 indexing_name = Signal()
-                indexing_name_contains = Signal()
                 indexing_system_files = Signal()
                 indexing_files_folders = Signal()
                 indexing_file_groups = Signal()
@@ -411,8 +390,8 @@ class Search:
             self.signals.starting.connect(lambda: self.ui_logger.update("Starting Search..."))
             self.signals.scanning.connect(lambda: self.ui_logger.update("Scanning..."))
             self.signals.indexing.connect(lambda: self.ui_logger.update("Indexing..."))
-            self.signals.indexing_name.connect(lambda: self.ui_logger.update("Indexing Name..."))
-            self.signals.indexing_name_contains.connect(lambda: self.ui_logger.update("Indexing Name contains..."))
+            self.signals.indexing_name.connect(
+                lambda: self.ui_logger.update(f"Indexing Name {data_name.rstrip(':')}..."))
             self.signals.indexing_system_files.connect(lambda: self.ui_logger.update("Indexing System Files..."))
             self.signals.indexing_files_folders.connect(
                 lambda: self.ui_logger.update("Indexing exclude or include folders or files ..."))
@@ -437,17 +416,25 @@ class Search:
             # Starting the Thread
             self.thread.start(
                 lambda: self.searching(
-                    data_name, data_in_name, data_filetype, data_file_size_min, data_file_size_max, data_library,
-                    data_search_from_valid, data_search_for, data_content, unix_time_list, data_sort_by,
-                    data_reverse_sort, data_file_group, data_file_type_mode, data_folder_depth,
-                    data_folder_depth_custom, data_excluded_files, new_cache_file,
-                    parent))
+                    data_name=data_name, data_name_specifier=data_name_specifier, data_consider_case=data_consider_case,
+                    data_similarity=data_similarity,
+                    data_filetype=data_filetype, data_file_group=data_file_group,
+                    data_file_type_mode=data_file_type_mode,
+                    data_file_size_min=data_file_size_min, data_file_size_max=data_file_size_max,
+                    data_search_from=data_search_from_valid,
+                    data_search_for=data_search_for, data_library=data_library,
+                    data_folder_depth=data_folder_depth, data_folder_depth_custom=data_folder_depth_custom,
+                    data_content=data_content,
+                    data_time=unix_time_list,
+                    data_sort_by=data_sort_by, data_reverse_sort=data_reverse_sort,
+                    data_excluded_files=data_excluded_files, new_cache_file=new_cache_file, parent=parent))
 
             # Debug
             logging.debug("Finished Setting up QThreadPool!")
 
     # The search engine
-    def searching(self, data_name, data_in_name, data_filetype, data_file_size_min, data_file_size_max, data_library,
+    def searching(self, data_name, data_name_specifier, data_consider_case, data_similarity, data_filetype,
+                  data_file_size_min, data_file_size_max, data_library,
                   data_search_from, data_search_for, data_content, data_time, data_sort_by, data_reverse_sort,
                   data_file_group, data_file_type_mode, data_folder_depth,
                   data_folder_depth_custom, data_excluded_files, new_cache_file, parent):
@@ -462,24 +449,24 @@ class Search:
         data_filetype = data_filetype.lstrip(".*")
 
         # Lower Arguments to remove case sensitivity
-        data_name = data_name.lower()
-        data_in_name = data_in_name.lower()
+        if not data_consider_case or data_name_specifier == "is similar to:":
+            data_name: str = data_name.lower()
+        # Convert percentage to ratio
+        data_similarity /= 100
         data_filetype = data_filetype.lower()
 
         '''
         There are multiple possibilities in unicode on how to display some characters (for example ä, ü, ö).
         A decomposed form NFD (normal form D) ä = a + ¨
         and a composed one NFC (normal form C) ä = ä
-        On macos the filesystem returns the names for files created locally as NFD while everyone else does NFC.
+        On macOS the filesystem returns the names for files created locally as NFD while everyone else does NFC.
         It is possible to place NFC characters in macOS file names. But not for a normal user.
 
         If you have problems on macOS with composed/decomposed unicode character remove the four lines of code below.
         '''
-
         # Normalising arguments (see above)
         if platform == "darwin":
             data_name = normalize("NFD", data_name)
-            data_in_name = normalize("NFD", data_in_name)
             data_filetype = normalize("NFD", data_filetype)
 
         # Checking if created time checking is needed
@@ -555,7 +542,8 @@ class Search:
             elif data_file_type_mode == "custom":
                 # Semicolons can be used for entering multiple possible file types,
                 # removing all spaces as filetypes have none (at least sane people don't use them)
-                allowed_filetypes_set = data_filetype.replace(" ", "").split(";")
+                # removing all the dots (the most left on already has been removed)
+                allowed_filetypes_set = data_filetype.replace(" ", "").replace(";.", ";").split(";")
 
             # Making tuples out of the sets for better performance
             allowed_filetypes = tuple(allowed_filetypes_set)
@@ -595,7 +583,7 @@ class Search:
         for cache_file in os.listdir(FF_Files.CACHED_SEARCHES_FOLDER):
             # Looks if there is a cache file for a higher directory add a folder separator ("-") so that files
             # from the same directory with a similar name aren't mistaken for files from a parent directory
-            # A dollar sign marks the beginning of the relative depth limit of the cache file
+            # A dollar sign marks the beginning of the absolute depth limit of the cache file
             # "-" marks a folder separator
             # comparable_cache_file is basically the original search path but all "/" are replaced with "-"
             comparable_cache_file = ((cache_file.removesuffix(".FFCache")[:cache_file.rfind("$")]) + "-")
@@ -710,7 +698,7 @@ class Search:
                         for directory in dirs:
                             dirs.remove(directory)
 
-        # Saves time
+        # Saving time
         time_after_searching = perf_counter() - time_before_start
 
         # Debug
@@ -724,27 +712,86 @@ class Search:
 
         # Applies filters, when they don't match the function remove them from the found_path_dict
         # Name
-        logging.info("Indexing Name...")
+        logging.info(f"Indexing Name \"{data_name_specifier}\"...")
         self.signals.indexing_name.emit()
         if data_name != "":
+            # Name is equal
+            # Ignoring case
+            if data_name_specifier == "is:" and not data_consider_case:
+                # Scan every file
+                for name_file in found_path_set:
+                    if not fnmatch(os.path.basename(name_file).lower(), data_name):
+                        copy_found_path_set.remove(name_file)
+            # Considering case
+            if data_name_specifier == "is:" and data_consider_case:
+                for name_file in found_path_set:
+                    if not fnmatch(os.path.basename(name_file), data_name):
+                        copy_found_path_set.remove(name_file)
 
-            # Scan every file
-            for name_file in found_path_set:
-                if not fnmatch(os.path.basename(name_file).lower(), data_name):
-                    copy_found_path_set.remove(name_file)
+            # Name contains
+            elif data_name_specifier == "contains:" and not data_consider_case:
+                for name_file in found_path_set:
+                    if not (data_name in os.path.basename(name_file).lower()):
+                        copy_found_path_set.remove(name_file)
+            elif data_name_specifier == "contains:" and data_consider_case:
+                for name_file in found_path_set:
+                    if not (data_name in os.path.basename(name_file)):
+                        copy_found_path_set.remove(name_file)
 
-        # Making the copy and the original the same
-        found_path_set = copy_found_path_set.copy()
+            # Name starts with
+            elif data_name_specifier == "begins with:" and not data_consider_case:
+                for name_file in found_path_set:
+                    if not os.path.basename(name_file).lower().startswith(data_name):
+                        copy_found_path_set.remove(name_file)
+            elif data_name_specifier == "begins with:" and data_consider_case:
+                for name_file in found_path_set:
+                    if not os.path.basename(name_file).startswith(data_name):
+                        copy_found_path_set.remove(name_file)
 
-        # Name contains
-        logging.info("Indexing Name contains...")
-        self.signals.indexing_name_contains.emit()
+            # Name (without file extension) ends with
+            elif data_name_specifier == "ends with:" and not data_consider_case:
+                for name_file in found_path_set:
+                    # Splitting the name so the file extension doesn't matter
+                    if not os.path.basename(name_file).split(".")[0].lower().endswith(data_name):
+                        copy_found_path_set.remove(name_file)
+            elif data_name_specifier == "ends with:" and data_consider_case:
+                for name_file in found_path_set:
+                    # Splitting the name so the file extension doesn't matter
+                    if not os.path.basename(name_file).split(".")[0].endswith(data_name):
+                        copy_found_path_set.remove(name_file)
 
-        if data_in_name != "":
-            # Scan every file
-            for name_contains_file in found_path_set:
-                if not (data_in_name in os.path.basename(name_contains_file).lower()):
-                    copy_found_path_set.remove(name_contains_file)
+
+            # Fuzzy search
+            elif data_name_specifier == "is similar to:":
+                for name_file in found_path_set:
+                    # Using difflib.SequenceMatcher to get a matching ratio,
+                    # based on the gestalt pattern matching algorithm.
+                    if difflib.SequenceMatcher(
+                            None, data_name, os.path.basename(name_file).lower()).ratio() < data_similarity:
+                        copy_found_path_set.remove(name_file)
+
+            # Doesn't contain
+            elif data_name_specifier == "doesn't contain:" and not data_consider_case:
+                # Scan every file
+                for name_file in found_path_set:
+                    if data_name in os.path.basename(name_file).lower():
+                        copy_found_path_set.remove(name_file)
+            elif data_name_specifier == "doesn't contain:" and data_consider_case:
+                # Scan every file
+                for name_file in found_path_set:
+                    if data_name in os.path.basename(name_file):
+                        copy_found_path_set.remove(name_file)
+
+            # RegEx
+            elif data_name_specifier == "in RegEx:":
+                if data_consider_case:
+                    re_flags = 0
+                else:
+                    re_flags = re.IGNORECASE
+                for name_file in found_path_set:
+                    # re is the python RegEx module
+                    if not re.match(data_name, os.path.basename(name_file), re_flags):
+                        copy_found_path_set.remove(name_file)
 
         # Making the copy and the original the same
         found_path_set = copy_found_path_set.copy()

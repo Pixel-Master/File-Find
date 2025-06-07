@@ -241,7 +241,7 @@ class MenuBar:
 
         # Tutorial
         tutorial_action = QAction("&Tutorial", self.parent)
-        tutorial_action.triggered.connect(lambda: FF_Additional_UI.welcome_popups(self.parent, force_popups=True))
+        tutorial_action.triggered.connect(lambda: FF_Additional_UI.Tutorial(self.parent, force_tutorial=True))
         self.help_menu.addAction(tutorial_action)
 
         if window == "search":
@@ -679,16 +679,6 @@ class MenuBar:
             else:
                 filetype = "Unknown"
 
-            # Display file path nicely
-            if not len(file) < 105:
-                file_path = ""
-                last_step = 0
-                for part in range(0, len(file), 100):
-                    file_path = file_path + "\n" + file[last_step: part]
-                    last_step = part
-            else:
-                file_path = file
-
             # Get dates
             # Date modified
             m_date = ctime(os.path.getmtime(file))
@@ -707,7 +697,7 @@ class MenuBar:
             FF_Additional_UI.PopUps.show_info_messagebox(
                 f"Information about: {FF_Files.display_path(file, 30)}",
                 f"\n"
-                f"Path: {file_path}\n"
+                f"Path:\n{file}\n"
                 f"\n"
                 f"Type: {filetype}\n"
                 f"File Name: {os.path.basename(file)}\n"

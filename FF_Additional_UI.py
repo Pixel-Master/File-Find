@@ -12,15 +12,15 @@
 import logging
 import os
 from json import load, dump
-from subprocess import run
 from sys import platform
 from time import time, ctime
 from unicodedata import normalize
 
 # PySide6 Gui Imports
 from PySide6.QtCore import Qt, Signal, QObject
-from PySide6.QtGui import QFont, QPixmap, QColor
-from PySide6.QtWidgets import QMessageBox, QComboBox, QLabel, QVBoxLayout, QWidget, QMainWindow, QLineEdit, QCompleter
+from PySide6.QtGui import QFont, QPixmap, QColor, QIcon, QAction
+from PySide6.QtWidgets import (QMessageBox, QComboBox, QLabel, QVBoxLayout, QWidget, QMainWindow,
+                               QLineEdit, QCompleter, QGridLayout, QToolButton, QTextBrowser)
 
 # Projects Libraries
 import FF_Files
@@ -34,6 +34,12 @@ DEFAULT_QT_FONT = QFont(FF_Files.DEFAULT_FONT, FF_Files.DEFAULT_FONT_SIZE)
 BOLD_QT_FONT = QFont(FF_Files.DEFAULT_FONT, FF_Files.DEFAULT_FONT_SIZE)
 BOLD_QT_FONT.setBold(True)
 
+if platform == "darwin":
+    # Used for explanation text
+    CTRL_BUTTON = "⌘"
+else:
+    CTRL_BUTTON = "CTRL"
+
 
 # Used for entering the directory
 class DirectoryEntry(QLineEdit):
@@ -43,7 +49,7 @@ class DirectoryEntry(QLineEdit):
         # Set the size
         self.resize(230, 20)
         self.setFixedHeight(25)
-        self.setFixedWidth(230)
+        self.setMinimumWidth(230)
         # Set text and tooltip to display the directory
         self.setText(FF_Files.SELECTED_DIR)
         # Execute the validate_dir function if text is changed
@@ -423,7 +429,7 @@ class PopUps:
             layout.addWidget(title_label)
 
             # Label
-            label = QLabel(msg_info)
+            label = QTextBrowser(msg_info)
             label.setText(text)
             # Make label selectable
             label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
@@ -454,136 +460,247 @@ class PopUps:
 
 
 # Displaying Welcome Popups
-def welcome_popups(parent, force_popups=False):
-    # Debug
-    logging.debug("Testing for PopUps...")
-
-    # Loading already displayed Popups with json
-    with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings")) as settings_file:
-        settings = load(settings_file)
-        popup_dict = settings["popup"]
-
-    if popup_dict["FF_welcome"] or force_popups:
+class Tutorial:
+    def __init__(self, parent, force_tutorial=False):
+        self.parent = parent
         # Debug
-        logging.info("Showing Welcomes PopUp...")
+        logging.debug("Testing for PopUps...")
 
-        # Asking if tutorial is necessary
-        question_popup = QMessageBox(parent=parent)
+        # Loading already displayed Popups with json
+        with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings")) as settings_file:
+            settings = load(settings_file)
+            popup_dict = settings["popup"]
 
-        question_popup.setText("Would you like to have a short tutorial?\n\n"
-                               "By going to Help > Tutorial, you can get it later.")
-        question_popup.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
-        # Entering the mainloop
-        question_popup.exec()
+        if popup_dict["FF_welcome"] or force_tutorial:
+            self.pages = {
+                1: {"title": "Welcome to File Find - Tutorial",
+                    "text": "<p>Thank you for downloading File Find!</p>"
+                            "<p>File Find is an open-source utility for finding files, searching for duplicates"
+                            " and comparing searches.</p>"
+                            "<p>The following tutorial will explain what File Find's capabilities and how to use them."
+                            "<br>"
+                            "You can navigate through the tutorial using the arrow keys on your keyboard or the "
+                            "ones in this window.<br>If you ever need this tutorial again, "
+                            "you can open it from anywhere within File Find by going"
+                            " to the menu bar and selecting <code>Help > Tutorial</code>."
+                            "</p><p>"
+                            "Your File Find version: "
+                            f"<code>{FF_Files.VERSION_SHORT}[{FF_Files.VERSION}]</code></p>"},
+                2: {"title": "Tutorial - Searching",
+                    "text": "<p>To search fill in the desired options and leave the unnecessary ones untouched. "
+                            "If you leave everything untouched, the result is going to include all files on your disk "
+                            "except system files "
+                            "(<i>To search for them you have to activate the option "
+                            "under <code>Advanced</code></i>).<br> If you are unsure about the functionality"
+                            " of a filter, you can hover over its name or refer "
+                            "<a href=\"https://pixel-master.github.io/File-Find/#how-to\">to this guide</a>.</p>"
+                            "<p>After filling in all the desired filters, press the <code>Find</code> button. "
+                            "Right-clicking it will show you more options.</p>"
+                            "<p>You can start multiple searches at once. The status of all the searches can be tracked"
+                            " by pressing the File Find icon in the menu bar and going to <code>Searches</code>.</p>"
+                            "<p>If you are having trouble finding a file try "
+                            "<a href=\"https://pixel-master.github.io/File-Find/#file_not_found\" a>"
+                            "these steps</a>.</p>"
+                            "<p>You can be export the selected filters as a File Find filter preset "
+                            "(<code>.FFFilter</code>) "
+                            f"by pressing <code>{CTRL_BUTTON} + S</code> in the main window. Filter presets can "
+                            f"be made the default in the settings or loaded by pressing <code>{CTRL_BUTTON} + O</code>."
+                            "</p><p>With every search File Find creates a cache so that the next search in the "
+                            "same directory takes only a fraction of the time. This means that the result might be "
+                            "a little outdated. The cache is cleared automatically after a set amount of time "
+                            "(which can be changed in settings) or "
+                            f"manually by selecting <code>Tools > Clear cache</code> in the menu bar.</p>"},
+                3: {"title": "Tutorial - Results",
+                    "text": "<p>Once the search is finished a results window will appear.</p>"
+                            "<p>There are multiple actions that can be performed "
+                            "for each found file on the bottom and in the menu bar. Double-clicking a file, selecting"
+                            " <code>Tools > View selected file in Finder/File explorer</code> in the menu bar or "
+                            "right-clicking the "
+                            "<code>Open</code> button will open it in Finder or Windows File Explorer"
+                            f" (this can be changed in settings).</p><p>You can save the current search by clicking on"
+                            " the three dots"
+                            f" or pressing <code>{CTRL_BUTTON} + S</code> and reopen it from the main window by going"
+                            f" to <code>File > Open Search</code>.</p>"
+                            "<p>Pressing <code>M</code> in any file list will mark/unmark a file.</p>"
+                            ""},
+                4: {"title": "Tutorial - Comparing and Finding duplicates",
+                    "text": "<p>Duplicated files can be found by pressing the duplicates-icon or selecting"
+                            " <code>File > Finding duplicated files...</code> in the menu bar "
+                            "in the results window.</p>"
+                            "<p>You'll then be prompted to select the preferred options. All ongoing searches of "
+                            "duplicates can be seen in the same place as the normal searches.</p>"
+                            "<p>Once it finished, you're going to see an expandable tree view. Press the arrow on the "
+                            "left of each file to see the files that are duplicates of the file on top.</p>"
+                            "<p>To compare two searches click on the corresponding icon or go"
+                            " to <code>File > Compare to other search...</code> in the menu bar. You will then be"
+                            " prompted to"
+                            " select a saved search (<code>.FFSearch</code>) from your disk.</p>"
+                            "<p>The process can be tracked the same way as a normal search. "
+                            "Once it finished, you'll see "
+                            "two tables, with each one containing the files that are exclusive to one search.</p>"},
+                5: {"title": "Tutorial - General Information",
+                    "text": "<p>If you close the main window, "
+                            "you can reopen it from the File Find icon in the menubar. "
+                            "Searches will keep running once the main window is closed</p>"
+                            "<p>The settings can be opened by going to <code>File Find > Preferences...</code></p>"
+                            "<p>If you want to contribute, look at the source code, "
+                            "found a bug or have a feature-request</p>"
+                            "<p>Go to <a href=\"https://github.com/Pixel-Master/File-Find\">GitHub</a>.</p>"
+                            "<p>If you are looking for updates go to the"
+                            " <a href=\"https://pixel-master.github.io/File-Find\">File Find Website</a></p>"
+                            "I hope you find all of your files!"}}
 
-        # Getting the button role of the clicked button
-        question_selected_button_role = question_popup.buttonRole(question_popup.clickedButton())
+        # Version Welcome PopUps
+        elif popup_dict["FF_ver_welcome"]:
+            self.pages = {
+                1: {"title": "Update was successful!",
+                    "text":
+                        "<p>Thanks for upgrading File Find!</p>"
+                        "<p>File Find is an open source Utility for finding files. </p>"
+                        f"<p>For an overview over the changes have a look at the "
+                        f"<a href=\"https://pixel-master.github.io/File-Find/download#{FF_Files.VERSION_SHORT}\"a>"
+                        f"changelog<br>"
+                        f"Get new versions <a href=\"https://pixel-master.github.io/File-Find/download\">here</a>"
+                        f"</p>"
+                        "<p>Your File Find version: "
+                        f"<code>{FF_Files.VERSION_SHORT} [{FF_Files.VERSION}]</code></p>"},
+                2: {"title": "Tutorial needed?",
+                    "text": "If you feel the need to get a refresher-tutorial, "
+                            "feel free to go to the menu bar and press <code>Help > Tutorial</code>."}}
 
-        if question_selected_button_role == QMessageBox.ButtonRole.YesRole:
-            # Showing welcome messages
-            PopUps.show_info_messagebox(
-                title="Welcome to File Find",
-                text="Welcome to File Find!\n\nThanks for downloading File Find!\n"
-                     "File Find is an open-source macOS utility,"
-                     " that makes it easy to search and find files.\n\n"
-                     "To search, fill in the filters you need and leave those"
-                     " you don't need empty.\n\n\n"
-                     "File Find version: "
-                     f"{FF_Files.VERSION_SHORT}[{FF_Files.VERSION}]",
-                parent=parent)
-            PopUps.show_info_messagebox(
-                title="Welcome to File Find",
-                text="Welcome to File Find!\n\nSearch with the find button.\n\n"
-                     "You can find all and settings in the settings menu.\n"
-                     "(find it by going to File Find > Setting in the menu-bar)\n\n"
-                     "If you press on the File Find icon in the menu bar and go to \"Searches:\","
-                     " you can see the state of all your active searches.",
-                parent=parent)
-            PopUps.show_info_messagebox(
-                title="Welcome to File Find",
-                text="Welcome to File Find!\n\nSave a search or a filter preset \n"
-                     "by pressing CMD/Ctrl + S in the result or main window.\n\n"
-                     "After you opened a search, you can find duplicated files\n"
-                     "or compare the opened search to an search saved on the disk,\n"
-                     "by pressing the corresponding buttons in the top right.",
-                parent=parent)
+        # If last update notice is older than 40 weeks, inform about possibility of a new update
+        # time() returns time since the epoch in seconds
+        elif popup_dict["last_update_notice"] < (time() - (FF_Files.SECONDS_OF_A_WEEK * 40)):
+            # Debug
+            logging.info(f"Showing update notice as last notice was on:"
+                         f" {ctime(popup_dict['last_update_notice'])}")
+            self.pages = {
+                1: {"title": "Updating is advised",
+                    "text": "<p>Looking for updates?</p>"
+                            "<p>It has been more the half a year since you last checked for updates.</p>"
+                            "<p>Download the newest versions "
+                            f"<a href=\"https://pixel-master.github.io/File-Find/download\">"
+                            f"on the File Find Website</a>.<br>"
+                            f"The changelog and release date of the newest File Find version can be seen "
+                            f"<a href=\"https://pixel-master.github.io/File-Find/download#newest\">"
+                            f"here</a>"
+                            f"</p>"
+                            "<p>Your current (probably not anymore up-to-date) File Find version: "
+                            f"<br><code>{FF_Files.VERSION_SHORT} [{FF_Files.VERSION}]</code></p>"}
+            }
 
-            PopUps.show_info_messagebox(
-                title="Welcome to File Find",
-                text="Welcome to File Find!\n\n"
-                     "If you want to contribute, look at the source code, "
-                     "found a bug or have a feature-request\n\n"
-                     "Go to: github.com/Pixel-Master/File-Find\n"
-                     "File Find Website: pixel-master.github.io/file-find\n\n"
-                     "I hope you find all of your files!",
-                parent=parent)
+        else:
+            return
 
-    # Version Welcome PopUps
-    elif popup_dict["FF_ver_welcome"]:
-        # Debug
-        logging.info("Showing Version Welcomes PopUp...")
-
-        # Showing welcome messages
-        PopUps.show_info_messagebox(
-            title="Thanks for upgrading File Find!",
-            text="Thanks for upgrading File Find!\n\n"
-                 f"File Find is an open source Utility for finding files. \n\n"
-                 f"Get new versions at: "
-                 f"https://pixel-master.github.io/File-Find/download"
-                 f"\n\n\n"
-                 "File Find version: "
-                 f"{FF_Files.VERSION_SHORT} [{FF_Files.VERSION}]",
-            parent=parent)
-
-        # Resetting time since last notice
+        # Resetting time since last update notice
         popup_dict["last_update_notice"] = time()
 
         # Debug
-        logging.debug(f"Reset time since last_update_notice to {ctime(popup_dict['last_update_notice'])}")
+        logging.debug(f"Reset time since last_update_notice to {ctime(time())}")
 
-    # If last update notice is older than 40 weeks, inform about possibility of a new update
-    # time() returns time since the epoch in seconds
-    elif popup_dict["last_update_notice"] < (time() - (FF_Files.SECONDS_OF_A_WEEK * 40)):
-        # Debug
-        logging.info(f"Showing update notice as last notice was on:"
-                     f" {ctime(popup_dict['last_update_notice'])}")
+        # Setting PopUp File
+        popup_dict["FF_ver_welcome"] = False
+        popup_dict["FF_welcome"] = False
+        settings["popup"] = popup_dict
+        with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "w") as settings_file:
+            dump(settings, settings_file)
 
-        # Show question
-        if (QMessageBox.information(
-                parent,
-                "Looking for updates?",
-                "Looking for updates?\n\n"
-                f"It has been more the half a year since you last checked for updates.\n\n"
-                f"Download new versions at: "
-                f"https://pixel-master.github.io/File-Find/download"
-                f"\n\n\n"
-                "Your current File Find version: "
-                f"{FF_Files.VERSION_SHORT} [{FF_Files.VERSION}]",
-                QMessageBox.StandardButton.Cancel | QMessageBox.StandardButton.Open)
+        # Creating a "sceleton" window on which we can later build on top
+        self.Info_Window = QMainWindow(parent)
+        self.Info_Window.show()
+        self.Info_Window.resize(600, 500)
+        self.Info_Window.setWindowTitle(self.pages[1]["title"])
+        # Creating a central widget and a layout so that everything is nicely laid out
+        self.central_widget = QWidget(self.Info_Window)
+        self.Info_Layout = QGridLayout(self.central_widget)
+        self.Info_Window.setCentralWidget(self.central_widget)
 
-                == QMessageBox.StandardButton.Open):
+        # Label in between the two buttons to indicate the number of pages
+        self.page_label = QLabel(self.Info_Window)
+        self.page_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-            # Open the download link
-            if platform == "darwin":
-                run(["open", "https://pixel-master.github.io/File-Find/download"])
-            elif platform == "win32" or platform == "cygwin":
-                run(["start", "https://pixel-master.github.io/File-Find/download"], shell=True)
-            elif platform == "linux":
-                run(["xdg-open", "https://pixel-master.github.io/File-Find/download"])
+        self.Info_Layout.addWidget(self.page_label, 2, 1)
 
-            # Resetting time since last notice
-            popup_dict["last_update_notice"] = time()
+        # Title label
+        self.title_label = QLabel(self.Info_Window)
+        self.title_label.setFont(BOLD_QT_FONT)
+        self.title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.Info_Layout.addWidget(self.title_label, 0, 1)
 
-            # Debug
-            logging.debug(f"Reset time since last_update_notice to {ctime(time())}")
+        # For the actual text we are using a QTextBrowser so that the text is displayed nicely
+        self.body_text = QTextBrowser(self.Info_Window)
+        self.body_text.setOpenExternalLinks(True)
+        self.Info_Layout.addWidget(self.body_text, 1, 1, 1, 1)
 
-    # Setting PopUp File
-    popup_dict["FF_ver_welcome"] = False
-    popup_dict["FF_welcome"] = False
-    settings["popup"] = popup_dict
-    with open(os.path.join(FF_Files.FF_LIB_FOLDER, "Settings"), "w") as settings_file:
-        dump(settings, settings_file)
+        def next_page():
+            if not self.next_button.isEnabled():
+                return
+            self.current_page += 1
+            update_info()
 
+        def previous_page():
+            if not self.previous_button.isEnabled():
+                return
+            self.current_page -= 1
+            update_info()
 
-# Debug
-logging.info("Finished PopUps")
+        def update_info():
+            logging.info(f"Updating info window to page {self.current_page} of {len(self.pages)}")
+            if self.current_page > len(self.pages):
+                # Button should be deactivated
+                logging.error("Tutorial page next button should have been deactivated")
+                return
+            # On last page
+            if self.current_page == len(self.pages):
+                self.next_button.setEnabled(False)
+                self.next_page_action.setEnabled(False)
+            else:
+                self.next_button.setEnabled(True)
+                self.next_page_action.setEnabled(True)
+            # On first page
+            if self.current_page == 1:
+                # Disable as in the beginning it isn't possible to go back
+                self.previous_button.setEnabled(False)
+                self.prev_page_action.setEnabled(False)
+            else:
+                self.previous_button.setEnabled(True)
+                self.prev_page_action.setEnabled(True)
+            # Update general info
+            self.page_label.setText(f"{self.current_page} / {len(self.pages)}")
+            self.body_text.setHtml(self.pages[self.current_page]["text"])
+            self.title_label.setText(self.pages[self.current_page]["title"])
+
+        # Create buttons to go to next and previous page
+        self.next_button = QToolButton(self.Info_Window)
+        # Using Qt's built-in icons
+        next_icon = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.GoNext))
+        self.next_button.setIcon(next_icon)
+        # Action
+        self.next_button.pressed.connect(next_page)
+        # Add to Layout
+        self.Info_Layout.addWidget(self.next_button, 2, 2)
+
+        # Repeat with the "previous" button
+        self.previous_button = QToolButton(self.Info_Window)
+        previous_icon = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.GoPrevious))
+        self.previous_button.setIcon(previous_icon)
+        # Action
+        self.previous_button.pressed.connect(previous_page)
+        self.Info_Layout.addWidget(self.previous_button, 2, 0)
+
+        # Menu bar
+        self.menu_bar = FF_Menubar.MenuBar(self.Info_Window, "info")
+        # Next Page Search
+        self.next_page_action = QAction("&Next page", self.parent)
+        self.next_page_action.triggered.connect(next_page)
+        self.next_page_action.setShortcut("Right")
+        self.menu_bar.edit_menu.addAction(self.next_page_action)
+        # Previous Page Search
+        self.prev_page_action = QAction("&Previous page", self.parent)
+        self.prev_page_action.triggered.connect(previous_page)
+        self.prev_page_action.setShortcut("Left")
+        self.menu_bar.edit_menu.addAction(self.prev_page_action)
+
+        # Insert the Text
+        self.current_page = 1
+        update_info()
