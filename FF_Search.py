@@ -760,7 +760,6 @@ class Search:
                     if not os.path.basename(name_file).split(".")[0].endswith(data_name):
                         copy_found_path_set.remove(name_file)
 
-
             # Fuzzy search
             elif data_name_specifier == "is similar to:":
                 for name_file in found_path_set:

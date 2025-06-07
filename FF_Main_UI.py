@@ -1205,7 +1205,7 @@ class MainWindow:
         menu_bar_icon = QSystemTrayIcon(self.Root_Window)
 
         if platform == "win32" or platform == "cygwin":
-            menu_bar_icon.activated.connect(self.Root_Window.show())
+            menu_bar_icon.activated.connect(self.Root_Window.show)
 
         # Icon
         # On macOS
