@@ -87,7 +87,7 @@ class MainWindow:
             self.basic_search_widget,
             self.generic_tooltip(
                 "Name",
-                "Multiple different modes can be selected. \n"
+                "Multiple different modes are available. \n"
                 "\nName \"is\":\n"
                 "  Input needs to match the file name exactly. Also supports unix shell-style "
                 "wildcards, which are not the same as regular expressions."
@@ -97,10 +97,10 @@ class MainWindow:
                 "      ?         matches any single character\n"
                 "      [seq]  matches any character in seq\n"
                 "      [!seq] matches any character not in seq\n\n"
-                "Name \"contains\":\n   The file name must contain input\n\n"
-                "Name \"begins with\":\n  The file name must start with the input\n\n"
+                "Name \"contains\":\n   The file name must contain the input.\n\n"
+                "Name \"begins with\":\n  The file name must start with the input.\n\n"
                 "Name \"ends with\":\n  The file name (without the file ending) must end with input. So \"mple\" "
-                "would match with \"Example.txt\"\n\n"
+                "would match with \"Example.txt\".\n\n"
                 "Name \"is similar to\":\n  Performs a fuzzy search. So \"amp\" matches with \"Example.txt\". "
                 "Matching percentage can be set separately.\n\n"
                 "Name \"doesn't contain\":\n  Input must not be included in its entirety in the file name.\n\n"

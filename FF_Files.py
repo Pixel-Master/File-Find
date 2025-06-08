@@ -19,7 +19,7 @@ import hashlib
 from PySide6.QtCore import QDate, Qt
 
 # Versions
-VERSION: str = "7-june-2025"
+VERSION: str = "8-june-2025"
 VERSION_SHORT: str = "2.0"
 # Versions of file formats
 FF_FILTER_VERSION = 2
