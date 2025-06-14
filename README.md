@@ -286,7 +286,7 @@ A: **File Find does not connect to the Internet**, everything stays on your mach
 
 - `FF_Search_UI.py` - This file contains the code for the search-results window
 
-- `FF_Additional_UI.py` - This file contains the code for additional UI components like the PopUp windows
+- `FF_Additional_UI.py` - This file contains the code for additional UI components like dark mode icons or the tutorial
 
 - `FF_About_UI.py` - This file contains the code for the About window
 

@@ -1019,7 +1019,7 @@ class MainWindow:
 
                    "name": self.edit_name.text(),
                    "name_specifier": self.name_specifier.currentText(),
-                   "consider_case": self.case_check_box,
+                   "consider_case": self.case_check_box.isChecked(),
                    "similarity": self.similarity_spinbox.value(),
                    "file_types": self.combobox_file_types.all_checked_items(),
                    "file_extension": self.edit_file_extension.text(),
@@ -1299,7 +1299,8 @@ class SearchUpdate:
 
         # Path action
         self.search_path: QAction = QAction(f"In {path}:")
-        self.search_path.setDisabled(True)
+        if platform == "darwin" or platform == "linux":
+            self.search_path.setDisabled(True)
 
         # Setup search status
         self.search_status: QAction = QAction("Setup Search Status...")

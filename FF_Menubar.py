@@ -383,80 +383,84 @@ class MenuBar:
         elif platform == "linux":
             command = ["gio", "trash", selected_file]
         elif platform == "win32" or platform == "cygwin":
-            command = ["echo",
-                       f"(new-object -comobject Shell.Application).Namespace(0).ParseName(\"{selected_file}\")"
-                       f".InvokeVerb(\"delete\")", "|", "powershell", "-command", "-"]
+            command = (f"echo (new-object -comobject Shell.Application).Namespace(0).ParseName('{selected_file}')"
+                       f".InvokeVerb('delete') | powershell -command -")
         else:
             command = None
-        # Moving the file to trash, after asking if necessary
-        if FF_Additional_UI.PopUps.show_delete_question(self.parent, selected_file):
 
-            try:
-                # Try to move the file to trash and add a date for uniqueness
+        # Moving the file to trash, after asking if necessary
+        if not FF_Additional_UI.PopUps.show_delete_question(self.parent, selected_file):
+            return
+
+        try:
+            # Try to move the file to trash in an operating system specific way
+            if platform == "win32" or platform == "cygwin":
+                subprocess.run(command, check=True, shell=True)
+            else:
                 subprocess.run(command, check=True)
 
-            except (subprocess.CalledProcessError, FileNotFoundError):
+        except (subprocess.CalledProcessError, FileNotFoundError):
 
-                #  Error message
-                FF_Additional_UI.PopUps.show_critical_messagebox(
-                    "Error!", f"File not found: {selected_file}", self.parent)
+            #  Error message
+            FF_Additional_UI.PopUps.show_critical_messagebox(
+                "Error!", f"File not found: {selected_file}", self.parent)
 
-                # Debug
-                logging.error(f"File not found: {selected_file}")
+            # Debug
+            logging.error(f"File not found: {selected_file}")
 
-            # If everything ran successful
-            else:
-                # Debug
-                logging.debug(f"Moved {selected_file} to trash")
+        # If everything ran successful
+        else:
+            # Debug
+            logging.debug(f"Moved {selected_file} to trash")
 
-                if self.window == "compare" or self.window == "search":
+            if self.window == "compare" or self.window == "search":
 
-                    # Set the icon
-                    icon = FF_Additional_UI.UIIcon(
-                        os.path.join(FF_Files.ASSETS_FOLDER, "trash_icon_small.png"),
-                        icon_set_func=self.get_listbox().item(self.get_listbox().currentRow()).setIcon,
-                        turn_auto=False)
+                # Set the icon
+                icon = FF_Additional_UI.UIIcon(
+                    os.path.join(FF_Files.ASSETS_FOLDER, "trash_icon_small.png"),
+                    icon_set_func=self.get_listbox().item(self.get_listbox().currentRow()).setIcon,
+                    turn_auto=False)
 
-                    icon.turn_dark()
+                icon.turn_dark()
 
-                    # Change the color to red
-                    self.get_listbox().item(
-                        self.get_listbox().currentRow()).setBackground(QColor(FF_Files.RED_DARK_THEME_COLOR))
-                    # Change font color to white
-                    self.get_listbox().item(self.get_listbox().currentRow()).setForeground(QColor("white"))
+                # Change the color to red
+                self.get_listbox().item(
+                    self.get_listbox().currentRow()).setBackground(QColor(FF_Files.RED_DARK_THEME_COLOR))
+                # Change font color to white
+                self.get_listbox().item(self.get_listbox().currentRow()).setForeground(QColor("white"))
 
-                    # Change font to italic
-                    font = self.get_listbox().item(self.get_listbox().currentRow()).font()
-                    font.setItalic(True)
-                    self.get_listbox().item(self.get_listbox().currentRow()).setFont(font)
+                # Change font to italic
+                font = self.get_listbox().item(self.get_listbox().currentRow()).font()
+                font.setItalic(True)
+                self.get_listbox().item(self.get_listbox().currentRow()).setFont(font)
 
-                # QTreeWidget needs special treatment
-                elif self.window == "duplicated":
-                    # Icon
-                    # Set the icon
-                    icon = FF_Additional_UI.UIIcon(
-                        os.path.join(FF_Files.ASSETS_FOLDER, "trash_icon_small.png"),
-                        icon_set_func=lambda x: self.get_listbox().currentItem().setIcon(0, x),
-                        turn_auto=False)
+            # QTreeWidget needs special treatment
+            elif self.window == "duplicated":
+                # Icon
+                # Set the icon
+                icon = FF_Additional_UI.UIIcon(
+                    os.path.join(FF_Files.ASSETS_FOLDER, "trash_icon_small.png"),
+                    icon_set_func=lambda x: self.get_listbox().currentItem().setIcon(0, x),
+                    turn_auto=False)
 
-                    icon.turn_dark()
+                icon.turn_dark()
 
-                    # Change the color to red
-                    self.get_listbox().currentItem().setBackground(0, QColor(FF_Files.RED_LIGHT_THEME_COLOR))
-                    self.get_listbox().currentItem().setBackground(1, QColor(FF_Files.RED_LIGHT_THEME_COLOR))
-                    # Change font color to white
-                    self.get_listbox().currentItem().setForeground(0, QColor("white"))
-                    self.get_listbox().currentItem().setForeground(1, QColor("white"))
+                # Change the color to red
+                self.get_listbox().currentItem().setBackground(0, QColor(FF_Files.RED_LIGHT_THEME_COLOR))
+                self.get_listbox().currentItem().setBackground(1, QColor(FF_Files.RED_LIGHT_THEME_COLOR))
+                # Change font color to white
+                self.get_listbox().currentItem().setForeground(0, QColor("white"))
+                self.get_listbox().currentItem().setForeground(1, QColor("white"))
 
-                    # Change font to italic
-                    font = self.get_listbox().currentItem().font(0)
-                    font.setItalic(True)
-                    self.get_listbox().currentItem().setFont(0, font)
-                    self.get_listbox().currentItem().setFont(1, font)
+                # Change font to italic
+                font = self.get_listbox().currentItem().font(0)
+                font.setItalic(True)
+                self.get_listbox().currentItem().setFont(0, font)
+                self.get_listbox().currentItem().setFont(1, font)
 
-                # Removing file from cache
-                logging.info("Removing file from cache...")
-                self.remove_file_from_cache(selected_file)
+            # Removing file from cache
+            logging.info("Removing file from cache...")
+            self.remove_file_from_cache(selected_file)
 
     # Marks a file
     def mark_file(self, color, selected_file=None):
@@ -646,11 +650,9 @@ class MenuBar:
         # Opening the file, the specific command depends on the platform
         if platform == "darwin":
             # Collecting the return code
-            return_code = run(["open",
-                               "-R",
-                               selected_file]).returncode
+            return_code = run(["open", "-R", selected_file]).returncode
         elif platform == "win32" or platform == "cygwin":
-            return_code = run(["start", os.path.dirname(selected_file)], shell=True).returncode
+            return_code = run(["explorer", "/select", selected_file], shell=True).returncode
         elif platform == "linux":
             return_code = run(["xdg-open", os.path.dirname(selected_file)]).returncode
 
