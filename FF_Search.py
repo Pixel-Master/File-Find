@@ -391,7 +391,7 @@ class Search:
             self.signals.scanning.connect(lambda: self.ui_logger.update("Scanning..."))
             self.signals.indexing.connect(lambda: self.ui_logger.update("Indexing..."))
             self.signals.indexing_name.connect(
-                lambda: self.ui_logger.update(f"Indexing Name {data_name.rstrip(':')}..."))
+                lambda: self.ui_logger.update(f"Indexing Name {data_name_specifier.rstrip(':')}..."))
             self.signals.indexing_system_files.connect(lambda: self.ui_logger.update("Indexing System Files..."))
             self.signals.indexing_files_folders.connect(
                 lambda: self.ui_logger.update("Indexing exclude or include folders or files ..."))
@@ -580,6 +580,12 @@ class Search:
         newest_fitting_cache_file = None
         newest_fitting_cache_file_c_date = 0
 
+        # On Windows the "C:\" has to be stripped
+        if platform == "win32" or platform == "cyqwin":
+            comparable_data_search_from = data_search_from[2:].replace(os.sep, "-") + "-"
+        else:
+            comparable_data_search_from = data_search_from.replace(os.sep, "-") + "-"
+
         for cache_file in os.listdir(FF_Files.CACHED_SEARCHES_FOLDER):
             # Looks if there is a cache file for a higher directory add a folder separator ("-") so that files
             # from the same directory with a similar name aren't mistaken for files from a parent directory
@@ -588,7 +594,7 @@ class Search:
             # comparable_cache_file is basically the original search path but all "/" are replaced with "-"
             comparable_cache_file = ((cache_file.removesuffix(".FFCache")[:cache_file.rfind("$")]) + "-")
 
-            if (data_search_from.replace(os.sep, "-") + "-").startswith(comparable_cache_file):
+            if comparable_data_search_from.startswith(comparable_cache_file):
                 # Date created and global folder depth (which must match) from separate file
                 with open(os.path.join(FF_Files.CACHE_METADATA_FOLDER, cache_file)) as time_file:
                     metadata = load(time_file)
@@ -752,12 +758,13 @@ class Search:
             elif data_name_specifier == "ends with:" and not data_consider_case:
                 for name_file in found_path_set:
                     # Splitting the name so the file extension doesn't matter
-                    if not os.path.basename(name_file).split(".")[0].lower().endswith(data_name):
+                    if not os.path.basename(name_file)[
+                           :os.path.basename(name_file).find(".")].lower().endswith(data_name):
                         copy_found_path_set.remove(name_file)
             elif data_name_specifier == "ends with:" and data_consider_case:
                 for name_file in found_path_set:
                     # Splitting the name so the file extension doesn't matter
-                    if not os.path.basename(name_file).split(".")[0].endswith(data_name):
+                    if not os.path.basename(name_file)[:os.path.basename(name_file).find(".")].endswith(data_name):
                         copy_found_path_set.remove(name_file)
 
             # Fuzzy search

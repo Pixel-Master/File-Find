@@ -200,7 +200,7 @@ Or you could:
 
 4. Create a virtual environment: 
     1. Create: `python -m venv venv`
-    2. Activate the virtual environment: `venv\bin\activate.bat`
+    2. Activate the virtual environment: `venv\Scripts\activate.bat`
 
 
 5. [Install dependencies](#dependencies-for-building): `pip3 install -r requirements.txt`

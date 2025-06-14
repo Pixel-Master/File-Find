@@ -676,7 +676,8 @@ class MainWindow:
         def print_data():
             logging.info(
                 f"\nFilters:\n"
-                f"Name {self.name_specifier} {self.edit_name.text()} (Consider Case: {self.case_check_box})\n"
+                f"Name {self.name_specifier.currentText()} {self.edit_name.text()} "
+                f"(Consider Case: {self.case_check_box.isChecked()})\n"
                 f"File Ending: {self.edit_file_extension.text()}\n"
                 f"File Groups: {self.combobox_file_types.all_checked_items()}\n"
                 f"File Type mode: {self.file_type_mode}\n\n"
