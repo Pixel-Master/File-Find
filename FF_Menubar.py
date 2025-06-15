@@ -652,7 +652,7 @@ class MenuBar:
             # Collecting the return code
             return_code = run(["open", "-R", selected_file]).returncode
         elif platform == "win32" or platform == "cygwin":
-            return_code = run(["explorer", "/select", selected_file], shell=True).returncode
+            return_code = run(["explorer", f"/select{selected_file}"]).returncode
         elif platform == "linux":
             return_code = run(["xdg-open", os.path.dirname(selected_file)]).returncode
 

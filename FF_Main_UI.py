@@ -1230,7 +1230,8 @@ class MainWindow:
         # Search Status Menu
         global search_status_menu
         search_status_menu = QMenu("&Searches:", self.Root_Window)
-        search_status_menu.setDisabled(True)
+        if platform == "darwin" or platform == "linux":
+            search_status_menu.setDisabled(True)
 
         # Quit File Find
         quit_action = QAction("&Quit File Find", self.Root_Window)
