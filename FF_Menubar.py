@@ -665,6 +665,7 @@ class MenuBar:
             run(["xdg-open", os.path.dirname(selected_file)])
 
         logging.debug(f"Opened in Finder: {selected_file}")
+
     # Get basic information about a file
     def file_info(self):
         file = self.get_current_item()

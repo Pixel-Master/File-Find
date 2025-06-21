@@ -348,4 +348,4 @@ Include in your feature request:
 
 ### Pull Request
 
-It is best if you create an Issue or ask me before you spent your time fixing an Issue or developing something new.
+It is better if you create an issue or ask me before spending your time fixing an issue or developing something new.
