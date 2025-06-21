@@ -21,8 +21,8 @@ from platform import mac_ver
 
 # PySide6 Gui Imports
 from PySide6.QtCore import QThreadPool, QSize
-from PySide6.QtGui import QAction, QColor, QKeySequence, QClipboard, QBrush, Qt
-from PySide6.QtWidgets import QFileDialog, QListWidget, QTreeWidget, QMenu, QPushButton, QTreeWidgetItem
+from PySide6.QtGui import QAction, QColor, QKeySequence, QBrush, Qt
+from PySide6.QtWidgets import QFileDialog, QListWidget, QTreeWidget, QMenu, QPushButton, QTreeWidgetItem, QApplication
 
 # Projects Libraries
 import FF_Additional_UI
@@ -121,10 +121,11 @@ class MenuBar:
             self.tools_menu.addAction(self.show_action)
 
             # Select an app to open the selected file
-            self.open_in_app_action = QAction("&Select an app to open the selected file...", self.parent)
-            self.open_in_app_action.triggered.connect(self.open_in_app)
-            self.open_in_app_action.setShortcut("Alt+O")
-            self.tools_menu.addAction(self.open_in_app_action)
+            if platform == "darwin":
+                self.open_in_app_action = QAction("&Select an app to open the selected file...", self.parent)
+                self.open_in_app_action.triggered.connect(self.open_in_app)
+                self.open_in_app_action.setShortcut("Alt+O")
+                self.tools_menu.addAction(self.open_in_app_action)
 
             # Separator
             self.tools_menu.addSeparator()
@@ -204,8 +205,11 @@ class MenuBar:
                 "Open", self.open_file, icon=os.path.join(FF_Files.ASSETS_FOLDER, "Open_icon_small.png"))
             bottom_layout.addWidget(open_file)
             # Menu when Right-clicking
-            self.create_context_menu(
-                open_file, (self.show_action, self.open_in_app_action, self.open_terminal_action))
+            if platform == "darwin":
+                self.create_context_menu(
+                    open_file, (self.show_action, self.open_in_app_action, self.open_terminal_action))
+            else:
+                self.create_context_menu(open_file, (self.show_action, self.open_terminal_action))
 
             # Button to show info about the file
             file_info_button = self.generate_button(
@@ -652,7 +656,7 @@ class MenuBar:
             # Collecting the return code
             return_code = run(["open", "-R", selected_file]).returncode
         elif platform == "win32" or platform == "cygwin":
-            return_code = run(["explorer", f"/select{selected_file}"]).returncode
+            return_code = run(["explorer", f"/select,{selected_file}"]).returncode
         elif platform == "linux":
             return_code = run(["xdg-open", os.path.dirname(selected_file)]).returncode
 
@@ -788,7 +792,7 @@ class MenuBar:
                                                          "\n"
                                                          f"MD5:\n {md5_hash}\n\n"
                                                          f"SHA1:\n {sha1_hash}\n\n"
-                                                         f"SHA265:\n {sha256_hash}\n\n\n"
+                                                         f"SHA256:\n {sha256_hash}\n\n\n"
                                                          f"Took: {round(final_time, 3)} sec.",
                                                          self.parent, large=True)
         else:
@@ -802,12 +806,12 @@ class MenuBar:
 
     # Copy file name to clipboard
     def copy_file(self):
-        clipboard = QClipboard()
+        clipboard = QApplication.clipboard()
         clipboard.setText(self.get_current_item())
 
     # Copy file name to clipboard
     def copy_name(self):
-        clipboard = QClipboard()
+        clipboard = QApplication.clipboard()
         clipboard.setText(os.path.basename(self.get_current_item()))
 
     # TODO: remove or implement correctly
@@ -816,7 +820,7 @@ class MenuBar:
 
     # Copy path for Terminal
     def copy_path_for_terminal(self):
-        clipboard = QClipboard()
+        clipboard = QApplication.clipboard()
         clipboard.setText(self.get_current_item().replace(" ", r"\ "))
 
     # Remove moved file from cache
