@@ -76,7 +76,6 @@ Or you could:
 
   <img src="https://github.com/Pixel-Master/Pixel-Master.github.io/blob/main/File-Find/screenshots/properties.png?raw=true" height="250">
 
-    * **File contains**: Allows you to search in files. Input must be in the file content. This option can take really long. Your input is case-sensitive.
     * **Date created and modified**: Specify a date range for the date the file has been created / modified, leave at default to ignore.
     * **File size**: Input specifies file size in a range from min to max. Select the unit (Byte, Megabyte, Gigabyte...) on the right. Select `No Limit` to only set a minimum or maximum value.
 
@@ -88,6 +87,7 @@ Or you could:
     * **Limit folder depth**: Toggle to include/exclude subdirectories or their subdirectories. Entering a custom number sets the maximum amount of subdirectories in which files are still included. 
       * `0` or `No subfolders` means that ony the files directly in the specified directory will be included 
       * `1` means only the files in the folders that are directly in the specified dir will be considered...
+    * **File contains**: Allows you to search in files. Input must be in the file content. This option can take really long. The input is case-sensitive and only supports raw text files such as `.txt`, MS-Office and PDFs are not supported.
     * **Only search for folders or files**: Toggle to only include folders or files in the search results.
     * **Search in system files**: Toggle to include files in the system and library folders.
 
@@ -280,7 +280,7 @@ A: **File Find does not connect to the Internet**, everything stays on your mach
 
 - `build.py` - Build script, requires nuitka to be installed. See [here](#building-from-source)
 
-### UI-Files 
+### UI-Files
 
 - `FF_Main_UI.py` - This file contains the code for the main window
 

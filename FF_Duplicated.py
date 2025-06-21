@@ -505,7 +505,7 @@ class DuplicatedUI:
                 ""
                 "Timestamps:\n"
                 f"Cache (basis for search results) created:\n{cache_created_time}\n"
-                f"Window opened:\n{ctime(time_stamp)}s",
+                f"Window opened:\n{ctime(time_stamp)}",
                 large=True,
                 parent=self.Duplicated_Window)
 

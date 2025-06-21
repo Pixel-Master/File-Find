@@ -267,7 +267,7 @@ class CompareUi:
                 f"Base Search ({FF_Files.display_path(path_of_first_search, 60)}):\n{search1_created_time}\n"
                 f"Second Search ({FF_Files.display_path(compared_searches.path_of_second_search[0], 60)}):"
                 f"\n{search2_created_time}\n\n"
-                f"Window opened: {ctime(time_stamp)}s",
+                f"Window opened: {ctime(time_stamp)}",
                 large=True,
                 parent=self.Compare_Window)
 

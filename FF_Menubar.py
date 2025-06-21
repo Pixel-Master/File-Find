@@ -648,25 +648,23 @@ class MenuBar:
 
         selected_file = self.get_current_item()
 
-        # Open the selected file with the selected program and checking the return value
-        return_code = -1
+        # If the file doesn't exist
+        if not os.path.exists(selected_file):
+            FF_Additional_UI.PopUps.show_critical_messagebox("Error!", f"File not Found: {selected_file}",
+                                                             self.parent)
+            logging.error(f"Tried to open in Finder, but file doesn't exist: {selected_file}")
+            return
 
         # Opening the file, the specific command depends on the platform
         if platform == "darwin":
             # Collecting the return code
-            return_code = run(["open", "-R", selected_file]).returncode
+            run(["open", "-R", selected_file])
         elif platform == "win32" or platform == "cygwin":
-            return_code = run(["explorer", f"/select,{selected_file}"]).returncode
+            run(["explorer", f"/select,{selected_file}"])
         elif platform == "linux":
-            return_code = run(["xdg-open", os.path.dirname(selected_file)]).returncode
+            run(["xdg-open", os.path.dirname(selected_file)])
 
-        # If the command failed
-        if return_code != 0:
-            FF_Additional_UI.PopUps.show_critical_messagebox("Error!", f"File not Found {selected_file}",
-                                                             self.parent)
-        else:
-            logging.debug(f"Opened in Finder: {selected_file}")
-
+        logging.debug(f"Opened in Finder: {selected_file}")
     # Get basic information about a file
     def file_info(self):
         file = self.get_current_item()
